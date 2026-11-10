@@ -1,0 +1,11 @@
+{
+  "name": "Blank Starter",
+  "baseref": "main",
+  "tarignore": [
+    "node_modules",
+    "www"
+  ],
+  "scripts": {
+    "test": "corepack pnpm run lint && corepack pnpm run build && corepack pnpm run test:unit && corepack pnpm exec playwright install --with-deps chromium && corepack pnpm run test:e2e"
+  }
+}
