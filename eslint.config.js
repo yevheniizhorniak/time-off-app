@@ -5,7 +5,17 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import globals from 'globals';
 
 export default defineConfig([
-  { ignores: ['dist/**', 'android/**', 'ios/**', 'playwright-report/**', 'test-results/**', 'blob-report/**'] },
+  {
+    ignores: [
+      'dist/**',
+      'storybook-static/**',
+      'android/**',
+      'ios/**',
+      'playwright-report/**',
+      'test-results/**',
+      'blob-report/**',
+    ],
+  },
   ionic,
   {
     files: ['**/*.{ts,tsx}'],
