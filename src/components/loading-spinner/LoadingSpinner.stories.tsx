@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import ExploreContainer from './ExploreContainer';
+import LoadingSpinner from './LoadingSpinner';
 
 const meta = {
-  title: 'Starter/ExploreContainer',
-  component: ExploreContainer,
-} satisfies Meta<typeof ExploreContainer>;
+  title: 'Components/LoadingSpinner',
+  component: LoadingSpinner,
+} satisfies Meta<typeof LoadingSpinner>;
 
 export default meta;
 
