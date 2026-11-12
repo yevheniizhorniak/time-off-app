@@ -25,6 +25,38 @@ async function switchUser(page: Page): Promise<void> {
   await expect(page.getByLabel('Employee name')).toBeVisible();
 }
 
+for (const path of ['/login', '/requests', '/requests/new', '/home', '/', '/unknown']) {
+  test(`only shows login when visiting ${path} without a session`, async ({ page }) => {
+    await page.goto(path);
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(page.getByLabel('Employee name')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Your requests|Team requests/ })).toHaveCount(0);
+    await expect(page.getByLabel('Start date')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Switch user', exact: true })).toHaveCount(0);
+  });
+}
+
+test('restores access to protected pages on refresh and blocks browser Back after sign-out', async ({ page }) => {
+  await loginEmployee(page);
+  await expect(page).toHaveURL(/\/requests$/);
+  await page.goto('/login');
+  await expect(page).toHaveURL(/\/requests$/);
+  await page.getByRole('link', { name: 'Request time off', exact: true }).click();
+  await expect(page).toHaveURL(/\/requests\/new$/);
+  await expect(page.getByLabel('Start date')).toBeVisible();
+  await page.reload();
+  await expect(page).toHaveURL(/\/requests\/new$/);
+  await expect(page.getByLabel('Start date')).toBeVisible();
+
+  await switchUser(page);
+  await expect(page).toHaveURL(/\/login$/);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByLabel('Employee name')).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Your requests|Team requests/ })).toHaveCount(0);
+  await expect(page.getByLabel('Start date')).toHaveCount(0);
+});
+
 test('submits requests, reviews both outcomes, restores sessions and isolates employees', async ({ page }) => {
   await loginEmployee(page);
   await fillRequest(page);
@@ -46,7 +78,7 @@ test('submits requests, reviews both outcomes, restores sessions and isolates em
 
   await page.getByRole('button', { name: 'Log in as a supervisor', exact: true }).click();
   await expect(page.getByRole('article')).toHaveCount(2);
-  await page.getByRole('button', { name: /13 Nov 2026, 2 requests/ }).click();
+  await page.getByRole('button', { name: 'Nov 13, 2026, 2 requests', exact: true }).click();
   const calendar = page.getByRole('region', { name: 'Team calendar' });
   await expect(calendar.getByRole('list')).toContainText('Alex');
   await expect(calendar.getByRole('list')).toContainText('Bob');
@@ -156,9 +188,9 @@ test('guards routes, navigates calendar across years and fits the viewport', asy
   await expect(page.getByRole('heading', { name: 'January 2027', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Previous month' }).click();
   await expect(page.getByRole('heading', { name: 'December 2026', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: /31 Dec 2026, 0 requests/ }).click();
+  await page.getByRole('button', { name: 'Dec 31, 2026, 0 requests', exact: true }).click();
   await expect(page.getByText('No time off on this day.')).toBeVisible();
-  expect(await page.locator('main').evaluate((main) => main.scrollWidth <= main.clientWidth)).toBe(true);
+  expect(await page.locator('main.time-off-app').evaluate((main) => main.scrollWidth <= main.clientWidth)).toBe(true);
   await page.emulateMedia({ colorScheme: 'dark' });
   await expect(page.getByRole('heading', { name: 'Team requests' })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('supervisor-dark.png'), fullPage: true });

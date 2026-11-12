@@ -38,6 +38,7 @@ import '@ionic/react/css/display.css';
 import '@ionic/react/css/palettes/dark.system.css';
 
 /* Theme variables */
+import '@fontsource-variable/inter';
 import './theme/variables.scss';
 
 setupIonicReact();
@@ -52,26 +53,26 @@ function ApplicationRoutes(): React.JSX.Element {
       key={session?.role === 'employee' ? `employee-${session.employeeKey}` : (session?.role ?? 'login')}
     >
       <Route path="/login" element={<Login />} />
-      <Route
-        path="/requests"
-        element={
-          session ? (
-            <TimeOffRequests key={session.role === 'employee' ? session.employeeKey : 'supervisor'} />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-      <Route
-        path="/requests/new"
-        element={
-          session?.role === 'employee' ? (
-            <NewRequest key={session.employeeKey} />
-          ) : (
-            <Navigate to={session ? '/requests' : '/login'} replace />
-          )
-        }
-      />
+      {session
+        ? [
+            <Route
+              key="requests"
+              path="/requests"
+              element={<TimeOffRequests key={session.role === 'employee' ? session.employeeKey : 'supervisor'} />}
+            />,
+            <Route
+              key="new-request"
+              path="/requests/new"
+              element={
+                session.role === 'employee' ? (
+                  <NewRequest key={session.employeeKey} />
+                ) : (
+                  <Navigate to="/requests" replace />
+                )
+              }
+            />,
+          ]
+        : []}
       <Route path="*" element={<Navigate to={session ? '/requests' : '/login'} replace />} />
     </IonRouterOutlet>
   );

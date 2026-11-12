@@ -11,9 +11,11 @@ import './timeOff.scss';
 type TimeOffPageProps = {
   /** Screen content within Ionic's scrolling container. */
   children: ReactNode;
+  /** Optional heading displayed above the screen content. */
+  title?: string;
 };
 
-export default function TimeOffPage({ children }: TimeOffPageProps): ReactElement {
+export default function TimeOffPage({ children, title }: TimeOffPageProps): ReactElement {
   const { session, signOut, storageError, reload, busy } = useTimeOff();
   const navigate = useNavigate();
   const [error, setError] = useState('');
@@ -38,6 +40,7 @@ export default function TimeOffPage({ children }: TimeOffPageProps): ReactElemen
         <main className="time-off-app">
           <header className="app-heading">
             <div>
+              {title && <h1>{title}</h1>}
               {session && <p className="app-muted">{session.role === 'employee' ? session.name : 'Supervisor'}</p>}
             </div>
             {session && <Button label="Switch user" disabled={busy} onClick={switchUser} />}
