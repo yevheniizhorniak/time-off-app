@@ -11,17 +11,24 @@ export type ToaButtonProps = Omit<ComponentProps<'button'>, 'children' | 'classN
   loading?: boolean;
 };
 
-export default function ToaButton({ disabled, label, loading = false, ...buttonProps }: ToaButtonProps): ReactElement {
+export default function ToaButton({
+  disabled,
+  label,
+  loading = false,
+  type = 'button',
+  ...buttonProps
+}: ToaButtonProps): ReactElement {
   return (
     <button
       aria-busy={loading || buttonProps['aria-busy']}
       className="toa-button"
       disabled={disabled || loading}
+      type={type}
       {...buttonProps}
     >
       {label}
       {loading && (
-        <span className="toa-button__spinner-container">
+        <span className="toa-button__spinner">
           <LoadingSpinner decorative />
         </span>
       )}

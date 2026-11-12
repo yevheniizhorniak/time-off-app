@@ -1,4 +1,6 @@
 button.toa-button {
+  background: var(--ion-color-primary, #0054e9);
+  color: var(--ion-color-primary-contrast, #fff);
   display: inline-flex; // TODO: Probably should be inline-block
   align-items: center;
   border: 0;

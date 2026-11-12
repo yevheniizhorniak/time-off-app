@@ -36,6 +36,18 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
+export const Date: Story = {
+  args: {
+    label: 'Start date',
+    type: 'date',
+    value: '2026-11-12',
+    min: '2026-11-01',
+    max: '2026-12-31',
+    required: true,
+    placeholder: undefined,
+  },
+};
+
 export const Populated: Story = {
   args: { value: 'Alex Morgan' },
 };

@@ -18,6 +18,8 @@ export type TextFieldProps = Pick<
   | 'maxLength'
   | 'inputMode'
   | 'pattern'
+  | 'min'
+  | 'max'
 > & {
   /** Visible label and accessible name for the input. */
   label: string;
@@ -27,8 +29,8 @@ export type TextFieldProps = Pick<
   onChange: ChangeEventHandler<HTMLInputElement>;
   /** Validation message displayed below and associated with the invalid control. */
   error?: string;
-  /** Native text input type. Defaults to `text`. */
-  type?: 'text' | 'email' | 'password' | 'search' | 'tel' | 'url';
+  /** Native single-line input type. Date values use YYYY-MM-DD. Defaults to `text`. */
+  type?: 'text' | 'email' | 'password' | 'search' | 'tel' | 'url' | 'date';
 };
 
 export default function TextField({

@@ -4,6 +4,31 @@ import { expect, test, vi } from 'vitest';
 
 import TextField from './TextField';
 
+test('supports native date fields and date bounds', () => {
+  const { rerender } = render(
+    <TextField
+      label="Start date"
+      type="date"
+      min="2026-11-12"
+      max="2026-12-31"
+      value="2026-11-11"
+      onChange={vi.fn()}
+    />,
+  );
+  expect(screen.getByLabelText('Start date')).toBeInvalid();
+  rerender(
+    <TextField
+      label="Start date"
+      type="date"
+      min="2026-11-12"
+      max="2026-12-31"
+      value="2026-11-12"
+      onChange={vi.fn()}
+    />,
+  );
+  expect(screen.getByLabelText('Start date')).toBeValid();
+});
+
 test('forwards native changes and keeps the value controlled by its parent', () => {
   const onChange = vi.fn((event: ChangeEvent<HTMLInputElement>) => event.currentTarget.value);
   const { rerender } = render(<TextField label="Employee name" onChange={onChange} value="" />);

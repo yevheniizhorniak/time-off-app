@@ -1,0 +1,332 @@
+.time-off-app {
+  box-sizing: border-box;
+  margin: 0 auto;
+  max-width: 1180px;
+  padding: 1.5rem 1rem 3rem;
+  color: var(--ion-text-color);
+  line-height: 1.5;
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  h1,
+  h2,
+  h3,
+  p {
+    margin: 0;
+  }
+  h1 {
+    font-size: clamp(1.6rem, 5vw, 2.15rem);
+    letter-spacing: -0.035em;
+    line-height: 1.2;
+  }
+  h2 {
+    font-size: 1.2rem;
+    letter-spacing: -0.015em;
+  }
+  h3 {
+    font-size: 1rem;
+  }
+  p,
+  h3,
+  li {
+    overflow-wrap: anywhere;
+  }
+  a {
+    color: var(--ion-color-primary);
+  }
+
+  .app-heading {
+    align-items: center;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    margin-bottom: 1.75rem;
+    > div {
+      min-width: 0;
+    }
+    button {
+      flex-shrink: 0;
+    }
+    p {
+      margin-bottom: 0.25rem;
+    }
+  }
+
+  .app-muted,
+  .request-card__metadata {
+    color: var(--app-muted);
+  }
+  .app-error {
+    color: var(--app-error);
+  }
+  .app-storage-error {
+    background: var(--ion-item-background);
+    border: 1px solid var(--app-error);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    p {
+      margin-bottom: 0.75rem;
+    }
+  }
+  .app-panel,
+  .request-card {
+    background: var(--ion-item-background);
+    border: 1px solid var(--app-border);
+    border-radius: 16px;
+    padding: 1.25rem;
+  }
+  .app-form {
+    display: grid;
+    gap: 1.25rem;
+  }
+  .app-actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .app-section-action {
+    margin-bottom: 1.5rem;
+  }
+  .app-link-button {
+    align-items: center;
+    background: var(--ion-color-primary);
+    border-radius: 8px;
+    color: var(--ion-color-primary-contrast);
+    display: inline-flex;
+    font-weight: 600;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0.625rem 1rem;
+    text-decoration: none;
+    &:hover {
+      background: var(--ion-color-primary-shade);
+    }
+    &:active {
+      filter: brightness(0.85);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--ion-color-primary);
+      outline-offset: 3px;
+    }
+  }
+  .app-text-link {
+    align-items: center;
+    display: inline-flex;
+    min-height: 44px;
+    padding: 0.5rem;
+    &:hover {
+      color: var(--ion-color-primary-shade);
+    }
+    &:active {
+      filter: brightness(0.85);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--ion-color-primary);
+      outline-offset: 2px;
+    }
+  }
+  .app-login {
+    margin: clamp(1rem, 8vh, 5rem) auto 0;
+    max-width: 440px;
+    > p {
+      margin: 0.75rem 0 1.5rem;
+    }
+    &__supervisor {
+      border-top: 1px solid var(--app-border);
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+    }
+    button {
+      width: 100%;
+    }
+  }
+  .app-request-form {
+    max-width: 680px;
+  }
+  .app-date-fields {
+    display: grid;
+    gap: 1.25rem;
+  }
+  .request-group {
+    margin-bottom: 2rem;
+    > h2 {
+      margin-bottom: 0.875rem;
+    }
+  }
+  .request-list {
+    display: grid;
+    gap: 1rem;
+  }
+  .app-empty {
+    border: 1px dashed var(--app-border);
+    border-radius: 12px;
+    color: var(--app-muted);
+    padding: 1.5rem;
+  }
+
+  .request-card {
+    display: grid;
+    gap: 0.625rem;
+    &__heading {
+      align-items: flex-start;
+      display: flex;
+      gap: 0.5rem;
+      justify-content: space-between;
+    }
+    &__employee {
+      font-weight: 600;
+    }
+    &__note {
+      white-space: pre-wrap;
+    }
+    &__metadata {
+      font-size: 0.875rem;
+    }
+    &__review {
+      border-top: 1px solid var(--app-border);
+      display: grid;
+      gap: 1rem;
+      margin-top: 0.5rem;
+      padding-top: 1rem;
+    }
+  }
+  .request-status {
+    border: 1px solid currentColor;
+    border-radius: 20px;
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.15rem 0.625rem;
+    text-transform: capitalize;
+    &--pending {
+      color: var(--app-pending);
+    }
+    &--approved {
+      color: var(--app-approved);
+    }
+    &--rejected {
+      color: var(--app-error);
+    }
+  }
+
+  .request-calendar {
+    align-self: start;
+    min-width: 0;
+    > h2 {
+      margin-bottom: 1rem;
+    }
+    &__navigation {
+      align-items: center;
+      display: flex;
+      gap: 0.5rem;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      h3 {
+        text-align: center;
+      }
+      button {
+        font-size: 0.875rem;
+        padding: 0.5rem;
+      }
+    }
+    &__grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 2px;
+      margin: 1rem 0;
+    }
+    &__weekday {
+      color: var(--app-muted);
+      font-size: 0.75rem;
+      text-align: center;
+      padding: 0.5rem 0;
+    }
+    &__day {
+      align-items: center;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      color: inherit;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      font: inherit;
+      justify-content: center;
+      min-height: 52px;
+      min-width: 0;
+      padding: 0.25rem 0;
+      &:hover {
+        background: var(--app-subtle);
+      }
+      &:active {
+        filter: brightness(0.85);
+      }
+      &[aria-current='date'] {
+        border-color: var(--ion-color-primary);
+      }
+      &[aria-pressed='true'] {
+        background: var(--ion-color-primary);
+        color: var(--ion-color-primary-contrast);
+      }
+      &:focus-visible {
+        outline: 2px solid var(--ion-color-primary);
+        outline-offset: 1px;
+      }
+    }
+    &__count {
+      background: var(--app-subtle);
+      border-radius: 10px;
+      color: var(--ion-text-color);
+      font-size: 0.625rem;
+      min-width: 16px;
+      padding: 0 3px;
+    }
+    &__details {
+      border-top: 1px solid var(--app-border);
+      padding-top: 1rem;
+    }
+    &__details p {
+      margin-top: 0.5rem;
+    }
+    ul {
+      margin: 0.75rem 0 0;
+      padding-left: 1.25rem;
+    }
+    li + li {
+      margin-top: 0.5rem;
+    }
+  }
+
+  @media (min-width: 540px) {
+    padding: 2rem 1.5rem 4rem;
+    .app-date-fields {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 1000px) {
+    .app-supervisor-layout {
+      align-items: start;
+      display: grid;
+      gap: 2rem;
+      grid-template-columns: minmax(0, 1fr) 400px;
+    }
+  }
+  @media (max-width: 360px) {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    .request-calendar {
+      padding: 0.75rem;
+    }
+    .app-heading {
+      gap: 0.5rem;
+    }
+    .app-heading button {
+      padding: 0.625rem;
+    }
+  }
+}

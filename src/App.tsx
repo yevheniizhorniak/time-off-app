@@ -3,7 +3,12 @@ import { IonReactRouter } from '@ionic/react-router';
 import { Navigate, Route } from 'react-router-dom';
 
 import ToastProvider from './components/toast/ToastProvider';
-import Home from './pages/Home';
+import TimeOffProvider from './features/time-off/TimeOffProvider';
+import { createRequestRepository, createSessionRepository } from './features/time-off/storage';
+import { useTimeOff } from './features/time-off/useTimeOff';
+import Login from './pages/Login/Login';
+import NewRequest from './pages/TimeOffRequests/NewRequest';
+import TimeOffRequests from './pages/TimeOffRequests/TimeOffRequests';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -37,15 +42,49 @@ import './theme/variables.scss';
 
 setupIonicReact();
 
+const repository = createRequestRepository(() => window.localStorage);
+const sessionRepository = createSessionRepository(() => window.sessionStorage);
+
+function ApplicationRoutes(): React.JSX.Element {
+  const { session } = useTimeOff();
+  return (
+    <IonRouterOutlet
+      key={session?.role === 'employee' ? `employee-${session.employeeKey}` : (session?.role ?? 'login')}
+    >
+      <Route path="/login" element={<Login />} />
+      <Route
+        path="/requests"
+        element={
+          session ? (
+            <TimeOffRequests key={session.role === 'employee' ? session.employeeKey : 'supervisor'} />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+      <Route
+        path="/requests/new"
+        element={
+          session?.role === 'employee' ? (
+            <NewRequest key={session.employeeKey} />
+          ) : (
+            <Navigate to={session ? '/requests' : '/login'} replace />
+          )
+        }
+      />
+      <Route path="*" element={<Navigate to={session ? '/requests' : '/login'} replace />} />
+    </IonRouterOutlet>
+  );
+}
+
 const App: React.FC = () => (
   <IonApp>
     <ToastProvider>
-      <IonReactRouter>
-        <IonRouterOutlet>
-          <Route path="/home" element={<Home />} />
-          <Route path="/" element={<Navigate to="/home" replace />} />
-        </IonRouterOutlet>
-      </IonReactRouter>
+      <TimeOffProvider repository={repository} sessionRepository={sessionRepository}>
+        <IonReactRouter>
+          <ApplicationRoutes />
+        </IonReactRouter>
+      </TimeOffProvider>
     </ToastProvider>
   </IonApp>
 );
