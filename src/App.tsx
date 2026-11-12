@@ -2,6 +2,7 @@ import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { Navigate, Route } from 'react-router-dom';
 
+import ToastProvider from './components/toast/ToastProvider';
 import Home from './pages/Home';
 
 /* Core CSS required for Ionic components to work properly */
@@ -38,12 +39,14 @@ setupIonicReact();
 
 const App: React.FC = () => (
   <IonApp>
-    <IonReactRouter>
-      <IonRouterOutlet>
-        <Route path="/home" element={<Home />} />
-        <Route path="/" element={<Navigate to="/home" replace />} />
-      </IonRouterOutlet>
-    </IonReactRouter>
+    <ToastProvider>
+      <IonReactRouter>
+        <IonRouterOutlet>
+          <Route path="/home" element={<Home />} />
+          <Route path="/" element={<Navigate to="/home" replace />} />
+        </IonRouterOutlet>
+      </IonReactRouter>
+    </ToastProvider>
   </IonApp>
 );
 

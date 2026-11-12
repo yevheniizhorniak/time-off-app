@@ -30,3 +30,4 @@ export default function ToaButton({ disabled, label, loading = false, ...buttonP
 }
 
 // TODO: Check css classes preferred format
+// TODO: Add ripple effect

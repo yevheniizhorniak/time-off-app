@@ -1,0 +1,12 @@
+.toa-label {
+  color: var(--ion-text-color, #000);
+  display: inline-block;
+  font: inherit;
+  font-weight: 600;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+
+  .toa-label__required {
+    color: var(--ion-color-danger, #c5000f);
+  }
+}
