@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import Button from '../../components/button/Button';
 
+import { useSession } from './useSession';
 import { useTimeOff } from './useTimeOff';
 
 import './timeOff.scss';
@@ -16,7 +17,8 @@ type TimeOffPageProps = {
 };
 
 export default function TimeOffPage({ children, title }: TimeOffPageProps): ReactElement {
-  const { session, signOut, storageError, reload, busy } = useTimeOff();
+  const { session, signOut } = useSession();
+  const { storageError, reload, busy } = useTimeOff();
   const navigate = useNavigate();
   const [error, setError] = useState('');
 

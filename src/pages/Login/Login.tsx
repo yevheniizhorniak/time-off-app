@@ -5,10 +5,10 @@ import Button from '../../components/button/Button';
 import TextField from '../../components/text-field/TextField';
 import TimeOffPage from '../../features/time-off/TimeOffPage';
 import { employeeKey, type Session } from '../../features/time-off/timeOff';
-import { useTimeOff } from '../../features/time-off/useTimeOff';
+import { useSession } from '../../features/time-off/useSession';
 
 export default function Login(): ReactElement {
-  const { session, signIn, sessionError } = useTimeOff();
+  const { session, signIn, sessionError } = useSession();
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState('');

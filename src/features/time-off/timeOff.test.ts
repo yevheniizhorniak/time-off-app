@@ -1,13 +1,18 @@
 import { expect, test } from 'vitest';
 
 import {
+  createTimeOffRequest,
   dateKey,
   employeeKey,
   isDate,
   monthDays,
+  RequestDecisionError,
+  RequestValidationError,
   requestsOnDate,
+  reviewTimeOffRequest,
   validateRequest,
   type RequestDraft,
+  type Session,
   type TimeOffRequest,
 } from './timeOff';
 
@@ -22,6 +27,50 @@ const request: TimeOffRequest = {
   createdAt: '2026-11-10T10:00:00Z',
 };
 const today = '2026-11-12';
+const employee: Extract<Session, { role: 'employee' }> = { role: 'employee', name: 'Alex', employeeKey: 'alex' };
+const metadata = { id: 'new-request', createdAt: '2026-11-12T10:00:00Z', today };
+
+test('creates a pending request with explicit metadata and trims notes without mutating the draft', () => {
+  const input = Object.freeze({ ...draft, note: '  Family trip  ' });
+  const created = createTimeOffRequest(input, employee, Object.freeze([]), metadata);
+  expect(created).toEqual({
+    ...input,
+    note: 'Family trip',
+    id: metadata.id,
+    createdAt: metadata.createdAt,
+    employeeKey: 'alex',
+    employeeName: 'Alex',
+    status: 'pending',
+  });
+  expect(input.note).toBe('  Family trip  ');
+});
+
+test('creation rejects invalid drafts and overlaps with the supplied current requests', () => {
+  expect(() => createTimeOffRequest({ ...draft, leaveType: 'unknown' }, employee, [], metadata)).toThrow(
+    RequestValidationError,
+  );
+  expect(() => createTimeOffRequest(draft, employee, [request], metadata)).toThrow(RequestValidationError);
+});
+
+test.each(['approved', 'rejected'] as const)('reviews pending requests as %s without mutating inputs', (status) => {
+  const other = Object.freeze({ ...request, id: 'other' });
+  const current = Object.freeze([Object.freeze({ ...request }), other]);
+  const reviewedAt = '2026-11-12T11:00:00Z';
+  const reviewed = reviewTimeOffRequest(current, request.id, status, '  Decision note  ', reviewedAt);
+  expect(reviewed[0]).toEqual({ ...request, status, reviewerNote: 'Decision note', reviewedAt });
+  expect(reviewed[1]).toBe(other);
+  expect(current[0].status).toBe('pending');
+});
+
+test('review rejects missing and already-reviewed requests with a typed decision error', () => {
+  const reviewedAt = '2026-11-12T11:00:00Z';
+  expect(() => reviewTimeOffRequest([request], 'missing', 'approved', '', reviewedAt)).toThrow(RequestDecisionError);
+  for (const status of ['approved', 'rejected'] as const) {
+    expect(() =>
+      reviewTimeOffRequest([{ ...request, status, reviewedAt }], request.id, 'approved', '', reviewedAt),
+    ).toThrow(RequestDecisionError);
+  }
+});
 
 test('allows today, one-day periods and all supported leave types', () => {
   for (const leaveType of ['paid-time-off', 'sick-day', 'parental-leave']) {

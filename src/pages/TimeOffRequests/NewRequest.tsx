@@ -15,10 +15,12 @@ import {
   type RequestDraft,
   type RequestErrors,
 } from '../../features/time-off/timeOff';
+import { useSession } from '../../features/time-off/useSession';
 import { useTimeOff } from '../../features/time-off/useTimeOff';
 
 export default function NewRequest(): ReactElement {
-  const { submitRequest, session, requests, busy, storageError } = useTimeOff();
+  const { session } = useSession();
+  const { submitRequest, requests, busy, storageError } = useTimeOff();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const formRef = useRef<HTMLFormElement>(null);

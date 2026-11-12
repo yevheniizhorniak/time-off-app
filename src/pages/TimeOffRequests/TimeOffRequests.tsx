@@ -5,10 +5,12 @@ import RequestCalendar from '../../features/time-off/RequestCalendar';
 import RequestCard from '../../features/time-off/RequestCard';
 import TimeOffPage from '../../features/time-off/TimeOffPage';
 import { dateKey } from '../../features/time-off/timeOff';
+import { useSession } from '../../features/time-off/useSession';
 import { useTimeOff } from '../../features/time-off/useTimeOff';
 
 export default function TimeOffRequests(): ReactElement {
-  const { session, requests, storageError } = useTimeOff();
+  const { session } = useSession();
+  const { requests, storageError } = useTimeOff();
   const isEmployee = session?.role === 'employee';
   const visible = requests.filter((request) => !isEmployee || request.employeeKey === session.employeeKey);
   const today = dateKey();

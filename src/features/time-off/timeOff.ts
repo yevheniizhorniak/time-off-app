@@ -34,6 +34,13 @@ export class RequestValidationError extends Error {
   }
 }
 
+export class RequestDecisionError extends Error {
+  constructor() {
+    super('This request has already been reviewed or is no longer available. Refresh the requests and try again.');
+    this.name = 'RequestDecisionError';
+  }
+}
+
 export function employeeKey(name: string): string {
   return name.trim().toLowerCase();
 }
@@ -100,6 +107,39 @@ export function validateRequest(
     errors.startDate = 'These dates overlap one of your pending or approved requests.';
   }
   return errors;
+}
+
+export function createTimeOffRequest(
+  draft: RequestDraft,
+  employee: Extract<Session, { role: 'employee' }>,
+  requests: readonly TimeOffRequest[],
+  metadata: { id: string; createdAt: string; today: string },
+): TimeOffRequest {
+  const errors = validateRequest(draft, employee.employeeKey, requests, metadata.today);
+  if (Object.keys(errors).length > 0) throw new RequestValidationError(errors);
+  if (!isLeaveType(draft.leaveType)) throw new Error('Choose a time off type.');
+  return {
+    ...draft,
+    note: draft.note.trim(),
+    leaveType: draft.leaveType,
+    id: metadata.id,
+    employeeKey: employee.employeeKey,
+    employeeName: employee.name,
+    status: 'pending',
+    createdAt: metadata.createdAt,
+  };
+}
+
+export function reviewTimeOffRequest(
+  requests: readonly TimeOffRequest[],
+  id: string,
+  status: 'approved' | 'rejected',
+  note: string,
+  reviewedAt: string,
+): TimeOffRequest[] {
+  const request = requests.find((item) => item.id === id);
+  if (!request || request.status !== 'pending') throw new RequestDecisionError();
+  return requests.map((item) => (item.id === id ? { ...item, status, reviewerNote: note.trim(), reviewedAt } : item));
 }
 
 export function monthDays(month: Date): (string | null)[] {

@@ -5,6 +5,7 @@ import TextArea from '../../components/text-area/TextArea';
 import { useToast } from '../../components/toast/useToast';
 
 import { dateKey, formatDate, leaveTypeLabel, type TimeOffRequest } from './timeOff';
+import { useSession } from './useSession';
 import { useTimeOff } from './useTimeOff';
 
 type RequestCardProps = {
@@ -13,7 +14,8 @@ type RequestCardProps = {
 };
 
 export default function RequestCard({ request }: RequestCardProps): ReactElement {
-  const { session, reviewRequest, busy, storageError } = useTimeOff();
+  const { session } = useSession();
+  const { reviewRequest, busy, storageError } = useTimeOff();
   const { showToast } = useToast();
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
