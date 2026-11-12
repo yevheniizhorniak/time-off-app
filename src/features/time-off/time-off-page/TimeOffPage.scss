@@ -1,0 +1,104 @@
+.time-off-app {
+  box-sizing: border-box;
+  margin: 0 auto;
+  max-width: 1180px;
+  padding: 1.5rem 1rem 3rem;
+  color: var(--ion-text-color);
+  line-height: 1.5;
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  h1,
+  h2,
+  h3,
+  p {
+    margin: 0;
+  }
+  h1 {
+    font-size: clamp(1.6rem, 5vw, 2.15rem);
+    letter-spacing: -0.035em;
+    line-height: 1.2;
+  }
+  h2 {
+    font-size: 1.2rem;
+    letter-spacing: -0.015em;
+  }
+  h3 {
+    font-size: 1rem;
+  }
+  p,
+  h3,
+  li {
+    overflow-wrap: anywhere;
+  }
+  a {
+    color: var(--ion-color-primary);
+  }
+
+  .app-heading {
+    align-items: center;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    margin-bottom: 1.75rem;
+    > div {
+      min-width: 0;
+    }
+    button {
+      flex-shrink: 0;
+    }
+    p {
+      margin-bottom: 0.25rem;
+    }
+  }
+
+  .app-muted {
+    color: var(--app-muted);
+  }
+  .app-error {
+    color: var(--app-error);
+  }
+  .app-storage-error {
+    background: var(--ion-item-background);
+    border: 1px solid var(--app-error);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    p {
+      margin-bottom: 0.75rem;
+    }
+  }
+  .app-panel {
+    background: var(--ion-item-background);
+    border: 1px solid var(--app-border);
+    border-radius: 16px;
+    padding: 1.25rem;
+  }
+  .app-form {
+    display: grid;
+    gap: 1.25rem;
+  }
+  .app-actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 540px) {
+    padding: 2rem 1.5rem 4rem;
+  }
+  @media (max-width: 360px) {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    .app-heading {
+      gap: 0.5rem;
+    }
+    .app-heading button {
+      padding: 0.625rem;
+    }
+  }
+}

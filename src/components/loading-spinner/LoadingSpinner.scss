@@ -1,0 +1,39 @@
+.toa-loading-spinner {
+  display: inline-flex;
+  flex: none;
+  height: 1.75rem;
+  width: 1.75rem;
+
+  svg {
+    animation: toa-loading-spinner-rotate 0.9s linear infinite;
+    height: 100%;
+    width: 100%;
+  }
+
+  circle {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+  }
+}
+
+.toa-loading-spinner__track {
+  opacity: 0.25;
+}
+
+.toa-loading-spinner__arc {
+  stroke-dasharray: 42 57;
+  stroke-linecap: round;
+}
+
+@keyframes toa-loading-spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toa-loading-spinner svg {
+    animation: none;
+  }
+}

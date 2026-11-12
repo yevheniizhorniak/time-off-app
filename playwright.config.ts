@@ -10,12 +10,22 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL,
+    locale: 'en-US',
+    timezoneId: 'Europe/Budapest',
     trace: 'on-first-retry',
   },
   projects: [
     {
       name: 'Mobile Chrome',
       use: { ...devices['Pixel 7'] },
+    },
+    {
+      name: 'Desktop Chrome',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 1000 } },
+    },
+    {
+      name: 'iOS Chrome',
+      use: { ...devices['iPhone 13'], browserName: 'chromium', defaultBrowserType: 'chromium' },
     },
   ],
   webServer: {

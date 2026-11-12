@@ -1,0 +1,62 @@
+.toa-text-field {
+  color: var(--ion-text-color, #1f2937);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  width: 100%;
+
+  .toa-label {
+    line-height: 1.5;
+  }
+
+  &__input {
+    background: var(--ion-item-background, var(--ion-background-color, #fff));
+    border: 1px solid var(--ion-color-medium, #92949c);
+    border-radius: 8px;
+    box-sizing: border-box;
+    color: inherit;
+    color-scheme: light dark;
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1.5;
+    min-height: 44px;
+    min-width: 0;
+    padding: 0.625rem 0.75rem;
+    width: 100%;
+
+    &:hover:not(:disabled) {
+      border-color: var(--ion-color-primary, #0054e9);
+    }
+
+    &:active:not(:disabled) {
+      border-color: var(--ion-color-primary-shade, #004acd);
+    }
+
+    &[aria-invalid='true'] {
+      border-color: var(--ion-color-danger, #c5000f);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--ion-color-primary, #0054e9);
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  }
+
+  &__error {
+    color: var(--ion-color-danger-shade, #ac000d);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0;
+    overflow-wrap: anywhere;
+
+    @media (prefers-color-scheme: dark) {
+      color: var(--ion-color-danger-tint, #ff4961);
+    }
+  }
+}

@@ -1,0 +1,64 @@
+.toa-tooltip-example {
+  box-sizing: border-box;
+  color: var(--ion-text-color, #17243b);
+  font-family: var(--toa-font-family, sans-serif);
+  padding: 4rem 1rem;
+  width: 100%;
+
+  &__button {
+    background: var(--ion-color-primary, #2457c5);
+    border: 0;
+    border-radius: 8px;
+    color: var(--ion-color-primary-contrast, #fff);
+    cursor: pointer;
+    font: inherit;
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.625rem 1rem;
+
+    &:hover:not(:disabled) {
+      background: var(--ion-color-primary-shade, #1c469f);
+    }
+
+    &:active:not(:disabled) {
+      filter: brightness(0.85);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--ion-text-color, #17243b);
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  }
+
+  &__edges {
+    align-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    inset: 8px;
+    justify-items: start;
+    position: fixed;
+
+    > :nth-child(even) {
+      justify-self: end;
+    }
+  }
+
+  &__scroll {
+    border: 1px solid var(--app-border, #dce2eb);
+    height: 16rem;
+    max-width: 24rem;
+    overflow: auto;
+    // A transformed ancestor would clip a fixed tooltip without the body portal.
+    transform: translateZ(0);
+  }
+
+  &__scroll-content {
+    min-height: 36rem;
+    padding: 3rem 1rem;
+  }
+}

@@ -1,0 +1,33 @@
+.time-off-app {
+  .app-text-link {
+    align-items: center;
+    display: inline-flex;
+    min-height: 44px;
+    padding: 0.5rem;
+    &:hover {
+      color: var(--ion-color-primary-shade);
+    }
+    &:active {
+      filter: brightness(0.85);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--ion-color-primary);
+      outline-offset: 2px;
+    }
+  }
+
+  .app-request-form {
+    max-width: 680px;
+  }
+
+  .app-date-fields {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  @media (min-width: 540px) {
+    .app-date-fields {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}

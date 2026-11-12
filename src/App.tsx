@@ -1,9 +1,13 @@
-import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
+import { IonApp, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { Navigate, Route } from 'react-router-dom';
 
-import Home from './pages/Home';
+import ApplicationRoutes from './ApplicationRoutes';
+import ToastProvider from './components/toast/ToastProvider';
+import { createRequestRepository, createSessionRepository } from './features/time-off/browser-storage-repositories';
+import SessionProvider from './features/time-off/session-provider/SessionProvider';
+import TimeOffProvider from './features/time-off/time-off-provider/TimeOffProvider';
 
+// TODO: I should remove some of these
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
 
@@ -32,18 +36,25 @@ import '@ionic/react/css/display.css';
 import '@ionic/react/css/palettes/dark.system.css';
 
 /* Theme variables */
+import '@fontsource-variable/inter';
 import './theme/variables.scss';
 
 setupIonicReact();
 
+const repository = createRequestRepository(() => window.localStorage);
+const sessionRepository = createSessionRepository(() => window.sessionStorage);
+
 const App: React.FC = () => (
   <IonApp>
-    <IonReactRouter>
-      <IonRouterOutlet>
-        <Route path="/home" element={<Home />} />
-        <Route path="/" element={<Navigate to="/home" replace />} />
-      </IonRouterOutlet>
-    </IonReactRouter>
+    <ToastProvider>
+      <SessionProvider repository={sessionRepository}>
+        <TimeOffProvider repository={repository}>
+          <IonReactRouter>
+            <ApplicationRoutes />
+          </IonReactRouter>
+        </TimeOffProvider>
+      </SessionProvider>
+    </ToastProvider>
   </IonApp>
 );
 
