@@ -3,9 +3,11 @@ import { Navigate, useNavigate } from 'react-router-dom';
 
 import Button from '../../components/button/Button';
 import TextField from '../../components/text-field/TextField';
-import TimeOffPage from '../../features/time-off/TimeOffPage';
-import { employeeKey, type Session } from '../../features/time-off/timeOff';
+import { employeeKey, type Session } from '../../features/time-off/time-off-domain';
+import TimeOffPage from '../../features/time-off/time-off-page/TimeOffPage';
 import { useSession } from '../../features/time-off/useSession';
+
+import './Login.scss';
 
 export default function Login(): ReactElement {
   const { session, signIn, sessionError } = useSession();

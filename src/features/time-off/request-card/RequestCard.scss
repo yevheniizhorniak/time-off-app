@@ -1,0 +1,52 @@
+.time-off-app {
+  .request-card {
+    background: var(--ion-item-background);
+    border: 1px solid var(--app-border);
+    border-radius: 16px;
+    padding: 1.25rem;
+    display: grid;
+    gap: 0.625rem;
+    &__heading {
+      align-items: flex-start;
+      display: flex;
+      gap: 0.5rem;
+      justify-content: space-between;
+    }
+    &__employee {
+      font-weight: 600;
+    }
+    &__note {
+      white-space: pre-wrap;
+    }
+    &__metadata {
+      color: var(--app-muted);
+      font-size: 0.875rem;
+    }
+    &__review {
+      border-top: 1px solid var(--app-border);
+      display: grid;
+      gap: 1rem;
+      margin-top: 0.5rem;
+      padding-top: 1rem;
+    }
+  }
+
+  .request-status {
+    border: 1px solid currentColor;
+    border-radius: 20px;
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.15rem 0.625rem;
+    text-transform: capitalize;
+    &--pending {
+      color: var(--app-pending);
+    }
+    &--approved {
+      color: var(--app-approved);
+    }
+    &--rejected {
+      color: var(--app-error);
+    }
+  }
+}

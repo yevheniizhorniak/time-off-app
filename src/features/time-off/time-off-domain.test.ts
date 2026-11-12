@@ -14,7 +14,7 @@ import {
   type RequestDraft,
   type Session,
   type TimeOffRequest,
-} from './timeOff';
+} from './time-off-domain';
 
 const draft: RequestDraft = { startDate: '2026-11-12', endDate: '2026-11-14', leaveType: 'paid-time-off', note: '' };
 const request: TimeOffRequest = {

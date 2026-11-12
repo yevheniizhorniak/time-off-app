@@ -1,0 +1,17 @@
+.time-off-app {
+  .app-login {
+    margin: clamp(1rem, 8vh, 5rem) auto 0;
+    max-width: 440px;
+    > p {
+      margin: 0.75rem 0 1.5rem;
+    }
+    &__supervisor {
+      border-top: 1px solid var(--app-border);
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+    }
+    button {
+      width: 100%;
+    }
+  }
+}

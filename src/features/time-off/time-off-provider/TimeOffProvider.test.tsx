@@ -2,18 +2,19 @@ import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
-import SessionProvider from './SessionProvider';
-import TimeOffProvider from './TimeOffProvider';
-import { createRequestRepository, createSessionRepository } from './storage';
+import { createRequestRepository, createSessionRepository } from '../browser-storage-repositories';
+import SessionProvider from '../session-provider/SessionProvider';
 import {
   RequestDecisionError,
   RequestValidationError,
   type RequestDraft,
   type Session,
   type TimeOffRequest,
-} from './timeOff';
-import { useSession } from './useSession';
-import { useTimeOff } from './useTimeOff';
+} from '../time-off-domain';
+import { useSession } from '../useSession';
+import { useTimeOff } from '../useTimeOff';
+
+import TimeOffProvider from './TimeOffProvider';
 
 const employee: Session = { role: 'employee', name: 'Alex', employeeKey: 'alex' };
 const draft: RequestDraft = {

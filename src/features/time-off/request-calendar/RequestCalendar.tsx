@@ -1,8 +1,16 @@
 import { useId, useState, type ReactElement } from 'react';
 
-import Button from '../../components/button/Button';
+import Button from '../../../components/button/Button';
+import {
+  dateKey,
+  formatDate,
+  leaveTypeLabel,
+  monthDays,
+  requestsOnDate,
+  type TimeOffRequest,
+} from '../time-off-domain';
 
-import { dateKey, formatDate, leaveTypeLabel, monthDays, requestsOnDate, type TimeOffRequest } from './timeOff';
+import './RequestCalendar.scss';
 
 type RequestCalendarProps = {
   /** Requests used to highlight pending and approved leave across the team. */

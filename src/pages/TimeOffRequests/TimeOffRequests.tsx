@@ -1,12 +1,14 @@
 import type { ReactElement } from 'react';
 import { Link } from 'react-router-dom';
 
-import RequestCalendar from '../../features/time-off/RequestCalendar';
-import RequestCard from '../../features/time-off/RequestCard';
-import TimeOffPage from '../../features/time-off/TimeOffPage';
-import { dateKey } from '../../features/time-off/timeOff';
+import RequestCalendar from '../../features/time-off/request-calendar/RequestCalendar';
+import RequestCard from '../../features/time-off/request-card/RequestCard';
+import { dateKey } from '../../features/time-off/time-off-domain';
+import TimeOffPage from '../../features/time-off/time-off-page/TimeOffPage';
 import { useSession } from '../../features/time-off/useSession';
 import { useTimeOff } from '../../features/time-off/useTimeOff';
+
+import './TimeOffRequests.scss';
 
 export default function TimeOffRequests(): ReactElement {
   const { session } = useSession();

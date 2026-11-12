@@ -19,3 +19,9 @@
 - Liskov substitution: implementations and test doubles must preserve their contracts, including failure behavior and invariants.
 - Interface segregation: define narrow contracts around consumer needs; avoid exposing infrastructure APIs to business logic or UI.
 - Dependency inversion: business logic should depend on small contracts, with concrete database, framework, and network adapters wired at the application boundary.
+
+# Code style
+
+- Name files after their specific responsibility and contents so readers can infer their purpose without opening them. Include relevant implementation details when they distinguish the module, such as `postgres-session-service.ts` instead of `auth.ts`. Avoid vague names such as `utils.ts` or `helpers.ts`; preserve framework-required names such as `route.ts` and `page.tsx`.
+- When a component has more than one associated file (including stories, styles, tests, or documentation), keep those files together in a dedicated component folder. Exception: preserve the starter entrypoint `src/App.tsx` and its companion `src/App.test.tsx` at the root of `src/`.
+- Define one React component per implementation file. Move helper components into their own files and import them. Related props, types, constants, and non-component helpers may stay with the component; Storybook files may contain multiple stories.

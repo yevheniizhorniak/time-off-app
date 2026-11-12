@@ -2,10 +2,11 @@ import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { createSessionRepository, type SessionRepository } from '../browser-storage-repositories';
+import type { Session } from '../time-off-domain';
+import { useSession } from '../useSession';
+
 import SessionProvider from './SessionProvider';
-import { createSessionRepository, type SessionRepository } from './storage';
-import type { Session } from './timeOff';
-import { useSession } from './useSession';
 
 const employee: Session = { role: 'employee', name: 'Alex', employeeKey: 'alex' };
 

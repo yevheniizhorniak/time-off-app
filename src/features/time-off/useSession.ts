@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-import type { Session } from './timeOff';
+import type { Session } from './time-off-domain';
 
 export type SessionState = {
   session: Session | null;

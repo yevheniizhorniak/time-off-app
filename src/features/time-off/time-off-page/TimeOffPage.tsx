@@ -2,12 +2,11 @@ import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/rea
 import { useState, type ReactElement, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import Button from '../../components/button/Button';
+import Button from '../../../components/button/Button';
+import { useSession } from '../useSession';
+import { useTimeOff } from '../useTimeOff';
 
-import { useSession } from './useSession';
-import { useTimeOff } from './useTimeOff';
-
-import './timeOff.scss';
+import './TimeOffPage.scss';
 
 type TimeOffPageProps = {
   /** Screen content within Ionic's scrolling container. */

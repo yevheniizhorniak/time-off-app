@@ -1,4 +1,4 @@
-import { employeeKey, isDate, isLeaveType, type Session, type TimeOffRequest } from './timeOff';
+import { employeeKey, isDate, isLeaveType, type Session, type TimeOffRequest } from './time-off-domain';
 
 export interface RequestRepository {
   load(): TimeOffRequest[];

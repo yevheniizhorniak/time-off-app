@@ -1,8 +1,8 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
-import { createRequestRepository } from './storage';
-import { RequestDecisionError, RequestValidationError, type TimeOffRequest } from './timeOff';
+import { createRequestRepository } from './browser-storage-repositories';
+import { RequestDecisionError, RequestValidationError, type TimeOffRequest } from './time-off-domain';
 import { useRequestStore } from './useRequestStore';
 
 const request: TimeOffRequest = {

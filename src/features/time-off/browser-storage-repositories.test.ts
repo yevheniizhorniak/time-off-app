@@ -1,7 +1,7 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 
-import { createRequestRepository, createSessionRepository } from './storage';
-import type { TimeOffRequest } from './timeOff';
+import { createRequestRepository, createSessionRepository } from './browser-storage-repositories';
+import type { TimeOffRequest } from './time-off-domain';
 
 const request: TimeOffRequest = {
   id: 'one',

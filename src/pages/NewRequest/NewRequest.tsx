@@ -6,7 +6,6 @@ import Dropdown from '../../components/dropdown/Dropdown';
 import TextArea from '../../components/text-area/TextArea';
 import TextField from '../../components/text-field/TextField';
 import { useToast } from '../../components/toast/useToast';
-import TimeOffPage from '../../features/time-off/TimeOffPage';
 import {
   dateKey,
   leaveTypes,
@@ -14,9 +13,12 @@ import {
   validateRequest,
   type RequestDraft,
   type RequestErrors,
-} from '../../features/time-off/timeOff';
+} from '../../features/time-off/time-off-domain';
+import TimeOffPage from '../../features/time-off/time-off-page/TimeOffPage';
 import { useSession } from '../../features/time-off/useSession';
 import { useTimeOff } from '../../features/time-off/useTimeOff';
+
+import './NewRequest.scss';
 
 export default function NewRequest(): ReactElement {
   const { session } = useSession();

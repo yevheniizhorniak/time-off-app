@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState, type ReactElement, type ReactNode } from 'react';
 
-import type { SessionRepository } from './storage';
-import type { Session } from './timeOff';
-import { SessionContext, type SessionState } from './useSession';
+import type { SessionRepository } from '../browser-storage-repositories';
+import type { Session } from '../time-off-domain';
+import { SessionContext, type SessionState } from '../useSession';
 
 type SessionProviderProps = {
   /** Application content sharing the active session. */

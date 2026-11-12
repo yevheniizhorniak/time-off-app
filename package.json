@@ -13,15 +13,16 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "preview": "vite preview",
-    "lint": "corepack pnpm run eslint && corepack pnpm run typecheck:e2e && corepack pnpm run prettier --check",
+    "lint": "corepack pnpm run eslint && corepack pnpm run typecheck:e2e && corepack pnpm run prettier --check && corepack pnpm run style:check",
     "lint:fix": "corepack pnpm run eslint --fix && corepack pnpm run prettier --write",
     "eslint": "eslint --max-warnings 0",
     "prettier": "prettier \"**/*.{ts,tsx}\"",
     "typecheck:e2e": "tsc -p tsconfig.e2e.json",
     "test": "corepack pnpm run test:unit && corepack pnpm run test:e2e",
-    "test:unit": "vitest run",
+    "test:unit": "vitest run && node --test scripts/check-code-style.test.mjs",
     "test:unit:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "style:check": "node scripts/check-code-style.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.6.0",

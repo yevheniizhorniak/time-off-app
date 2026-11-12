@@ -1,15 +1,11 @@
-import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
+import { IonApp, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { Navigate, Route } from 'react-router-dom';
 
+import ApplicationRoutes from './ApplicationRoutes';
 import ToastProvider from './components/toast/ToastProvider';
-import SessionProvider from './features/time-off/SessionProvider';
-import TimeOffProvider from './features/time-off/TimeOffProvider';
-import { createRequestRepository, createSessionRepository } from './features/time-off/storage';
-import { useSession } from './features/time-off/useSession';
-import Login from './pages/Login/Login';
-import NewRequest from './pages/TimeOffRequests/NewRequest';
-import TimeOffRequests from './pages/TimeOffRequests/TimeOffRequests';
+import { createRequestRepository, createSessionRepository } from './features/time-off/browser-storage-repositories';
+import SessionProvider from './features/time-off/session-provider/SessionProvider';
+import TimeOffProvider from './features/time-off/time-off-provider/TimeOffProvider';
 
 // TODO: I should remove some of these
 /* Core CSS required for Ionic components to work properly */
@@ -47,38 +43,6 @@ setupIonicReact();
 
 const repository = createRequestRepository(() => window.localStorage);
 const sessionRepository = createSessionRepository(() => window.sessionStorage);
-
-function ApplicationRoutes(): React.JSX.Element {
-  const { session } = useSession();
-  return (
-    <IonRouterOutlet
-      key={session?.role === 'employee' ? `employee-${session.employeeKey}` : (session?.role ?? 'login')}
-    >
-      <Route path="/login" element={<Login />} />
-      {session
-        ? [
-            <Route
-              key="requests"
-              path="/requests"
-              element={<TimeOffRequests key={session.role === 'employee' ? session.employeeKey : 'supervisor'} />}
-            />,
-            <Route
-              key="new-request"
-              path="/requests/new"
-              element={
-                session.role === 'employee' ? (
-                  <NewRequest key={session.employeeKey} />
-                ) : (
-                  <Navigate to="/requests" replace />
-                )
-              }
-            />,
-          ]
-        : []}
-      <Route path="*" element={<Navigate to={session ? '/requests' : '/login'} replace />} />
-    </IonRouterOutlet>
-  );
-}
 
 const App: React.FC = () => (
   <IonApp>
