@@ -1,68 +1,22 @@
 import { dateKey } from '../../components/calendar/date-key';
 import { isDate } from '../../type-safety/is-date';
-import type { Session } from '../auth/session-domain';
+import type { Session } from '../auth/types/session';
 
 import { isWeekend, timeOffHolidayName } from './time-off-holidays';
+import {
+  RequestCancellationError,
+  RequestDecisionError,
+  RequestValidationError,
+  type RequestErrors,
+} from './types/errors';
+import { isLeaveType, leaveTypes, type LeaveType } from './types/leave-type';
+import type { RequestDraft } from './types/request-draft';
+import type { TimeOffRequest } from './types/time-off-request';
 
 export { dateKey } from '../../components/calendar/date-key';
 export { formatDate } from '../../components/calendar/format-date';
 export { monthDays } from '../../components/calendar/month-days';
 export { isDate } from '../../type-safety/is-date';
-
-export const leaveTypes = [
-  { value: 'paid-time-off', label: 'Paid Time Off' },
-  { value: 'sick-day', label: 'Sick day' },
-  { value: 'parental-leave', label: 'Parental Leave' },
-] as const;
-
-export type LeaveType = (typeof leaveTypes)[number]['value'];
-export type RequestStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
-
-export type RequestDraft = {
-  startDate: string;
-  endDate: string;
-  leaveType: string;
-  note: string;
-};
-
-export type TimeOffRequest = Omit<RequestDraft, 'leaveType'> & {
-  id: string;
-  employeeName: string;
-  employeeKey: string;
-  leaveType: LeaveType;
-  status: RequestStatus;
-  createdAt: string;
-  reviewedAt?: string;
-  reviewerNote?: string;
-  cancelledFromDate?: string;
-  cancelledAt?: string;
-};
-
-export type RequestErrors = Partial<Record<keyof RequestDraft, string>>;
-
-export class RequestValidationError extends Error {
-  constructor(public readonly errors: RequestErrors) {
-    super('Check the highlighted fields.');
-  }
-}
-
-export class RequestDecisionError extends Error {
-  constructor() {
-    super('This request has already been reviewed or is no longer available. Refresh the requests and try again.');
-    this.name = 'RequestDecisionError';
-  }
-}
-
-export class RequestCancellationError extends Error {
-  constructor() {
-    super('This request can no longer be cancelled. Refresh the requests and try again.');
-    this.name = 'RequestCancellationError';
-  }
-}
-
-export function isLeaveType(value: unknown): value is LeaveType {
-  return leaveTypes.some((type) => type.value === value);
-}
 
 export function leaveTypeLabel(type: LeaveType): string {
   return leaveTypes.find((option) => option.value === type)!.label;

@@ -1,14 +1,8 @@
 import { useId, useState, type ReactElement } from 'react';
 
 import { ToaCalendar } from '../../../../components/calendar/Calendar';
-import {
-  dateKey,
-  formatDate,
-  leaveTypeLabel,
-  monthDays,
-  requestsOnDate,
-  type TimeOffRequest,
-} from '../../time-off-domain';
+import { dateKey, formatDate, leaveTypeLabel, monthDays, requestsOnDate } from '../../time-off-domain';
+import type { TimeOffRequest } from '../../types/time-off-request';
 
 import './RequestCalendar.scss';
 

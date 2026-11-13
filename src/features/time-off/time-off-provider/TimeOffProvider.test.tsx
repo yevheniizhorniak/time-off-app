@@ -3,18 +3,14 @@ import type { ReactNode } from 'react';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
 import { createSessionRepository } from '../../auth/browser-session-repository';
-import type { Session } from '../../auth/session-domain';
 import SessionProvider from '../../auth/session-provider/SessionProvider';
+import type { Session } from '../../auth/types/session';
 import { useSession } from '../../auth/useSession';
 import { createRequestRepository } from '../browser-request-repository';
 import { useTimeOff } from '../hooks/useTimeOff';
-import {
-  RequestCancellationError,
-  RequestDecisionError,
-  RequestValidationError,
-  type RequestDraft,
-  type TimeOffRequest,
-} from '../time-off-domain';
+import { RequestCancellationError, RequestDecisionError, RequestValidationError } from '../types/errors';
+import type { RequestDraft } from '../types/request-draft';
+import type { TimeOffRequest } from '../types/time-off-request';
 
 import TimeOffProvider from './TimeOffProvider';
 

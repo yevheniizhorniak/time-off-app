@@ -3,9 +3,10 @@ import { Navigate, useNavigate } from 'react-router-dom';
 
 import { ToaButton } from '../../components/button/Button';
 import { ToaTextField } from '../../components/text-field/TextField';
-import { employeeKey, type Session } from '../../features/auth/session-domain';
+import type { Session } from '../../features/auth/types/session';
 import { useSession } from '../../features/auth/useSession';
 import TimeOffPageLayout from '../../features/time-off/components/time-off-page-layout/TimeOffPageLayout';
+import { trimLowerCase } from '../../trim-lower-case';
 
 import './Login.scss';
 
@@ -35,7 +36,7 @@ export default function Login(): ReactElement {
       return;
     }
     setNameError('');
-    login({ role: 'employee', name: name.trim(), employeeKey: employeeKey(name) });
+    login({ role: 'employee', name: name.trim(), employeeKey: trimLowerCase(name) });
   }
 
   return (

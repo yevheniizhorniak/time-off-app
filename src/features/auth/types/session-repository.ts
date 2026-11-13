@@ -1,4 +1,4 @@
-import type { Session } from './session-domain';
+import type { Session } from './session';
 
 export interface SessionRepository {
   /** Returns `null` when absent. Throws on invalid data or read failure. */

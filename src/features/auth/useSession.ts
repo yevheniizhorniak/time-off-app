@@ -1,13 +1,6 @@
 import { createContext, useContext } from 'react';
 
-import type { Session } from './session-domain';
-
-export type SessionState = {
-  session: Session | null;
-  sessionError: string | null;
-  signIn: (session: Session) => void;
-  signOut: () => void;
-};
+import type { SessionState } from './types/session-state';
 
 export const SessionContext = createContext<SessionState | null>(null);
 

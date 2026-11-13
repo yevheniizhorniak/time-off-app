@@ -1,10 +1,7 @@
 import { dateKey } from '../../components/calendar/date-key';
 import { isDate } from '../../type-safety/is-date';
 
-export type TimeOffHoliday = {
-  date: string;
-  name: string;
-};
+import type { TimeOffHoliday } from './types/time-off-holiday';
 
 /** Organization-specific holidays, using local YYYY-MM-DD dates and English names. */
 export const additionalTimeOffHolidays: readonly TimeOffHoliday[] = [];

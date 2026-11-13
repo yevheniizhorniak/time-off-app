@@ -1,46 +1,9 @@
 import { isRecord } from '../../type-safety/is-record';
-import { isTimestamp } from '../../type-safety/is-timestamp';
-import { employeeKey } from '../auth/session-domain';
 
-import type { RequestRepository } from './request-repository';
-import { isDate, isLeaveType, type TimeOffRequest } from './time-off-domain';
+import type { RequestRepository } from './types/request-repository';
+import { isTimeOffRequest, type TimeOffRequest } from './types/time-off-request';
 
 const requestKey = 'time-off-app.requests';
-
-function hasValidCancellation(value: Record<string, unknown>, startDate: string, endDate: string): boolean {
-  if (value.cancelledFromDate === undefined && value.cancelledAt === undefined) {
-    return value.status !== 'cancelled';
-  }
-  return (
-    isDate(value.cancelledFromDate) &&
-    isTimestamp(value.cancelledAt) &&
-    value.cancelledFromDate >= startDate &&
-    value.cancelledFromDate <= endDate &&
-    (value.status === 'cancelled' ? value.cancelledFromDate === startDate : value.cancelledFromDate > startDate)
-  );
-}
-
-function isRequest(value: unknown): value is TimeOffRequest {
-  if (!isRecord(value)) return false;
-  return (
-    typeof value.id === 'string' &&
-    value.id.length > 0 &&
-    typeof value.employeeName === 'string' &&
-    value.employeeName.trim().length > 0 &&
-    value.employeeKey === employeeKey(value.employeeName) &&
-    isDate(value.startDate) &&
-    isDate(value.endDate) &&
-    value.startDate <= value.endDate &&
-    isLeaveType(value.leaveType) &&
-    typeof value.note === 'string' &&
-    isTimestamp(value.createdAt) &&
-    hasValidCancellation(value, value.startDate, value.endDate) &&
-    (value.reviewerNote === undefined || typeof value.reviewerNote === 'string') &&
-    ((value.status === 'pending' && value.reviewedAt === undefined) ||
-      ((value.status === 'approved' || value.status === 'rejected') && isTimestamp(value.reviewedAt)) ||
-      (value.status === 'cancelled' && (value.reviewedAt === undefined || isTimestamp(value.reviewedAt))))
-  );
-}
 
 export function createRequestRepository(getStorage: () => Storage): RequestRepository {
   function load(): TimeOffRequest[] {
@@ -51,7 +14,7 @@ export function createRequestRepository(getStorage: () => Storage): RequestRepos
       !isRecord(data) ||
       data.version !== 1 ||
       !Array.isArray(data.requests) ||
-      !data.requests.every(isRequest) ||
+      !data.requests.every(isTimeOffRequest) ||
       new Set(data.requests.map((request) => request.id)).size !== data.requests.length
     ) {
       throw new Error('Saved requests have an unsupported format.');

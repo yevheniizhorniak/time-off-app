@@ -2,12 +2,8 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
 import { createRequestRepository } from '../browser-request-repository';
-import {
-  RequestCancellationError,
-  RequestDecisionError,
-  RequestValidationError,
-  type TimeOffRequest,
-} from '../time-off-domain';
+import { RequestCancellationError, RequestDecisionError, RequestValidationError } from '../types/errors';
+import type { TimeOffRequest } from '../types/time-off-request';
 
 import { useRequestStore } from './useRequestStore';
 

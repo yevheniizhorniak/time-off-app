@@ -1,23 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import type { RequestRepository } from '../request-repository';
-import {
-  RequestCancellationError,
-  RequestDecisionError,
-  RequestValidationError,
-  type TimeOffRequest,
-} from '../time-off-domain';
-
-type RequestSnapshot = {
-  requests: TimeOffRequest[];
-  storageError: string | null;
-};
-
-type RequestStore = RequestSnapshot & {
-  busy: boolean;
-  reload: () => void;
-  persist: (change: (current: TimeOffRequest[]) => TimeOffRequest[]) => Promise<void>;
-};
+import { RequestCancellationError, RequestDecisionError, RequestValidationError } from '../types/errors';
+import type { RequestRepository } from '../types/request-repository';
+import type { RequestSnapshot } from '../types/request-snapshot';
+import type { RequestStore } from '../types/request-store';
+import type { TimeOffRequest } from '../types/time-off-request';
 
 const readError =
   'Saved requests could not be read. Check browser storage access or restore valid saved data, then retry.';

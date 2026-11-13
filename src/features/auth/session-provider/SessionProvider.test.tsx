@@ -3,8 +3,8 @@ import type { ReactNode } from 'react';
 import { beforeEach, expect, test, vi } from 'vitest';
 
 import { createSessionRepository } from '../browser-session-repository';
-import type { Session } from '../session-domain';
-import type { SessionRepository } from '../session-repository';
+import type { Session } from '../types/session';
+import type { SessionRepository } from '../types/session-repository';
 import { useSession } from '../useSession';
 
 import SessionProvider from './SessionProvider';

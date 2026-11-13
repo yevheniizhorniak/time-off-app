@@ -1,6 +1,6 @@
 import { afterEach, expect, test, vi } from 'vitest';
 
-import type { Session } from '../auth/session-domain';
+import type { Session } from '../auth/types/session';
 
 import {
   cancellationStartDate,
@@ -9,16 +9,14 @@ import {
   dateKey,
   isDate,
   monthDays,
-  RequestDecisionError,
-  RequestCancellationError,
-  RequestValidationError,
   requestsOnDate,
   reviewTimeOffRequest,
   validateRequest,
-  type RequestDraft,
-  type TimeOffRequest,
 } from './time-off-domain';
 import * as timeOffHolidays from './time-off-holidays';
+import { RequestCancellationError, RequestDecisionError, RequestValidationError } from './types/errors';
+import type { RequestDraft } from './types/request-draft';
+import type { TimeOffRequest } from './types/time-off-request';
 
 const draft: RequestDraft = { startDate: '2026-11-12', endDate: '2026-11-13', leaveType: 'paid-time-off', note: '' };
 const request: TimeOffRequest = {

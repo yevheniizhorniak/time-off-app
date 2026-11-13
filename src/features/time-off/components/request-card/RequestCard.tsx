@@ -6,7 +6,8 @@ import { ToaTextArea } from '../../../../components/text-area/TextArea';
 import { useToast } from '../../../../components/toast/useToast';
 import { useSession } from '../../../auth/useSession';
 import { useTimeOff } from '../../hooks/useTimeOff';
-import { cancellationStartDate, dateKey, formatDate, leaveTypeLabel, type TimeOffRequest } from '../../time-off-domain';
+import { cancellationStartDate, dateKey, formatDate, leaveTypeLabel } from '../../time-off-domain';
+import type { TimeOffRequest } from '../../types/time-off-request';
 
 import './RequestCard.scss';
 

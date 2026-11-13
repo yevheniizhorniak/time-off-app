@@ -4,12 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../components/toast/useToast';
 import { useSession } from '../../features/auth/useSession';
 import { useTimeOff } from '../../features/time-off/hooks/useTimeOff';
-import {
-  RequestValidationError,
-  validateRequest,
-  type RequestDraft,
-  type RequestErrors,
-} from '../../features/time-off/time-off-domain';
+import { validateRequest } from '../../features/time-off/time-off-domain';
+import { RequestValidationError, type RequestErrors } from '../../features/time-off/types/errors';
+import type { RequestDraft } from '../../features/time-off/types/request-draft';
 
 type NewRequestForm = {
   formRef: RefObject<HTMLFormElement | null>;

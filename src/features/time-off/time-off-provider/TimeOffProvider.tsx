@@ -3,14 +3,9 @@ import { useCallback, useMemo, type ReactElement, type ReactNode } from 'react';
 import { useSession } from '../../auth/useSession';
 import { useRequestStore } from '../hooks/useRequestStore';
 import { TimeOffContext } from '../hooks/useTimeOff';
-import type { RequestRepository } from '../request-repository';
-import {
-  cancelTimeOffRequest,
-  createTimeOffRequest,
-  dateKey,
-  reviewTimeOffRequest,
-  type RequestDraft,
-} from '../time-off-domain';
+import { cancelTimeOffRequest, createTimeOffRequest, dateKey, reviewTimeOffRequest } from '../time-off-domain';
+import type { RequestDraft } from '../types/request-draft';
+import type { RequestRepository } from '../types/request-repository';
 
 type TimeOffProviderProps = {
   /** Application content sharing requests. */

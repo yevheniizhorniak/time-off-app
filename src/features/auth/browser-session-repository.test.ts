@@ -16,3 +16,28 @@ test('restores simulated sessions and removes them on sign out', () => {
   repository.save(null);
   expect(repository.load()).toBeNull();
 });
+
+test('trims employee names when restoring saved sessions', () => {
+  sessionStorage.setItem(
+    'time-off-app.session',
+    JSON.stringify({ role: 'employee', name: '  ALex  ', employeeKey: 'alex', extra: 'ignored' }),
+  );
+  const repository = createSessionRepository(() => sessionStorage);
+  expect(repository.load()).toEqual({ role: 'employee', name: 'ALex', employeeKey: 'alex' });
+});
+
+test.each([
+  null,
+  [],
+  { role: 'admin' },
+  { role: 'employee', name: '', employeeKey: '' },
+  { role: 'employee', name: '   ', employeeKey: '' },
+  { role: 'employee', name: 'Alex', employeeKey: 'bob' },
+  { role: 'employee', name: 'Alex' },
+])('rejects invalid saved sessions %j', (session) => {
+  const raw = JSON.stringify(session);
+  sessionStorage.setItem('time-off-app.session', raw);
+  const repository = createSessionRepository(() => sessionStorage);
+  expect(() => repository.load()).toThrow('Saved session is invalid.');
+  expect(sessionStorage.getItem('time-off-app.session')).toBe(raw);
+});

@@ -6,7 +6,8 @@ import { ToaDropdown } from '../../components/dropdown/Dropdown';
 import { ToaTextArea } from '../../components/text-area/TextArea';
 import TimeOffDateField from '../../features/time-off/components/time-off-date-field/TimeOffDateField';
 import TimeOffPageLayout from '../../features/time-off/components/time-off-page-layout/TimeOffPageLayout';
-import { dateKey, leaveTypes } from '../../features/time-off/time-off-domain';
+import { dateKey } from '../../features/time-off/time-off-domain';
+import { leaveTypes } from '../../features/time-off/types/leave-type';
 
 import { useNewRequestForm } from './useNewRequestForm';
 

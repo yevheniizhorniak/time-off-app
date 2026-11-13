@@ -1,7 +1,8 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
-import { formatDate, type TimeOffRequest } from '../../time-off-domain';
+import { formatDate } from '../../time-off-domain';
+import type { TimeOffRequest } from '../../types/time-off-request';
 
 import RequestCalendar from './RequestCalendar';
 

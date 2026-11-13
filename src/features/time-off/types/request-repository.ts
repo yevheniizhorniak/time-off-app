@@ -1,4 +1,4 @@
-import type { TimeOffRequest } from './time-off-domain';
+import type { TimeOffRequest } from './time-off-request';
 
 export interface RequestRepository {
   /** Returns an empty array when absent. Throws on invalid data or read failure. */
