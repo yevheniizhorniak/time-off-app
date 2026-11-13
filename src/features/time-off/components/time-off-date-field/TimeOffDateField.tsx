@@ -1,11 +1,12 @@
-import { useId, useRef, useState, type MouseEvent, type ReactElement } from 'react';
+import { useId, useState, type ReactElement } from 'react';
 
 import { ToaButton } from '../../../../components/button/Button';
 import { ToaCalendar } from '../../../../components/calendar/Calendar';
 import { dateKey } from '../../../../components/calendar/date-key';
 import { formatDate } from '../../../../components/calendar/format-date';
+import { ToaDialog } from '../../../../components/dialog/Dialog';
 import { ToaLabel } from '../../../../components/label/Label';
-import { isDate } from '../../../../dates/is-date';
+import { isDate } from '../../../../type-safety/is-date';
 import { isWeekend, timeOffHolidayName, timeOffHolidaysForYear } from '../../time-off-holidays';
 
 import './TimeOffDateField.scss';
@@ -37,8 +38,6 @@ export default function TimeOffDateField({
   required = false,
 }: TimeOffDateFieldProps): ReactElement {
   const id = useId();
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
   const [month, setMonth] = useState(() => new Date(`${min}T12:00:00`));
   const minimum = min > dateKey() ? min : dateKey();
@@ -52,33 +51,17 @@ export default function TimeOffDateField({
 
   function openCalendar(): void {
     setMonth(new Date(`${isDate(value) ? value : minimum}T12:00:00`));
-    dialogRef.current?.showModal();
     setOpen(true);
   }
 
   function closeCalendar(): void {
-    dialogRef.current?.close();
     setOpen(false);
-    triggerRef.current?.focus();
   }
 
   function selectDate(date: string): void {
     if (isUnavailable(date)) return;
     onChange(date);
     closeCalendar();
-  }
-
-  function dismissBackdrop(event: MouseEvent<HTMLDialogElement>): void {
-    if (event.target !== event.currentTarget) return;
-    const bounds = event.currentTarget.getBoundingClientRect();
-    if (
-      event.clientX < bounds.left ||
-      event.clientX > bounds.right ||
-      event.clientY < bounds.top ||
-      event.clientY > bounds.bottom
-    ) {
-      closeCalendar();
-    }
   }
 
   return (
@@ -88,7 +71,6 @@ export default function TimeOffDateField({
         type="button"
         id={id}
         className="time-off-date-field__trigger"
-        ref={triggerRef}
         disabled={disabled}
         aria-haspopup="dialog"
         aria-expanded={open}
@@ -107,17 +89,13 @@ export default function TimeOffDateField({
           {error}
         </p>
       )}
-      <dialog
+      <ToaDialog
         id={`${id}-dialog`}
         className="time-off-date-field__dialog"
-        ref={dialogRef}
         aria-labelledby={`${id}-title`}
         aria-describedby={`${id}-legend`}
-        onCancel={(event) => {
-          event.preventDefault();
-          closeCalendar();
-        }}
-        onClick={dismissBackdrop}
+        isOpen={open}
+        onDismiss={closeCalendar}
       >
         <h2 id={`${id}-title`}>Choose {label.toLowerCase()}</h2>
         <ToaCalendar
@@ -152,7 +130,7 @@ export default function TimeOffDateField({
         <div className="time-off-date-field__actions">
           <ToaButton label="Cancel" onClick={closeCalendar} />
         </div>
-      </dialog>
+      </ToaDialog>
     </div>
   );
 }

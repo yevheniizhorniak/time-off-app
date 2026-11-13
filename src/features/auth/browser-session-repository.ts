@@ -1,11 +1,9 @@
+import { isRecord } from '../../type-safety/is-record';
+
 import { employeeKey } from './session-domain';
 import type { SessionRepository } from './session-repository';
 
 const sessionKey = 'time-off-app.session';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
 
 export function createSessionRepository(getStorage: () => Storage): SessionRepository {
   return {

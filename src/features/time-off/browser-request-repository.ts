@@ -1,17 +1,11 @@
+import { isRecord } from '../../type-safety/is-record';
+import { isTimestamp } from '../../type-safety/is-timestamp';
 import { employeeKey } from '../auth/session-domain';
 
 import type { RequestRepository } from './request-repository';
 import { isDate, isLeaveType, type TimeOffRequest } from './time-off-domain';
 
 const requestKey = 'time-off-app.requests';
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
-function isTimestamp(value: unknown): value is string {
-  return typeof value === 'string' && !Number.isNaN(Date.parse(value));
-}
 
 function hasValidCancellation(value: Record<string, unknown>, startDate: string, endDate: string): boolean {
   if (value.cancelledFromDate === undefined && value.cancelledAt === undefined) {

@@ -1,0 +1,14 @@
+.toa-dialog {
+  background: var(--toa-background-color, #fff);
+  border: 0;
+  border-radius: 12px;
+  box-shadow: 0 16px 48px rgb(0 0 0 / 0.24);
+  color: var(--toa-text-color, #1f2937);
+  max-width: 28rem;
+  padding: 1.5rem;
+  width: calc(100% - 2rem);
+
+  &::backdrop {
+    background: rgb(0 0 0 / 0.5);
+  }
+}

@@ -1,5 +1,5 @@
 import { dateKey } from '../../components/calendar/date-key';
-import { isDate } from '../../dates/is-date';
+import { isDate } from '../../type-safety/is-date';
 import type { Session } from '../auth/session-domain';
 
 import { isWeekend, timeOffHolidayName } from './time-off-holidays';
@@ -7,7 +7,7 @@ import { isWeekend, timeOffHolidayName } from './time-off-holidays';
 export { dateKey } from '../../components/calendar/date-key';
 export { formatDate } from '../../components/calendar/format-date';
 export { monthDays } from '../../components/calendar/month-days';
-export { isDate } from '../../dates/is-date';
+export { isDate } from '../../type-safety/is-date';
 
 export const leaveTypes = [
   { value: 'paid-time-off', label: 'Paid Time Off' },

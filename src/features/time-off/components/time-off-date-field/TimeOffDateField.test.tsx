@@ -40,6 +40,7 @@ test('disables past dates, weekends and named holidays, then returns focus after
     <TimeOffDateField label="Start date" value="" min="2026-11-01" required onChange={onChange} />,
   );
   const trigger = screen.getByRole('button', { name: 'Start date' });
+  trigger.focus();
   fireEvent.click(trigger);
   const dialog = screen.getByRole('dialog', { name: 'Choose start date' });
   expect(screen.getByRole('heading', { name: 'November 2026' })).toBeInTheDocument();
@@ -84,6 +85,7 @@ test('Cancel, Escape and backdrop dismissal preserve the value and restore trigg
   const onChange = vi.fn();
   render(<TimeOffDateField label="Start date" value="2026-11-13" min="2026-11-12" onChange={onChange} />);
   const trigger = screen.getByRole('button', { name: 'Start date' });
+  trigger.focus();
   fireEvent.click(trigger);
   fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
   expect(trigger).toHaveFocus();

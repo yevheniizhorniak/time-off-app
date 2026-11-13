@@ -1,5 +1,5 @@
 import { dateKey } from '../../components/calendar/date-key';
-import { isDate } from '../../dates/is-date';
+import { isDate } from '../../type-safety/is-date';
 
 export type TimeOffHoliday = {
   date: string;

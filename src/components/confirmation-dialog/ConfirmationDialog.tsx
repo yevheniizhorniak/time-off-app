@@ -1,4 +1,6 @@
-import { useEffect, useId, useRef, type MouseEvent, type ReactElement, type SyntheticEvent } from 'react';
+import { useId, type ReactElement } from 'react';
+
+import { ToaDialog } from '../dialog/Dialog';
 
 import './ConfirmationDialog.scss';
 
@@ -29,48 +31,16 @@ export function ToaConfirmationDialog({
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
 }: ToaConfirmationDialogProps): ReactElement {
-  const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const messageId = useId();
 
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
-    if (isOpen && !dialog.open) {
-      dialog.showModal();
-    } else if (!isOpen && dialog.open) {
-      dialog.close();
-    }
-  }, [isOpen]);
-
-  function handleCancel(event: SyntheticEvent<HTMLDialogElement>): void {
-    event.preventDefault();
-    onCancel();
-  }
-
-  function handleBackdropClick(event: MouseEvent<HTMLDialogElement>): void {
-    if (event.target !== event.currentTarget) return;
-
-    const bounds = event.currentTarget.getBoundingClientRect();
-    if (
-      event.clientX < bounds.left ||
-      event.clientX > bounds.right ||
-      event.clientY < bounds.top ||
-      event.clientY > bounds.bottom
-    ) {
-      onCancel();
-    }
-  }
-
   return (
-    <dialog
+    <ToaDialog
       aria-describedby={messageId}
       aria-labelledby={titleId}
       className="toa-confirmation-dialog"
-      onCancel={handleCancel}
-      onClick={handleBackdropClick}
-      ref={dialogRef}
+      isOpen={isOpen}
+      onDismiss={onCancel}
     >
       <h2 className="toa-confirmation-dialog__title" id={titleId}>
         {title}
@@ -94,6 +64,6 @@ export function ToaConfirmationDialog({
           {confirmLabel}
         </button>
       </div>
-    </dialog>
+    </ToaDialog>
   );
 }
