@@ -18,14 +18,15 @@ type NewTimeOffRequestForm = {
   errors: TimeOffRequestErrors;
   error: string;
   busy: boolean;
-  storageError: string | null;
+  loading: boolean;
+  loadError: string | null;
   submit: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 };
 
 /** Validates and saves time off requests, reports failures, and navigates on success. */
 export function useNewTimeOffRequestForm(): NewTimeOffRequestForm {
   const { session } = useSession();
-  const { submitTimeOffRequest, timeOffRequests, busy, storageError } = useTimeOff();
+  const { submitTimeOffRequest, timeOffRequests, busy, loading, loadError } = useTimeOff();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const formRef = useRef<HTMLFormElement>(null);
@@ -41,7 +42,7 @@ export function useNewTimeOffRequestForm(): NewTimeOffRequestForm {
   async function submit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
     setError('');
-    if (session?.role !== 'employee') return;
+    if (session?.role !== 'employee' || busy || loading || loadError) return;
     const nextErrors = validateTimeOffRequest(draft, session.employeeKey, timeOffRequests);
     if (Object.keys(nextErrors).length > 0) {
       showValidation(nextErrors);
@@ -58,5 +59,5 @@ export function useNewTimeOffRequestForm(): NewTimeOffRequestForm {
     }
   }
 
-  return { formRef, draft, setDraft, errors, error, busy, storageError, submit };
+  return { formRef, draft, setDraft, errors, error, busy, loading, loadError, submit };
 }

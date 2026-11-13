@@ -2,10 +2,10 @@ import { useId, useState, type ReactElement } from 'react';
 
 import { ToaButton } from '../../../../components/button/Button';
 import { ToaCalendar } from '../../../../components/calendar/Calendar';
-import { dateKey } from '../../../../components/calendar/date-key';
 import { formatDate } from '../../../../components/calendar/format-date';
 import { ToaDialog } from '../../../../components/dialog/Dialog';
 import { ToaLabel } from '../../../../components/label/Label';
+import { dateKey } from '../../../../type-safety/date-key';
 import { isDate } from '../../../../type-safety/is-date';
 import { isWeekend } from '../../holidays/is-weekend';
 import { timeOffHolidayName } from '../../holidays/time-off-holiday-name';

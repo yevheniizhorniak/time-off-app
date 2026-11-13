@@ -6,13 +6,13 @@ import TimeOffPageLayout from '../../features/time-off/components/time-off-page-
 import TimeOffRequestCalendar from '../../features/time-off/components/time-off-request-calendar/TimeOffRequestCalendar';
 import TimeOffRequestCard from '../../features/time-off/components/time-off-request-card/TimeOffRequestCard';
 import { useTimeOff } from '../../features/time-off/hooks/useTimeOff';
-import { dateKey } from '../../features/time-off/time-off-domain';
+import { dateKey } from '../../type-safety/date-key';
 
 import './TimeOffRequests.scss';
 
 export default function TimeOffRequests(): ReactElement {
   const { session } = useSession();
-  const { timeOffRequests, storageError } = useTimeOff();
+  const { timeOffRequests, loadError, hasLoaded } = useTimeOff();
   const isEmployee = session?.role === 'employee';
   const visible = timeOffRequests.filter(
     (timeOffRequest) => !isEmployee || timeOffRequest.employeeKey === session.employeeKey,
@@ -61,8 +61,8 @@ export default function TimeOffRequests(): ReactElement {
           </Link>
         </div>
       )}
-      {storageError && (
-        <p className="app-muted">Time off request information may be unavailable until saved data can be loaded.</p>
+      {loadError && (
+        <p className="app-muted">Time off request information may be unavailable until data can be loaded.</p>
       )}
       <div className={isEmployee ? '' : 'app-supervisor-layout'}>
         <div>
@@ -70,9 +70,11 @@ export default function TimeOffRequests(): ReactElement {
             <section className="time-off-request-group" key={group.title}>
               <h2>{group.title}</h2>
               {group.items.length === 0 ? (
-                <p className="app-empty">
-                  {storageError ? 'Unable to load time off requests.' : 'No time off requests yet.'}
-                </p>
+                hasLoaded || loadError ? (
+                  <p className="app-empty">
+                    {loadError ? 'Unable to load time off requests.' : 'No time off requests yet.'}
+                  </p>
+                ) : null
               ) : (
                 <div className="time-off-request-list">
                   {group.items.map((timeOffRequest) => (
@@ -83,7 +85,7 @@ export default function TimeOffRequests(): ReactElement {
             </section>
           ))}
         </div>
-        {!isEmployee && <TimeOffRequestCalendar timeOffRequests={timeOffRequests} />}
+        {!isEmployee && hasLoaded && <TimeOffRequestCalendar timeOffRequests={timeOffRequests} />}
       </div>
     </TimeOffPageLayout>
   );

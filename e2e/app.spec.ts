@@ -287,7 +287,7 @@ test('disables weekends and Czech holidays in calendar dialogs and allows ranges
 test('reports corrupt saved data, protects it from overwrite and reloads after repair', async ({ page }) => {
   await page.evaluate(() => localStorage.setItem('time-off-app.time-off-requests', '{broken'));
   await page.reload();
-  await expect(page.getByRole('alert')).toContainText('Saved time off requests could not be read');
+  await expect(page.getByRole('alert')).toContainText('Time off requests could not be loaded');
   await loginEmployee(page);
   await fillTimeOffRequest(page);
   await expect(page.getByRole('button', { name: 'Submit time off request', exact: true })).toBeDisabled();

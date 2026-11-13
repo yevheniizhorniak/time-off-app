@@ -6,15 +6,15 @@ import { ToaDropdown } from '../../components/dropdown/Dropdown';
 import { ToaTextArea } from '../../components/text-area/TextArea';
 import TimeOffDateField from '../../features/time-off/components/time-off-date-field/TimeOffDateField';
 import TimeOffPageLayout from '../../features/time-off/components/time-off-page-layout/TimeOffPageLayout';
-import { dateKey } from '../../features/time-off/time-off-domain';
 import { leaveTypes } from '../../features/time-off/types/leave-type';
+import { dateKey } from '../../type-safety/date-key';
 
 import { useNewTimeOffRequestForm } from './useNewTimeOffRequestForm';
 
 import './NewTimeOffRequest.scss';
 
 export default function NewTimeOffRequest(): ReactElement {
-  const { formRef, draft, setDraft, errors, error, busy, storageError, submit } = useNewTimeOffRequestForm();
+  const { formRef, draft, setDraft, errors, error, busy, loading, loadError, submit } = useNewTimeOffRequestForm();
 
   return (
     <TimeOffPageLayout title="Request time off">
@@ -66,7 +66,7 @@ export default function NewTimeOffRequest(): ReactElement {
             </p>
           )}
           <div className="app-actions">
-            <ToaButton label="Submit time off request" type="submit" loading={busy} disabled={!!storageError} />
+            <ToaButton label="Submit time off request" type="submit" loading={busy} disabled={loading || !!loadError} />
             {!busy && (
               <Link className="app-text-link" to="/time-off-requests">
                 Cancel

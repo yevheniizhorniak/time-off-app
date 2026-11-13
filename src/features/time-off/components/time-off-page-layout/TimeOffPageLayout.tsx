@@ -18,7 +18,7 @@ type TimeOffPageLayoutProps = {
 
 export default function TimeOffPageLayout({ children, title }: TimeOffPageLayoutProps): ReactElement {
   const { session, signOut } = useSession();
-  const { storageError, reload, busy } = useTimeOff();
+  const { loadError, reload, busy, loading } = useTimeOff();
   const navigate = useNavigate();
   const [error, setError] = useState('');
 
@@ -55,11 +55,16 @@ export default function TimeOffPageLayout({ children, title }: TimeOffPageLayout
               {error}
             </p>
           )}
-          {storageError && (
+          {loadError && (
             <div className="app-storage-error" role="alert">
-              <p>{storageError}</p>
-              <ToaButton label="Retry loading time off requests" disabled={busy} onClick={reload} />
+              <p>{loadError}</p>
+              <ToaButton label="Retry loading time off requests" disabled={busy || loading} onClick={reload} />
             </div>
+          )}
+          {loading && (
+            <p role="status" className="app-muted">
+              Loading time off requests…
+            </p>
           )}
           {children}
         </main>

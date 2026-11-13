@@ -1,8 +1,9 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, expect, test, vi } from 'vitest';
 
+import { dateKey } from '../../type-safety/date-key';
+
 import { ToaCalendar, type ToaCalendarProps } from './Calendar';
-import { dateKey } from './date-key';
 import { formatDate } from './format-date';
 
 const props: ToaCalendarProps = {

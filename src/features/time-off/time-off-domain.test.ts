@@ -1,19 +1,19 @@
 import { afterEach, expect, test, vi } from 'vitest';
 
-import type { Session } from '../auth/types/session';
+import { monthDays } from '../../components/calendar/month-days';
+import { dateKey } from '../../type-safety/date-key';
+import { isDate } from '../../type-safety/is-date';
 
 import * as timeOffHolidays from './holidays/time-off-holiday-name';
 import {
   cancellationStartDate,
   cancelTimeOffRequest,
   createTimeOffRequest,
-  dateKey,
-  isDate,
-  monthDays,
   timeOffRequestsOnDate,
   reviewTimeOffRequest,
   validateTimeOffRequest,
 } from './time-off-domain';
+import type { TimeOffEmployee } from './types/time-off-employee';
 import type { TimeOffRequest } from './types/time-off-request';
 import type { TimeOffRequestDraft } from './types/time-off-request-draft';
 import {
@@ -38,7 +38,7 @@ const timeOffRequest: TimeOffRequest = {
   createdAt: '2026-11-10T10:00:00Z',
 };
 const today = '2026-11-12';
-const employee: Extract<Session, { role: 'employee' }> = { role: 'employee', name: 'Alex', employeeKey: 'alex' };
+const employee: TimeOffEmployee = { name: 'Alex', employeeKey: 'alex' };
 const metadata = { id: 'new-time-off-request', createdAt: '2026-11-12T10:00:00Z', today };
 
 afterEach(() => {

@@ -1,0 +1,58 @@
+name: Pull request checks
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: corepack pnpm install --frozen-lockfile
+
+      - name: Build application and run lint
+        run: corepack pnpm run build
+
+      - name: Run unit tests with coverage
+        run: corepack pnpm run test:unit
+
+      - name: Install Playwright Chromium
+        run: corepack pnpm exec playwright install --with-deps chromium
+
+      - name: Run browser tests
+        run: corepack pnpm run test:e2e
+
+      - name: Build Storybook
+        run: corepack pnpm run build-storybook
+
+      - name: Upload Playwright failure reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-failure-reports
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+          if-no-files-found: ignore

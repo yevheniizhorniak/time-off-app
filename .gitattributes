@@ -1,0 +1,3 @@
+# Keep TypeScript line endings consistent with Prettier on every platform.
+*.ts text eol=lf
+*.tsx text eol=lf

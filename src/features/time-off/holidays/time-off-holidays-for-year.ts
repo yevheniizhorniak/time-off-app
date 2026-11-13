@@ -1,4 +1,4 @@
-import { dateKey } from '../../../components/calendar/date-key';
+import { dateKey } from '../../../type-safety/date-key';
 import { isDate } from '../../../type-safety/is-date';
 
 import { additionalTimeOffHolidays } from './additional-time-off-holidays';

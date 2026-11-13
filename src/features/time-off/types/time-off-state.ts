@@ -1,9 +1,7 @@
-import type { TimeOffRequest } from './time-off-request';
 import type { TimeOffRequestDraft } from './time-off-request-draft';
+import type { TimeOffRequestSnapshot } from './time-off-request-snapshot';
 
-export type TimeOffState = {
-  timeOffRequests: TimeOffRequest[];
-  storageError: string | null;
+export type TimeOffState = TimeOffRequestSnapshot & {
   busy: boolean;
   reload: () => void;
   submitTimeOffRequest: (draft: TimeOffRequestDraft) => Promise<void>;

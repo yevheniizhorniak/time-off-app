@@ -1,12 +1,14 @@
+import { dateKey } from '../../type-safety/date-key';
 import { isRecord } from '../../type-safety/is-record';
 
+import { cancelTimeOffRequest, createTimeOffRequest, reviewTimeOffRequest } from './time-off-domain';
 import { isTimeOffRequest, type TimeOffRequest } from './types/time-off-request';
 import type { TimeOffRequestRepository } from './types/time-off-request-repository';
 
 const timeOffRequestKey = 'time-off-app.time-off-requests';
 
 export function createTimeOffRequestRepository(getStorage: () => Storage): TimeOffRequestRepository {
-  function load(): TimeOffRequest[] {
+  function read(): TimeOffRequest[] {
     const raw = getStorage().getItem(timeOffRequestKey);
     if (raw === null) return [];
     const data: unknown = JSON.parse(raw);
@@ -24,17 +26,42 @@ export function createTimeOffRequestRepository(getStorage: () => Storage): TimeO
     return timeOffRequests;
   }
 
+  async function update(change: (current: TimeOffRequest[]) => TimeOffRequest[]): Promise<TimeOffRequest[]> {
+    function commit(): TimeOffRequest[] {
+      const timeOffRequests = change(read());
+      getStorage().setItem(timeOffRequestKey, JSON.stringify({ version: 2, timeOffRequests }));
+      return timeOffRequests;
+    }
+    // Serialize read/modify/write across tabs in browsers supporting Web Locks.
+    if (navigator.locks) return navigator.locks.request(timeOffRequestKey, commit);
+    return commit();
+  }
+
   return {
-    load,
-    async update(change) {
-      function commit(): TimeOffRequest[] {
-        const timeOffRequests = change(load());
-        getStorage().setItem(timeOffRequestKey, JSON.stringify({ version: 2, timeOffRequests }));
-        return timeOffRequests;
-      }
-      // Serialize read/modify/write across tabs in browsers supporting Web Locks.
-      if (navigator.locks) return navigator.locks.request(timeOffRequestKey, commit);
-      return commit();
+    async load() {
+      return read();
+    },
+    submit(draft, employee) {
+      return update((current) => {
+        const now = new Date();
+        return [
+          ...current,
+          createTimeOffRequest(draft, employee, current, {
+            id: crypto.randomUUID(),
+            createdAt: now.toISOString(),
+            today: dateKey(now),
+          }),
+        ];
+      });
+    },
+    review(id, status, note) {
+      return update((current) => reviewTimeOffRequest(current, id, status, note, new Date().toISOString()));
+    },
+    cancel(id, employeeKey) {
+      return update((current) => {
+        const now = new Date();
+        return cancelTimeOffRequest(current, id, employeeKey, { today: dateKey(now), cancelledAt: now.toISOString() });
+      });
     },
     subscribe(onChange) {
       function handleStorage(event: StorageEvent): void {

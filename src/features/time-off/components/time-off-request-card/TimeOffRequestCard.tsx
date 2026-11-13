@@ -1,12 +1,14 @@
 import { useState, type ReactElement } from 'react';
 
 import { ToaButton } from '../../../../components/button/Button';
+import { formatDate } from '../../../../components/calendar/format-date';
 import { ToaConfirmationDialog } from '../../../../components/confirmation-dialog/ConfirmationDialog';
 import { ToaTextArea } from '../../../../components/text-area/TextArea';
 import { useToast } from '../../../../components/toast/useToast';
+import { dateKey } from '../../../../type-safety/date-key';
 import { useSession } from '../../../auth/useSession';
 import { useTimeOff } from '../../hooks/useTimeOff';
-import { cancellationStartDate, dateKey, formatDate, leaveTypeLabel } from '../../time-off-domain';
+import { cancellationStartDate, leaveTypeLabel } from '../../time-off-domain';
 import type { TimeOffRequest } from '../../types/time-off-request';
 
 import './TimeOffRequestCard.scss';
@@ -18,7 +20,7 @@ type TimeOffRequestCardProps = {
 
 export default function TimeOffRequestCard({ timeOffRequest }: TimeOffRequestCardProps): ReactElement {
   const { session } = useSession();
-  const { reviewTimeOffRequest, cancelTimeOffRequest, busy, storageError } = useTimeOff();
+  const { reviewTimeOffRequest, cancelTimeOffRequest, busy, loading, loadError } = useTimeOff();
   const { showToast } = useToast();
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
@@ -31,7 +33,7 @@ export default function TimeOffRequestCard({ timeOffRequest }: TimeOffRequestCar
 
   async function cancel(): Promise<void> {
     setConfirmingCancellation(false);
-    if (!canCancel || busy || storageError) return;
+    if (!canCancel || busy || loading || loadError) return;
     setError('');
     try {
       await cancelTimeOffRequest(timeOffRequest.id);
@@ -42,6 +44,7 @@ export default function TimeOffRequestCard({ timeOffRequest }: TimeOffRequestCar
   }
 
   async function review(status: 'approved' | 'rejected'): Promise<void> {
+    if (!canReview || busy || loading || loadError) return;
     setError('');
     try {
       await reviewTimeOffRequest(timeOffRequest.id, status, note);
@@ -100,7 +103,7 @@ export default function TimeOffRequestCard({ timeOffRequest }: TimeOffRequestCar
         <div className="app-actions">
           <ToaButton
             label="Cancel time off request"
-            disabled={busy || !!storageError}
+            disabled={busy || loading || !!loadError}
             onClick={() => setConfirmingCancellation(true)}
           />
         </div>
@@ -124,8 +127,16 @@ export default function TimeOffRequestCard({ timeOffRequest }: TimeOffRequestCar
             disabled={busy}
           />
           <div className="app-actions">
-            <ToaButton label="Approve" disabled={busy || !!storageError} onClick={() => void review('approved')} />
-            <ToaButton label="Reject" disabled={busy || !!storageError} onClick={() => void review('rejected')} />
+            <ToaButton
+              label="Approve"
+              disabled={busy || loading || !!loadError}
+              onClick={() => void review('approved')}
+            />
+            <ToaButton
+              label="Reject"
+              disabled={busy || loading || !!loadError}
+              onClick={() => void review('rejected')}
+            />
           </div>
         </div>
       )}

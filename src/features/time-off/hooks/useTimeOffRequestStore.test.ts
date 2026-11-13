@@ -1,13 +1,13 @@
-import { act, renderHook } from '@testing-library/react';
-import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import { expect, test, vi } from 'vitest';
 
-import { createTimeOffRequestRepository } from '../browser-time-off-request-repository';
 import type { TimeOffRequest } from '../types/time-off-request';
 import {
   TimeOffRequestCancellationError,
   TimeOffRequestDecisionError,
   TimeOffRequestValidationError,
 } from '../types/time-off-request-errors';
+import type { TimeOffRequestRepository } from '../types/time-off-request-repository';
 
 import { useTimeOffRequestStore } from './useTimeOffRequestStore';
 
@@ -23,131 +23,229 @@ const timeOffRequest: TimeOffRequest = {
   createdAt: '2026-11-12T08:00:00Z',
 };
 
-beforeEach(() => localStorage.clear());
-afterEach(() => vi.restoreAllMocks());
+function createRepository() {
+  const unsubscribe = vi.fn();
+  return {
+    load: vi.fn<TimeOffRequestRepository['load']>().mockResolvedValue([]),
+    submit: vi.fn<TimeOffRequestRepository['submit']>().mockResolvedValue([timeOffRequest]),
+    review: vi.fn<TimeOffRequestRepository['review']>().mockResolvedValue([]),
+    cancel: vi.fn<TimeOffRequestRepository['cancel']>().mockResolvedValue([]),
+    subscribe: vi.fn<TimeOffRequestRepository['subscribe']>(() => unsubscribe),
+    unsubscribe,
+  };
+}
 
-test('loads saved time off requests, preserves them on read failure, and recovers with reload', async () => {
-  const repository = createTimeOffRequestRepository(() => localStorage);
-  await repository.update(() => [timeOffRequest]);
+test('loads after mounting and distinguishes an initial load from an empty collection', async () => {
+  const repository = createRepository();
+  const pending = Promise.withResolvers<TimeOffRequest[]>();
+  repository.load.mockReturnValue(pending.promise);
   const { result } = renderHook(() => useTimeOffRequestStore(repository));
-  expect(result.current.timeOffRequests).toEqual([timeOffRequest]);
-  localStorage.setItem('time-off-app.time-off-requests', '{broken');
-  act(() => result.current.reload());
-  expect(result.current.storageError).toContain('Saved time off requests could not be read');
-  expect(result.current.timeOffRequests).toEqual([timeOffRequest]);
-  localStorage.removeItem('time-off-app.time-off-requests');
-  act(() => result.current.reload());
-  expect(result.current.storageError).toBeNull();
-  expect(result.current.timeOffRequests).toEqual([]);
+  expect(result.current).toMatchObject({ loading: true, hasLoaded: false, busy: false, timeOffRequests: [] });
+  await waitFor(() => expect(repository.load).toHaveBeenCalledOnce());
+  await act(async () => pending.resolve([]));
+  expect(result.current).toMatchObject({ loading: false, hasLoaded: true, loadError: null, timeOffRequests: [] });
 });
 
-test('reports an initial read failure and recovers through storage notifications', async () => {
-  localStorage.setItem('time-off-app.time-off-requests', '{broken');
-  const repository = createTimeOffRequestRepository(() => localStorage);
+test('reports an initial failure and recovers through retry', async () => {
+  const repository = createRepository();
+  repository.load.mockRejectedValueOnce(new Error('Offline'));
+  const { result } = renderHook(() => useTimeOffRequestStore(repository));
+  await waitFor(() => expect(result.current.loading).toBe(false));
+  expect(result.current).toMatchObject({ hasLoaded: false, timeOffRequests: [] });
+  expect(result.current.loadError).toContain('could not be loaded');
+  repository.load.mockResolvedValue([timeOffRequest]);
+  await act(async () => result.current.reload());
+  expect(result.current).toMatchObject({
+    hasLoaded: true,
+    loading: false,
+    loadError: null,
+    timeOffRequests: [timeOffRequest],
+  });
+});
+
+test('preserves the last snapshot during a refresh and on refresh failure, then recovers from an external change', async () => {
+  const repository = createRepository();
+  repository.load.mockResolvedValueOnce([timeOffRequest]);
   const { result, unmount } = renderHook(() => useTimeOffRequestStore(repository));
-  const removeListener = vi.spyOn(window, 'removeEventListener');
-  expect(result.current.timeOffRequests).toEqual([]);
-  expect(result.current.storageError).toContain('Saved time off requests could not be read');
-  localStorage.removeItem('time-off-app.time-off-requests');
-  await repository.update(() => [timeOffRequest]);
-  act(() => {
-    window.dispatchEvent(new StorageEvent('storage', { key: 'time-off-app.time-off-requests' }));
-  });
-  expect(result.current.timeOffRequests).toEqual([timeOffRequest]);
-  expect(result.current.storageError).toBeNull();
-  localStorage.setItem('time-off-app.time-off-requests', '{broken');
-  act(() => {
-    window.dispatchEvent(new StorageEvent('storage', { key: 'time-off-app.time-off-requests' }));
-  });
-  expect(result.current.timeOffRequests).toEqual([timeOffRequest]);
-  expect(result.current.storageError).toContain('Saved time off requests could not be read');
+  await waitFor(() => expect(result.current.loading).toBe(false));
+  const refresh = Promise.withResolvers<TimeOffRequest[]>();
+  repository.load.mockReturnValueOnce(refresh.promise);
+  act(() => result.current.reload());
+  expect(result.current).toMatchObject({ loading: true, hasLoaded: true, timeOffRequests: [timeOffRequest] });
+  await act(async () => refresh.reject(new Error('Offline')));
+  expect(result.current).toMatchObject({ loading: false, timeOffRequests: [timeOffRequest] });
+  expect(result.current.loadError).toContain('could not be loaded');
+  const notify = repository.subscribe.mock.calls[0][0];
+  await act(async () => notify());
+  expect(result.current).toMatchObject({ timeOffRequests: [], loadError: null, hasLoaded: true });
   unmount();
-  expect(removeListener).toHaveBeenCalledWith('storage', expect.any(Function));
+  expect(repository.unsubscribe).toHaveBeenCalledOnce();
 });
 
-test('failed saves preserve time off requests and the original cause, then allow retry', async () => {
-  const repository = createTimeOffRequestRepository(() => localStorage);
-  await repository.update(() => [timeOffRequest]);
+test('serializes a delayed read, a command, and an external refresh in invocation order', async () => {
+  const repository = createRepository();
+  const initial = Promise.withResolvers<TimeOffRequest[]>();
+  const saved = Promise.withResolvers<TimeOffRequest[]>();
+  repository.load.mockReturnValueOnce(initial.promise).mockResolvedValue([timeOffRequest]);
+  repository.submit.mockReturnValue(saved.promise);
   const { result } = renderHook(() => useTimeOffRequestStore(repository));
-  const failure = new DOMException('Storage full', 'QuotaExceededError');
-  const write = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-    throw failure;
+  await waitFor(() => expect(repository.load).toHaveBeenCalledOnce());
+  let saving!: Promise<void>;
+  act(() => {
+    saving = result.current.persist(() => repository.submit(timeOffRequest, { name: 'Alex', employeeKey: 'alex' }));
+    repository.subscribe.mock.calls[0][0]();
   });
+  expect(result.current).toMatchObject({ busy: true, loading: true });
+  expect(repository.submit).not.toHaveBeenCalled();
+  await act(async () => initial.resolve([]));
+  expect(repository.submit).toHaveBeenCalledOnce();
+  expect(repository.load).toHaveBeenCalledOnce();
+  expect(result.current.timeOffRequests).toEqual([]);
   await act(async () => {
-    await expect(result.current.persist(() => [])).rejects.toMatchObject({
-      message: 'Your changes could not be saved. Check browser storage access and try again.',
+    saved.resolve([timeOffRequest]);
+    await saving;
+  });
+  expect(repository.load).toHaveBeenCalledTimes(2);
+  expect(result.current).toMatchObject({ busy: false, loading: false, timeOffRequests: [timeOffRequest] });
+});
+
+test('keeps queued writes busy and continues after a failed command while preserving its cause', async () => {
+  const repository = createRepository();
+  repository.load.mockResolvedValue([timeOffRequest]);
+  const { result } = renderHook(() => useTimeOffRequestStore(repository));
+  await waitFor(() => expect(result.current.loading).toBe(false));
+  const first = Promise.withResolvers<TimeOffRequest[]>();
+  const second = Promise.withResolvers<TimeOffRequest[]>();
+  const laterCommand = vi.fn(() => second.promise);
+  const failure = new Error('Offline');
+  let failing!: Promise<unknown>;
+  let saving!: Promise<void>;
+  act(() => {
+    failing = result.current.persist(() => first.promise).catch((error: unknown) => error);
+    saving = result.current.persist(laterCommand);
+  });
+  expect(result.current.busy).toBe(true);
+  expect(laterCommand).not.toHaveBeenCalled();
+  await act(async () => {
+    first.reject(failure);
+    expect(await failing).toMatchObject({
+      message: 'Your changes could not be saved. Please try again.',
       cause: failure,
     });
   });
-  expect(result.current.timeOffRequests).toEqual([timeOffRequest]);
-  expect(repository.load()).toEqual([timeOffRequest]);
-  expect(result.current.busy).toBe(false);
-  write.mockRestore();
-  await act(async () => result.current.persist(() => []));
-  expect(result.current.timeOffRequests).toEqual([]);
-  expect(repository.load()).toEqual([]);
+  expect(laterCommand).toHaveBeenCalledOnce();
+  expect(result.current).toMatchObject({ busy: true, timeOffRequests: [timeOffRequest] });
+  await act(async () => {
+    second.resolve([]);
+    await saving;
+  });
+  expect(result.current).toMatchObject({ busy: false, timeOffRequests: [] });
 });
 
-test('preserves typed validation and decision failures without publishing a change', async () => {
-  const repository = createTimeOffRequestRepository(() => localStorage);
+test('preserves typed domain failures and permits a subsequent retry', async () => {
+  const repository = createRepository();
   const { result } = renderHook(() => useTimeOffRequestStore(repository));
+  await waitFor(() => expect(result.current.loading).toBe(false));
   for (const failure of [
     new TimeOffRequestValidationError({ startDate: 'Overlap' }),
     new TimeOffRequestDecisionError(),
     new TimeOffRequestCancellationError(),
   ]) {
     await act(async () => {
-      await expect(
-        result.current.persist(() => {
-          throw failure;
-        }),
-      ).rejects.toBe(failure);
+      await expect(result.current.persist(() => Promise.reject(failure))).rejects.toBe(failure);
     });
-    expect(result.current.busy).toBe(false);
-    expect(result.current.timeOffRequests).toEqual([]);
-    expect(repository.load()).toEqual([]);
+    expect(result.current).toMatchObject({ busy: false, timeOffRequests: [] });
   }
+  await act(async () => result.current.persist(() => Promise.resolve([timeOffRequest])));
+  expect(result.current.timeOffRequests).toEqual([timeOffRequest]);
 });
 
-test.each(['success', 'failure'] as const)(
-  'stays busy until both overlapping operations settle when %s finishes first',
-  async (first) => {
-    const repository = createTimeOffRequestRepository(() => localStorage);
-    const originalUpdate = repository.update;
-    const success = Promise.withResolvers<void>();
-    const failure = Promise.withResolvers<TimeOffRequest[]>();
-    vi.spyOn(repository, 'update')
-      .mockImplementationOnce(async (change) => {
-        await success.promise;
-        return originalUpdate(change);
-      })
-      .mockImplementationOnce(() => failure.promise);
-    const { result } = renderHook(() => useTimeOffRequestStore(repository));
-    let saving: Promise<void>;
-    let failing: Promise<unknown>;
-    act(() => {
-      saving = result.current.persist(() => [timeOffRequest]);
-      failing = result.current.persist(() => []).catch((error: unknown) => error);
-    });
-    expect(result.current.busy).toBe(true);
-    await act(async () => {
-      if (first === 'success') {
-        success.resolve();
-        await saving;
-      } else {
-        failure.reject(new Error('Storage full'));
-        await failing;
-      }
-    });
-    expect(result.current.busy).toBe(true);
-    await act(async () => {
-      success.resolve();
-      failure.reject(new Error('Storage full'));
-      await saving;
-      expect(await failing).toBeInstanceOf(Error);
-    });
-    expect(result.current.busy).toBe(false);
-    expect(result.current.timeOffRequests).toEqual([timeOffRequest]);
-    expect(repository.load()).toEqual([timeOffRequest]);
-  },
-);
+test.each(['resolve', 'reject'] as const)('ignores an old repository load that later %ss', async (outcome) => {
+  const oldRepository = createRepository();
+  const oldLoad = Promise.withResolvers<TimeOffRequest[]>();
+  oldRepository.load.mockReturnValue(oldLoad.promise);
+  const { result, rerender } = renderHook(({ repository }) => useTimeOffRequestStore(repository), {
+    initialProps: { repository: oldRepository },
+  });
+  await waitFor(() => expect(oldRepository.load).toHaveBeenCalledOnce());
+  const oldActions = result.current;
+  const replacement = createRepository();
+  replacement.load.mockResolvedValue([timeOffRequest]);
+  rerender({ repository: replacement });
+  expect(result.current).toMatchObject({ loading: true, hasLoaded: false, timeOffRequests: [] });
+  await waitFor(() => expect(result.current.loading).toBe(false));
+  await act(async () => {
+    if (outcome === 'resolve') oldLoad.resolve([]);
+    else oldLoad.reject(new Error('Old failure'));
+    oldActions.reload();
+    await expect(oldActions.persist(() => Promise.resolve([]))).rejects.toThrow('no longer active');
+  });
+  expect(oldRepository.unsubscribe).toHaveBeenCalledOnce();
+  expect(oldRepository.load).toHaveBeenCalledOnce();
+  expect(result.current).toMatchObject({
+    timeOffRequests: [timeOffRequest],
+    loadError: null,
+    hasLoaded: true,
+    loading: false,
+  });
+});
+
+test('ignores in-flight commands from a replaced repository', async () => {
+  const oldRepository = createRepository();
+  const { result, rerender } = renderHook(({ repository }) => useTimeOffRequestStore(repository), {
+    initialProps: { repository: oldRepository },
+  });
+  await waitFor(() => expect(result.current.loading).toBe(false));
+  const command = Promise.withResolvers<TimeOffRequest[]>();
+  let saving!: Promise<void>;
+  act(() => {
+    saving = result.current.persist(() => command.promise);
+  });
+  await act(async () => {
+    await Promise.resolve();
+  });
+  const replacement = createRepository();
+  rerender({ repository: replacement });
+  await waitFor(() => expect(result.current.loading).toBe(false));
+  await act(async () => {
+    command.resolve([timeOffRequest]);
+    await saving;
+  });
+  expect(result.current).toMatchObject({ timeOffRequests: [], busy: false, hasLoaded: true });
+});
+
+test('unsubscribes and prevents queued commands and notifications from running after unmount', async () => {
+  const repository = createRepository();
+  const pending = Promise.withResolvers<TimeOffRequest[]>();
+  repository.load.mockReturnValue(pending.promise);
+  const { result, unmount } = renderHook(() => useTimeOffRequestStore(repository));
+  await waitFor(() => expect(repository.load).toHaveBeenCalledOnce());
+  const command = vi.fn(() => Promise.resolve([timeOffRequest]));
+  let saving!: Promise<unknown>;
+  act(() => {
+    saving = result.current.persist(command).catch((error: unknown) => error);
+  });
+  const notify = repository.subscribe.mock.calls[0][0];
+  unmount();
+  await act(async () => {
+    pending.resolve([]);
+    expect(await saving).toBeInstanceOf(Error);
+    notify();
+  });
+  expect(command).not.toHaveBeenCalled();
+  expect(repository.unsubscribe).toHaveBeenCalledOnce();
+  expect(repository.load).toHaveBeenCalledOnce();
+});
+
+test('supports the Strict Mode setup/cleanup cycle without accepting results from a retired lifecycle', async () => {
+  const repository = createRepository();
+  repository.load.mockResolvedValue([timeOffRequest]);
+  const { result, unmount } = renderHook(() => useTimeOffRequestStore(repository), {
+    reactStrictMode: true,
+  });
+  await waitFor(() => expect(result.current.loading).toBe(false));
+  expect(result.current.timeOffRequests).toEqual([timeOffRequest]);
+  expect(repository.subscribe).toHaveBeenCalledTimes(2);
+  unmount();
+  expect(repository.unsubscribe).toHaveBeenCalledTimes(2);
+});

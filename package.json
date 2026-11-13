@@ -6,7 +6,7 @@
   "packageManager": "pnpm@12.16.1",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "corepack pnpm run lint && tsc && vite build",
     "android:sync": "corepack pnpm run build && cap sync android",
     "android:open": "cap open android",
     "build:android": "corepack pnpm run android:sync && node scripts/build-android.mjs",

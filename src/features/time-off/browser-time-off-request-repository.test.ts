@@ -1,7 +1,13 @@
-import { beforeEach, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
 import { createTimeOffRequestRepository } from './browser-time-off-request-repository';
 import type { TimeOffRequest } from './types/time-off-request';
+import type { TimeOffRequestDraft } from './types/time-off-request-draft';
+import {
+  TimeOffRequestValidationError,
+  TimeOffRequestDecisionError,
+  TimeOffRequestCancellationError,
+} from './types/time-off-request-errors';
 
 const timeOffRequest: TimeOffRequest = {
   id: 'one',
@@ -15,75 +21,134 @@ const timeOffRequest: TimeOffRequest = {
   createdAt: '2026-11-12T08:00:00Z',
 };
 
+const employee = { name: 'Alex', employeeKey: 'alex' };
+const draft: TimeOffRequestDraft = {
+  startDate: '2026-11-12',
+  endDate: '2026-11-13',
+  leaveType: 'sick-day',
+  note: ' Family trip ',
+};
+
+function saveTimeOffRequests(timeOffRequests: unknown[]): void {
+  localStorage.setItem('time-off-app.time-off-requests', JSON.stringify({ version: 2, timeOffRequests }));
+}
+
 beforeEach(() => {
   localStorage.clear();
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-11-12T12:00:00Z'));
+});
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
-test('starts empty and preserves existing time off requests when applying later changes', async () => {
+test('submits and reviews against the latest collection, returning persisted snapshots', async () => {
   const repository = createTimeOffRequestRepository(() => localStorage);
-  expect(repository.load()).toEqual([]);
-  await repository.update(() => [timeOffRequest]);
-  await repository.update((current) => [
-    ...current,
-    { ...timeOffRequest, id: 'two', employeeKey: 'bob', employeeName: 'Bob' },
-  ]);
-  expect(repository.load().map((item) => item.id)).toEqual(['one', 'two']);
-  await repository.update((current) =>
-    current.map((item) =>
-      item.id === 'one'
-        ? {
-            ...item,
-            status: 'approved',
-            reviewerNote: 'Enjoy your break',
-            reviewedAt: '2026-11-12T09:00:00Z',
-          }
-        : item,
-    ),
-  );
-  expect(repository.load()[0]).toMatchObject({ status: 'approved', reviewerNote: 'Enjoy your break' });
+  expect(await repository.load()).toEqual([]);
+  const [created] = await repository.submit(draft, employee);
+  expect(created).toMatchObject({
+    employeeKey: 'alex',
+    employeeName: 'Alex',
+    note: 'Family trip',
+    status: 'pending',
+    createdAt: '2026-11-12T12:00:00.000Z',
+  });
+  expect(created.id).toEqual(expect.any(String));
+  const submitted = await repository.submit(draft, { name: 'Bob', employeeKey: 'bob' });
+  expect(submitted).toHaveLength(2);
+  expect(submitted[0]).toEqual(created);
+  const reviewed = await repository.review(created.id, 'approved', ' Enjoy your break ');
+  expect(reviewed[0]).toMatchObject({
+    status: 'approved',
+    reviewerNote: 'Enjoy your break',
+    reviewedAt: '2026-11-12T12:00:00.000Z',
+  });
+  expect(await repository.load()).toEqual(reviewed);
+  await expect(repository.submit(draft, employee)).rejects.toBeInstanceOf(TimeOffRequestValidationError);
+  await expect(repository.review(created.id, 'rejected', '')).rejects.toBeInstanceOf(TimeOffRequestDecisionError);
+  await expect(repository.cancel(created.id, 'bob')).rejects.toBeInstanceOf(TimeOffRequestCancellationError);
+  expect(await repository.load()).toEqual(reviewed);
 });
 
-test('serializes updates with the canonical storage key when Web Locks are available', async () => {
+test('cancels ongoing and future leave while retaining review history and preventing repeat cancellation', async () => {
+  const repository = createTimeOffRequestRepository(() => localStorage);
+  saveTimeOffRequests([timeOffRequest]);
+  await repository.review(timeOffRequest.id, 'approved', 'Approved earlier');
+  const partial = await repository.cancel(timeOffRequest.id, employee.employeeKey);
+  expect(partial[0]).toMatchObject({
+    status: 'approved',
+    cancelledFromDate: '2026-11-13',
+    reviewerNote: 'Approved earlier',
+    cancelledAt: '2026-11-12T12:00:00.000Z',
+  });
+  await expect(repository.cancel(timeOffRequest.id, employee.employeeKey)).rejects.toBeInstanceOf(
+    TimeOffRequestCancellationError,
+  );
+  const [, future] = await repository.submit({ ...draft, startDate: '2026-11-16', endDate: '2026-11-18' }, employee);
+  const full = await repository.cancel(future.id, employee.employeeKey);
+  expect(full[1]).toMatchObject({ status: 'cancelled', cancelledFromDate: '2026-11-16' });
+  expect(await repository.load()).toEqual(full);
+});
+
+test('serializes every command with the canonical storage key when Web Locks are available', async () => {
   const lock = vi.fn(async (_name: string, commit: () => TimeOffRequest[]) => commit());
   vi.stubGlobal('navigator', { locks: { request: lock } });
-  try {
-    const repository = createTimeOffRequestRepository(() => localStorage);
-    await repository.update(() => [timeOffRequest]);
-    expect(lock).toHaveBeenCalledWith('time-off-app.time-off-requests', expect.any(Function));
-    expect(repository.load()).toEqual([timeOffRequest]);
-  } finally {
-    vi.unstubAllGlobals();
-  }
+  const repository = createTimeOffRequestRepository(() => localStorage);
+  const [created] = await repository.submit(draft, employee);
+  await repository.review(created.id, 'approved', '');
+  await repository.cancel(created.id, employee.employeeKey);
+  expect(lock).toHaveBeenCalledTimes(3);
+  expect(lock).toHaveBeenCalledWith('time-off-app.time-off-requests', expect.any(Function));
 });
 
-test('invalid saved data cannot be silently overwritten', async () => {
-  localStorage.setItem('time-off-app.time-off-requests', '{broken');
-  const repository = createTimeOffRequestRepository(() => localStorage);
-  expect(() => repository.load()).toThrow();
-  await expect(repository.update(() => [timeOffRequest])).rejects.toThrow();
-  expect(localStorage.getItem('time-off-app.time-off-requests')).toBe('{broken');
-  for (const timeOffRequests of [
-    [{ ...timeOffRequest, endDate: '2026-11-01' }],
-    [timeOffRequest, timeOffRequest],
-    [{ ...timeOffRequest, status: 'approved' }],
-  ]) {
-    localStorage.setItem('time-off-app.time-off-requests', JSON.stringify({ version: 2, timeOffRequests }));
-    expect(() => repository.load()).toThrow();
-  }
-});
-
-test('failed writes reject without changing the saved time off requests', async () => {
-  const repository = createTimeOffRequestRepository(() => localStorage);
-  await repository.update(() => [timeOffRequest]);
-  const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-    throw new DOMException('Storage full', 'QuotaExceededError');
+test('validates data changed while a command is waiting for its Web Lock', async () => {
+  const granted = Promise.withResolvers<void>();
+  const lock = vi.fn(async (_name: string, commit: () => TimeOffRequest[]) => {
+    await granted.promise;
+    return commit();
   });
-  try {
-    await expect(repository.update(() => [])).rejects.toThrow('Storage full');
-  } finally {
-    setItem.mockRestore();
+  vi.stubGlobal('navigator', { locks: { request: lock } });
+  const repository = createTimeOffRequestRepository(() => localStorage);
+  const submitting = repository.submit(draft, employee);
+  const rejected = expect(submitting).rejects.toBeInstanceOf(TimeOffRequestValidationError);
+  saveTimeOffRequests([timeOffRequest]);
+  granted.resolve();
+  await rejected;
+  expect(await repository.load()).toEqual([timeOffRequest]);
+});
+
+test('invalid saved data cannot be silently overwritten by any command', async () => {
+  const repository = createTimeOffRequestRepository(() => localStorage);
+  for (const raw of [
+    '{broken',
+    ...[
+      [{ ...timeOffRequest, endDate: '2026-11-01' }],
+      [timeOffRequest, timeOffRequest],
+      [{ ...timeOffRequest, status: 'approved' }],
+    ].map((timeOffRequests) => JSON.stringify({ version: 2, timeOffRequests })),
+  ]) {
+    localStorage.setItem('time-off-app.time-off-requests', raw);
+    await expect(repository.load()).rejects.toThrow();
+    await expect(repository.submit(draft, employee)).rejects.toThrow();
+    await expect(repository.review('one', 'approved', '')).rejects.toThrow();
+    await expect(repository.cancel('one', employee.employeeKey)).rejects.toThrow();
+    expect(localStorage.getItem('time-off-app.time-off-requests')).toBe(raw);
   }
-  expect(repository.load()).toEqual([timeOffRequest]);
+});
+
+test('failed writes reject with the original cause and preserve saved data for retry', async () => {
+  const repository = createTimeOffRequestRepository(() => localStorage);
+  saveTimeOffRequests([timeOffRequest]);
+  const failure = new DOMException('Storage full', 'QuotaExceededError');
+  const write = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    throw failure;
+  });
+  await expect(repository.review('one', 'approved', '')).rejects.toBe(failure);
+  expect(await repository.load()).toEqual([timeOffRequest]);
+  write.mockRestore();
+  expect((await repository.review('one', 'approved', ''))[0].status).toBe('approved');
 });
 
 test('refreshes only for time off request storage changes and unsubscribes cleanly', () => {
@@ -109,12 +174,12 @@ test.each([JSON.stringify({ version: 1, requests: [timeOffRequest] }), '{broken'
   async (raw) => {
     localStorage.setItem('time-off-app.requests', raw);
     const repository = createTimeOffRequestRepository(() => localStorage);
-    expect(repository.load()).toEqual([]);
-    await repository.update((current) => [...current, { ...timeOffRequest, id: 'new' }]);
-    expect(repository.load()).toEqual([{ ...timeOffRequest, id: 'new' }]);
+    expect(await repository.load()).toEqual([]);
+    const created = await repository.submit(draft, employee);
+    expect(await repository.load()).toEqual(created);
     expect(JSON.parse(localStorage.getItem('time-off-app.time-off-requests')!)).toEqual({
       version: 2,
-      timeOffRequests: [{ ...timeOffRequest, id: 'new' }],
+      timeOffRequests: created,
     });
     expect(localStorage.getItem('time-off-app.requests')).toBe(raw);
   },
@@ -122,10 +187,10 @@ test.each([JSON.stringify({ version: 1, requests: [timeOffRequest] }), '{broken'
 
 test.each([{ timeOffRequests: [] }, { timeOffRequests: [timeOffRequest] }])(
   'loads the saved collection: %j',
-  ({ timeOffRequests }) => {
+  async ({ timeOffRequests }) => {
     const repository = createTimeOffRequestRepository(() => localStorage);
     localStorage.setItem('time-off-app.time-off-requests', JSON.stringify({ version: 2, timeOffRequests }));
-    expect(repository.load()).toEqual(timeOffRequests);
+    expect(await repository.load()).toEqual(timeOffRequests);
   },
 );
 
@@ -138,8 +203,8 @@ test.each([
 ])('rejects unsupported saved formats without overwriting them: %s', async (raw) => {
   localStorage.setItem('time-off-app.time-off-requests', raw);
   const repository = createTimeOffRequestRepository(() => localStorage);
-  expect(() => repository.load()).toThrow();
-  await expect(repository.update(() => [])).rejects.toThrow();
+  await expect(repository.load()).rejects.toThrow();
+  await expect(repository.review('one', 'approved', '')).rejects.toThrow();
   expect(localStorage.getItem('time-off-app.time-off-requests')).toBe(raw);
 });
 
@@ -149,7 +214,7 @@ test('loads version-2 records and round-trips full and partial cancellation hist
     'time-off-app.time-off-requests',
     JSON.stringify({ version: 2, timeOffRequests: [timeOffRequest] }),
   );
-  expect(repository.load()).toEqual([timeOffRequest]);
+  expect(await repository.load()).toEqual([timeOffRequest]);
   for (const saved of [
     { ...timeOffRequest, status: 'cancelled' as const, cancelledFromDate: timeOffRequest.startDate },
     {
@@ -174,8 +239,9 @@ test('loads version-2 records and round-trips full and partial cancellation hist
     },
   ]) {
     const cancelled = { ...saved, cancelledAt: '2026-11-11T12:00:00Z' };
-    await repository.update(() => [cancelled]);
-    expect(repository.load()).toEqual([cancelled]);
+    saveTimeOffRequests([cancelled]);
+    await repository.submit(draft, { name: 'Bob', employeeKey: 'bob' });
+    expect((await repository.load())[0]).toEqual(cancelled);
   }
 });
 
@@ -201,8 +267,8 @@ test('rejects incomplete, invalid and inconsistent cancellation metadata without
   ]) {
     const raw = JSON.stringify({ version: 2, timeOffRequests: [saved] });
     localStorage.setItem('time-off-app.time-off-requests', raw);
-    expect(() => repository.load()).toThrow();
-    await expect(repository.update(() => [])).rejects.toThrow();
+    await expect(repository.load()).rejects.toThrow();
+    await expect(repository.review('one', 'approved', '')).rejects.toThrow();
     expect(localStorage.getItem('time-off-app.time-off-requests')).toBe(raw);
   }
 });

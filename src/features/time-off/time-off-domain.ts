@@ -1,10 +1,10 @@
-import { dateKey } from '../../components/calendar/date-key';
+import { dateKey } from '../../type-safety/date-key';
 import { isDate } from '../../type-safety/is-date';
-import type { Session } from '../auth/types/session';
 
 import { isWeekend } from './holidays/is-weekend';
 import { timeOffHolidayName } from './holidays/time-off-holiday-name';
 import { isLeaveType, leaveTypes, type LeaveType } from './types/leave-type';
+import type { TimeOffEmployee } from './types/time-off-employee';
 import type { TimeOffRequest } from './types/time-off-request';
 import type { TimeOffRequestDraft } from './types/time-off-request-draft';
 import {
@@ -13,11 +13,6 @@ import {
   TimeOffRequestValidationError,
   type TimeOffRequestErrors,
 } from './types/time-off-request-errors';
-
-export { dateKey } from '../../components/calendar/date-key';
-export { formatDate } from '../../components/calendar/format-date';
-export { monthDays } from '../../components/calendar/month-days';
-export { isDate } from '../../type-safety/is-date';
 
 export function leaveTypeLabel(type: LeaveType): string {
   return leaveTypes.find((option) => option.value === type)!.label;
@@ -76,7 +71,7 @@ export function validateTimeOffRequest(
 
 export function createTimeOffRequest(
   draft: TimeOffRequestDraft,
-  employee: Extract<Session, { role: 'employee' }>,
+  employee: TimeOffEmployee,
   timeOffRequests: readonly TimeOffRequest[],
   metadata: { id: string; createdAt: string; today: string },
 ): TimeOffRequest {

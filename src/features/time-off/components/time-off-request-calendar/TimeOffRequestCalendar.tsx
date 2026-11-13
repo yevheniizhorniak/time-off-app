@@ -1,7 +1,10 @@
 import { useId, useState, type ReactElement } from 'react';
 
 import { ToaCalendar } from '../../../../components/calendar/Calendar';
-import { dateKey, formatDate, leaveTypeLabel, monthDays, timeOffRequestsOnDate } from '../../time-off-domain';
+import { formatDate } from '../../../../components/calendar/format-date';
+import { monthDays } from '../../../../components/calendar/month-days';
+import { dateKey } from '../../../../type-safety/date-key';
+import { leaveTypeLabel, timeOffRequestsOnDate } from '../../time-off-domain';
 import type { TimeOffRequest } from '../../types/time-off-request';
 
 import './TimeOffRequestCalendar.scss';

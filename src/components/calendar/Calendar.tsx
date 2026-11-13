@@ -1,8 +1,8 @@
 import type { ReactElement, ReactNode } from 'react';
 
+import { dateKey } from '../../type-safety/date-key';
 import { ToaButton } from '../button/Button';
 
-import { dateKey } from './date-key';
 import { formatDate } from './format-date';
 import { monthDays } from './month-days';
 

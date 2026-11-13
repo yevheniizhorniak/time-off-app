@@ -1,4 +1,4 @@
-import { dateKey } from './date-key';
+import { dateKey } from '../../type-safety/date-key';
 
 /** Local dates for a Monday-first month, preceded by empty weekday cells. */
 export function monthDays(month: Date): (string | null)[] {

@@ -1,4 +1,4 @@
-import { dateKey } from '../components/calendar/date-key';
+import { dateKey } from './date-key';
 
 export function isDate(value: unknown): value is string {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
