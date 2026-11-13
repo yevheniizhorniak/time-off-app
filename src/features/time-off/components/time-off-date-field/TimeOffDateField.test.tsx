@@ -87,7 +87,10 @@ test('Cancel, Escape and backdrop dismissal preserve the value and restore trigg
   const trigger = screen.getByRole('button', { name: 'Start date' });
   trigger.focus();
   fireEvent.click(trigger);
-  fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+  const cancelButton = screen.getByRole('button', { name: 'Cancel' });
+  expect(cancelButton).toHaveClass('toa-button', 'toa-button--secondary');
+  fireEvent.click(cancelButton);
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   expect(trigger).toHaveFocus();
   fireEvent.click(trigger);
   const dialog = screen.getByRole('dialog');

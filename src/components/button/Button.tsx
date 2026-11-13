@@ -7,12 +7,15 @@ import './Button.scss';
 export type ToaButtonProps = Omit<ComponentProps<'button'>, 'children' | 'className'> & {
   /** Remains visible while loading. */
   label: string;
+  /** Visual emphasis. Defaults to `primary`; `secondary` uses an outlined style. */
+  emphasis?: 'primary' | 'secondary';
   /** Shows a spinner, disables activation, and sets `aria-busy`. Defaults to `false`. */
   loading?: boolean;
 };
 
 export function ToaButton({
   disabled,
+  emphasis = 'primary',
   label,
   loading = false,
   type = 'button',
@@ -21,7 +24,7 @@ export function ToaButton({
   return (
     <button
       aria-busy={loading || buttonProps['aria-busy']}
-      className="toa-button"
+      className={`toa-button toa-button--${emphasis}`}
       disabled={disabled || loading}
       type={type}
       {...buttonProps}

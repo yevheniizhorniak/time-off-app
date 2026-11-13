@@ -1,26 +1,43 @@
 @use '../../theme/typography';
 
 button.toa-button {
-  background: var(--toa-color-primary, #0054e9);
-  color: var(--toa-color-primary-text, #fff);
   display: inline-block;
-  border: 0;
+  border: 1px solid transparent;
   border-radius: 8px;
   cursor: pointer;
   @include typography.text-semibold;
   min-height: 44px;
   padding: 0.625rem 1rem;
 
-  &:hover:not(:disabled) {
-    background: var(--toa-color-primary-hover, #0047c7);
+  &--primary {
+    background: var(--toa-color-primary);
+    color: var(--toa-color-primary-text);
+
+    &:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--toa-color-primary) 90%, var(--toa-text-color));
+    }
+
+    &:active:not(:disabled) {
+      background: color-mix(in srgb, var(--toa-color-primary) 80%, var(--toa-text-color));
+    }
   }
 
-  &:active:not(:disabled) {
-    filter: brightness(0.85);
+  &--secondary {
+    background: transparent;
+    border-color: var(--toa-color-medium);
+    color: var(--toa-text-color);
+
+    &:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--toa-text-color) 8%, transparent);
+    }
+
+    &:active:not(:disabled) {
+      background: color-mix(in srgb, var(--toa-text-color) 14%, transparent);
+    }
   }
 
   &:focus-visible {
-    outline: 2px solid CanvasText;
+    outline: 2px solid var(--toa-color-primary);
     outline-offset: 2px;
   }
 

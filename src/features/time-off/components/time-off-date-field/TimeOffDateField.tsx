@@ -128,7 +128,7 @@ export default function TimeOffDateField({
           </ul>
         )}
         <div className="time-off-date-field__actions">
-          <ToaButton label="Cancel" onClick={closeCalendar} />
+          <ToaButton emphasis="secondary" label="Cancel" onClick={closeCalendar} />
         </div>
       </ToaDialog>
     </div>

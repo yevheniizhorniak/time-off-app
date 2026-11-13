@@ -3,15 +3,20 @@ import { expect, test, vi } from 'vitest';
 
 import { ToaButton } from './Button';
 
-test('passes clicks through and defaults to a non-submit button', () => {
-  const onClick = vi.fn();
-  render(<ToaButton label="Save request" onClick={onClick} />);
+test.each([undefined, 'primary', 'secondary'] as const)(
+  'passes clicks through with %s emphasis and defaults to a non-submit button',
+  (emphasis) => {
+    const onClick = vi.fn();
+    render(<ToaButton emphasis={emphasis} label="Save request" onClick={onClick} />);
 
-  const button = screen.getByRole('button', { name: 'Save request' });
-  expect(button).toHaveAttribute('type', 'button');
-  button.click();
-  expect(onClick).toHaveBeenCalledOnce();
-});
+    const button = screen.getByRole('button', { name: 'Save request' });
+    expect(button).toHaveAttribute('type', 'button');
+    expect(button).toHaveClass('toa-button', `toa-button--${emphasis ?? 'primary'}`);
+    expect(button).not.toHaveAttribute('emphasis');
+    button.click();
+    expect(onClick).toHaveBeenCalledOnce();
+  },
+);
 
 test('allows a submit button', () => {
   render(<ToaButton label="Save request" type="submit" />);
@@ -19,24 +24,27 @@ test('allows a submit button', () => {
   expect(screen.getByRole('button', { name: 'Save request' })).toHaveAttribute('type', 'submit');
 });
 
-test('prevents clicks while disabled or loading and keeps the label accessible', () => {
-  const onClick = vi.fn();
-  const { rerender } = render(<ToaButton disabled label="Save request" onClick={onClick} />);
+test.each(['primary', 'secondary'] as const)(
+  'prevents clicks while disabled or loading with %s emphasis and keeps the label accessible',
+  (emphasis) => {
+    const onClick = vi.fn();
+    const { rerender } = render(<ToaButton disabled emphasis={emphasis} label="Save request" onClick={onClick} />);
 
-  const button = screen.getByRole('button', { name: 'Save request' });
-  expect(button).toBeDisabled();
-  button.click();
+    const button = screen.getByRole('button', { name: 'Save request' });
+    expect(button).toBeDisabled();
+    button.click();
 
-  expect(button.querySelector('.toa-button__spinner')).not.toBeInTheDocument();
+    expect(button.querySelector('.toa-button__spinner')).not.toBeInTheDocument();
 
-  rerender(<ToaButton label="Save request" loading onClick={onClick} />);
+    rerender(<ToaButton emphasis={emphasis} label="Save request" loading onClick={onClick} />);
 
-  expect(button).toBeDisabled();
-  expect(button).toHaveAttribute('aria-busy', 'true');
-  expect(button).toHaveTextContent('Save request');
-  expect(button.querySelector('.toa-button__spinner')).toBeInTheDocument();
-  expect(button.querySelector('.toa-button__spinner > .toa-loading-spinner')).toHaveAttribute('aria-hidden', 'true');
-  expect(screen.queryByRole('status')).not.toBeInTheDocument();
-  button.click();
-  expect(onClick).not.toHaveBeenCalled();
-});
+    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute('aria-busy', 'true');
+    expect(button).toHaveTextContent('Save request');
+    expect(button.querySelector('.toa-button__spinner')).toBeInTheDocument();
+    expect(button.querySelector('.toa-button__spinner > .toa-loading-spinner')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    button.click();
+    expect(onClick).not.toHaveBeenCalled();
+  },
+);

@@ -69,11 +69,17 @@ test('uses custom labels and invokes the matching button callback', () => {
     />,
   );
 
-  fireEvent.click(screen.getByRole('button', { name: 'Keep pending' }));
+  const cancelButton = screen.getByRole('button', { name: 'Keep pending' });
+  expect(cancelButton).toHaveClass('toa-button', 'toa-button--secondary');
+  expect(cancelButton).toHaveAttribute('type', 'button');
+  fireEvent.click(cancelButton);
   expect(onCancel).toHaveBeenCalledOnce();
   expect(onConfirm).not.toHaveBeenCalled();
 
-  fireEvent.click(screen.getByRole('button', { name: 'Approve' }));
+  const confirmButton = screen.getByRole('button', { name: 'Approve' });
+  expect(confirmButton).toHaveClass('toa-button', 'toa-button--primary');
+  expect(confirmButton).toHaveAttribute('type', 'button');
+  fireEvent.click(confirmButton);
   expect(onConfirm).toHaveBeenCalledOnce();
   expect(onCancel).toHaveBeenCalledOnce();
 });

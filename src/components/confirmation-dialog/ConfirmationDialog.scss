@@ -1,5 +1,3 @@
-@use '../../theme/typography';
-
 .toa-confirmation-dialog {
   &__title {
     font-size: 1.25rem;
@@ -17,42 +15,5 @@
     flex-wrap: wrap;
     gap: 0.75rem;
     justify-content: flex-end;
-  }
-
-  &__button {
-    border: 1px solid transparent;
-    border-radius: 8px;
-    cursor: pointer;
-    @include typography.text-semibold;
-    min-height: 44px;
-    padding: 0.625rem 1rem;
-
-    &:focus-visible {
-      outline: 2px solid var(--toa-color-primary, #0054e9);
-      outline-offset: 2px;
-    }
-
-    &:active {
-      filter: brightness(0.85);
-    }
-
-    &--cancel {
-      background: transparent;
-      border-color: var(--toa-color-medium, #92949c);
-      color: inherit;
-
-      &:hover {
-        background: var(--toa-color-light, #f4f5f8);
-      }
-    }
-
-    &--confirm {
-      background: var(--toa-color-primary, #0054e9);
-      color: var(--toa-color-primary-text, #fff);
-
-      &:hover {
-        background: var(--toa-color-primary-hover, #004acd);
-      }
-    }
   }
 }

@@ -1,5 +1,6 @@
 import { useId, type ReactElement } from 'react';
 
+import { ToaButton } from '../button/Button';
 import { ToaDialog } from '../dialog/Dialog';
 
 import './ConfirmationDialog.scss';
@@ -49,20 +50,8 @@ export function ToaConfirmationDialog({
         {message}
       </p>
       <div className="toa-confirmation-dialog__actions">
-        <button
-          className="toa-confirmation-dialog__button toa-confirmation-dialog__button--cancel"
-          onClick={onCancel}
-          type="button"
-        >
-          {cancelLabel}
-        </button>
-        <button
-          className="toa-confirmation-dialog__button toa-confirmation-dialog__button--confirm"
-          onClick={onConfirm}
-          type="button"
-        >
-          {confirmLabel}
-        </button>
+        <ToaButton emphasis="secondary" label={cancelLabel} onClick={onCancel} />
+        <ToaButton emphasis="primary" label={confirmLabel} onClick={onConfirm} />
       </div>
     </ToaDialog>
   );
