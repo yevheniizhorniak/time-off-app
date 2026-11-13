@@ -2,7 +2,8 @@ import { dateKey } from '../../components/calendar/date-key';
 import { isDate } from '../../type-safety/is-date';
 import type { Session } from '../auth/types/session';
 
-import { isWeekend, timeOffHolidayName } from './time-off-holidays';
+import { isWeekend } from './holidays/is-weekend';
+import { timeOffHolidayName } from './holidays/time-off-holiday-name';
 import {
   RequestCancellationError,
   RequestDecisionError,

@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from 'vitest';
 
 import type { Session } from '../auth/types/session';
 
+import * as timeOffHolidays from './holidays/time-off-holiday-name';
 import {
   cancellationStartDate,
   cancelTimeOffRequest,
@@ -13,7 +14,6 @@ import {
   reviewTimeOffRequest,
   validateRequest,
 } from './time-off-domain';
-import * as timeOffHolidays from './time-off-holidays';
 import { RequestCancellationError, RequestDecisionError, RequestValidationError } from './types/errors';
 import type { RequestDraft } from './types/request-draft';
 import type { TimeOffRequest } from './types/time-off-request';

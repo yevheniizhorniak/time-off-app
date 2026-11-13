@@ -7,7 +7,9 @@ import { formatDate } from '../../../../components/calendar/format-date';
 import { ToaDialog } from '../../../../components/dialog/Dialog';
 import { ToaLabel } from '../../../../components/label/Label';
 import { isDate } from '../../../../type-safety/is-date';
-import { isWeekend, timeOffHolidayName, timeOffHolidaysForYear } from '../../time-off-holidays';
+import { isWeekend } from '../../holidays/is-weekend';
+import { timeOffHolidayName } from '../../holidays/time-off-holiday-name';
+import { timeOffHolidaysForYear } from '../../holidays/time-off-holidays-for-year';
 
 import './TimeOffDateField.scss';
 

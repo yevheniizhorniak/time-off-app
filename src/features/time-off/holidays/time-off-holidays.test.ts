@@ -1,6 +1,8 @@
 import { expect, test } from 'vitest';
 
-import { isWeekend, timeOffHolidayName, timeOffHolidaysForYear } from './time-off-holidays';
+import { isWeekend } from './is-weekend';
+import { timeOffHolidayName } from './time-off-holiday-name';
+import { timeOffHolidaysForYear } from './time-off-holidays-for-year';
 
 test('includes all 13 Czech public holidays with English names', () => {
   expect(timeOffHolidaysForYear(2026)).toEqual([
