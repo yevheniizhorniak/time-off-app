@@ -1,5 +1,5 @@
 .time-off-app {
-  .request-calendar {
+  .time-off-request-calendar {
     align-self: start;
     min-width: 0;
     > h2 {
@@ -33,7 +33,7 @@
   }
 
   @media (max-width: 360px) {
-    .request-calendar {
+    .time-off-request-calendar {
       padding: 0.75rem;
     }
   }

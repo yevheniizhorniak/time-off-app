@@ -58,7 +58,7 @@ export default function TimeOffPageLayout({ children, title }: TimeOffPageLayout
           {storageError && (
             <div className="app-storage-error" role="alert">
               <p>{storageError}</p>
-              <ToaButton label="Retry loading requests" disabled={busy} onClick={reload} />
+              <ToaButton label="Retry loading time off requests" disabled={busy} onClick={reload} />
             </div>
           )}
           {children}

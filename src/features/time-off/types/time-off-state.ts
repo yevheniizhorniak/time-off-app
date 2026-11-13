@@ -1,12 +1,12 @@
-import type { RequestDraft } from './request-draft';
 import type { TimeOffRequest } from './time-off-request';
+import type { TimeOffRequestDraft } from './time-off-request-draft';
 
 export type TimeOffState = {
-  requests: TimeOffRequest[];
+  timeOffRequests: TimeOffRequest[];
   storageError: string | null;
   busy: boolean;
   reload: () => void;
-  submitRequest: (draft: RequestDraft) => Promise<void>;
-  reviewRequest: (id: string, status: 'approved' | 'rejected', note: string) => Promise<void>;
-  cancelRequest: (id: string) => Promise<void>;
+  submitTimeOffRequest: (draft: TimeOffRequestDraft) => Promise<void>;
+  reviewTimeOffRequest: (id: string, status: 'approved' | 'rejected', note: string) => Promise<void>;
+  cancelTimeOffRequest: (id: string) => Promise<void>;
 };

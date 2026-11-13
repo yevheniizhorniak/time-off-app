@@ -8,9 +8,9 @@ test('provides a default and customizable accessible label', () => {
 
   expect(screen.getByRole('status', { name: 'Loading' })).toBeInTheDocument();
 
-  rerender(<ToaLoadingSpinner label="Loading requests" />);
+  rerender(<ToaLoadingSpinner label="Loading time off requests" />);
 
-  expect(screen.getByRole('status', { name: 'Loading requests' })).toBeInTheDocument();
+  expect(screen.getByRole('status', { name: 'Loading time off requests' })).toBeInTheDocument();
 });
 
 test('hides a decorative spinner from assistive technology', () => {

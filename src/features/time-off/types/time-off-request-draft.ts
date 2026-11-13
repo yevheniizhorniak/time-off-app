@@ -1,4 +1,4 @@
-export type RequestDraft = {
+export type TimeOffRequestDraft = {
   startDate: string;
   endDate: string;
   leaveType: string;

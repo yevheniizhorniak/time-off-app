@@ -1,54 +1,56 @@
 import { useCallback, useMemo, type ReactElement, type ReactNode } from 'react';
 
 import { useSession } from '../../auth/useSession';
-import { useRequestStore } from '../hooks/useRequestStore';
 import { TimeOffContext } from '../hooks/useTimeOff';
-import { cancelTimeOffRequest, createTimeOffRequest, dateKey, reviewTimeOffRequest } from '../time-off-domain';
-import type { RequestDraft } from '../types/request-draft';
-import type { RequestRepository } from '../types/request-repository';
+import { useTimeOffRequestStore } from '../hooks/useTimeOffRequestStore';
+import * as timeOffDomain from '../time-off-domain';
+import type { TimeOffRequestDraft } from '../types/time-off-request-draft';
+import type { TimeOffRequestRepository } from '../types/time-off-request-repository';
 
 type TimeOffProviderProps = {
-  /** Application content sharing requests. */
+  /** Application content sharing time off requests. */
   children: ReactNode;
   /** Persistence adapter supplied at the application boundary. */
-  repository: RequestRepository;
+  repository: TimeOffRequestRepository;
 };
 
 export default function TimeOffProvider({ children, repository }: TimeOffProviderProps): ReactElement {
   const { session } = useSession();
-  const { requests, storageError, busy, reload, persist } = useRequestStore(repository);
+  const { timeOffRequests, storageError, busy, reload, persist } = useTimeOffRequestStore(repository);
 
-  const submitRequest = useCallback(
-    async (draft: RequestDraft): Promise<void> => {
-      if (session?.role !== 'employee') throw new Error('Sign in as an employee to submit a request.');
+  const submitTimeOffRequest = useCallback(
+    async (draft: TimeOffRequestDraft): Promise<void> => {
+      if (session?.role !== 'employee') throw new Error('Sign in as an employee to submit a time off request.');
       await persist((current) => {
         const now = new Date();
-        const request = createTimeOffRequest(draft, session, current, {
+        const timeOffRequest = timeOffDomain.createTimeOffRequest(draft, session, current, {
           id: crypto.randomUUID(),
           createdAt: now.toISOString(),
-          today: dateKey(now),
+          today: timeOffDomain.dateKey(now),
         });
-        return [...current, request];
+        return [...current, timeOffRequest];
       });
     },
     [session, persist],
   );
 
-  const reviewRequest = useCallback(
+  const reviewTimeOffRequest = useCallback(
     async (id: string, status: 'approved' | 'rejected', note: string): Promise<void> => {
-      if (session?.role !== 'supervisor') throw new Error('Sign in as a supervisor to review requests.');
-      await persist((current) => reviewTimeOffRequest(current, id, status, note, new Date().toISOString()));
+      if (session?.role !== 'supervisor') throw new Error('Sign in as a supervisor to review time off requests.');
+      await persist((current) =>
+        timeOffDomain.reviewTimeOffRequest(current, id, status, note, new Date().toISOString()),
+      );
     },
     [session, persist],
   );
 
-  const cancelRequest = useCallback(
+  const cancelTimeOffRequest = useCallback(
     async (id: string): Promise<void> => {
-      if (session?.role !== 'employee') throw new Error('Sign in as an employee to cancel a request.');
+      if (session?.role !== 'employee') throw new Error('Sign in as an employee to cancel a time off request.');
       await persist((current) => {
         const now = new Date();
-        return cancelTimeOffRequest(current, id, session.employeeKey, {
-          today: dateKey(now),
+        return timeOffDomain.cancelTimeOffRequest(current, id, session.employeeKey, {
+          today: timeOffDomain.dateKey(now),
           cancelledAt: now.toISOString(),
         });
       });
@@ -57,8 +59,16 @@ export default function TimeOffProvider({ children, repository }: TimeOffProvide
   );
 
   const value = useMemo(
-    () => ({ requests, storageError, busy, reload, submitRequest, reviewRequest, cancelRequest }),
-    [requests, storageError, busy, reload, submitRequest, reviewRequest, cancelRequest],
+    () => ({
+      timeOffRequests,
+      storageError,
+      busy,
+      reload,
+      submitTimeOffRequest,
+      reviewTimeOffRequest,
+      cancelTimeOffRequest,
+    }),
+    [timeOffRequests, storageError, busy, reload, submitTimeOffRequest, reviewTimeOffRequest, cancelTimeOffRequest],
   );
 
   return <TimeOffContext.Provider value={value}>{children}</TimeOffContext.Provider>;

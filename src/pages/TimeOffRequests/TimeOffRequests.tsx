@@ -2,9 +2,9 @@ import type { ReactElement } from 'react';
 import { Link } from 'react-router-dom';
 
 import { useSession } from '../../features/auth/useSession';
-import RequestCalendar from '../../features/time-off/components/request-calendar/RequestCalendar';
-import RequestCard from '../../features/time-off/components/request-card/RequestCard';
 import TimeOffPageLayout from '../../features/time-off/components/time-off-page-layout/TimeOffPageLayout';
+import TimeOffRequestCalendar from '../../features/time-off/components/time-off-request-calendar/TimeOffRequestCalendar';
+import TimeOffRequestCard from '../../features/time-off/components/time-off-request-card/TimeOffRequestCard';
 import { useTimeOff } from '../../features/time-off/hooks/useTimeOff';
 import { dateKey } from '../../features/time-off/time-off-domain';
 
@@ -12,36 +12,38 @@ import './TimeOffRequests.scss';
 
 export default function TimeOffRequests(): ReactElement {
   const { session } = useSession();
-  const { requests, storageError } = useTimeOff();
+  const { timeOffRequests, storageError } = useTimeOff();
   const isEmployee = session?.role === 'employee';
-  const visible = requests.filter((request) => !isEmployee || request.employeeKey === session.employeeKey);
+  const visible = timeOffRequests.filter(
+    (timeOffRequest) => !isEmployee || timeOffRequest.employeeKey === session.employeeKey,
+  );
   const today = dateKey();
   const groups = isEmployee
     ? [
         {
           title: 'Upcoming and current',
           items: visible
-            .filter((request) => request.endDate >= today)
+            .filter((timeOffRequest) => timeOffRequest.endDate >= today)
             .sort((a, b) => a.startDate.localeCompare(b.startDate)),
         },
         {
-          title: 'Past requests',
+          title: 'Past time off requests',
           items: visible
-            .filter((request) => request.endDate < today)
+            .filter((timeOffRequest) => timeOffRequest.endDate < today)
             .sort((a, b) => b.startDate.localeCompare(a.startDate)),
         },
       ]
     : [
         {
-          title: 'Pending requests',
+          title: 'Pending time off requests',
           items: visible
-            .filter((request) => request.status === 'pending')
+            .filter((timeOffRequest) => timeOffRequest.status === 'pending')
             .sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
         },
         {
-          title: 'Reviewed and cancelled requests',
+          title: 'Reviewed and cancelled time off requests',
           items: visible
-            .filter((request) => request.status !== 'pending')
+            .filter((timeOffRequest) => timeOffRequest.status !== 'pending')
             .sort((a, b) =>
               (b.cancelledAt ?? b.reviewedAt ?? b.createdAt).localeCompare(
                 a.cancelledAt ?? a.reviewedAt ?? a.createdAt,
@@ -51,35 +53,37 @@ export default function TimeOffRequests(): ReactElement {
       ];
 
   return (
-    <TimeOffPageLayout title={isEmployee ? 'Your requests' : 'Team requests'}>
+    <TimeOffPageLayout title={isEmployee ? 'Your time off requests' : 'Team time off requests'}>
       {isEmployee && (
         <div className="app-actions app-section-action">
-          <Link className="app-link-button" to="/requests/new">
+          <Link className="app-link-button" to="/time-off-requests/new">
             Request time off
           </Link>
         </div>
       )}
       {storageError && (
-        <p className="app-muted">Request information may be unavailable until saved data can be loaded.</p>
+        <p className="app-muted">Time off request information may be unavailable until saved data can be loaded.</p>
       )}
       <div className={isEmployee ? '' : 'app-supervisor-layout'}>
         <div>
           {groups.map((group) => (
-            <section className="request-group" key={group.title}>
+            <section className="time-off-request-group" key={group.title}>
               <h2>{group.title}</h2>
               {group.items.length === 0 ? (
-                <p className="app-empty">{storageError ? 'Unable to load requests.' : 'No requests yet.'}</p>
+                <p className="app-empty">
+                  {storageError ? 'Unable to load time off requests.' : 'No time off requests yet.'}
+                </p>
               ) : (
-                <div className="request-list">
-                  {group.items.map((request) => (
-                    <RequestCard request={request} key={request.id} />
+                <div className="time-off-request-list">
+                  {group.items.map((timeOffRequest) => (
+                    <TimeOffRequestCard timeOffRequest={timeOffRequest} key={timeOffRequest.id} />
                   ))}
                 </div>
               )}
             </section>
           ))}
         </div>
-        {!isEmployee && <RequestCalendar requests={requests} />}
+        {!isEmployee && <TimeOffRequestCalendar timeOffRequests={timeOffRequests} />}
       </div>
     </TimeOffPageLayout>
   );

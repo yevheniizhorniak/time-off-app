@@ -10,19 +10,28 @@ import {
   dateKey,
   isDate,
   monthDays,
-  requestsOnDate,
+  timeOffRequestsOnDate,
   reviewTimeOffRequest,
-  validateRequest,
+  validateTimeOffRequest,
 } from './time-off-domain';
-import { RequestCancellationError, RequestDecisionError, RequestValidationError } from './types/errors';
-import type { RequestDraft } from './types/request-draft';
 import type { TimeOffRequest } from './types/time-off-request';
+import type { TimeOffRequestDraft } from './types/time-off-request-draft';
+import {
+  TimeOffRequestCancellationError,
+  TimeOffRequestDecisionError,
+  TimeOffRequestValidationError,
+} from './types/time-off-request-errors';
 
-const draft: RequestDraft = { startDate: '2026-11-12', endDate: '2026-11-13', leaveType: 'paid-time-off', note: '' };
-const request: TimeOffRequest = {
+const draft: TimeOffRequestDraft = {
+  startDate: '2026-11-12',
+  endDate: '2026-11-13',
+  leaveType: 'paid-time-off',
+  note: '',
+};
+const timeOffRequest: TimeOffRequest = {
   ...draft,
   leaveType: 'paid-time-off',
-  id: 'request-1',
+  id: 'time-off-request-1',
   employeeKey: 'alex',
   employeeName: 'Alex',
   status: 'pending',
@@ -30,13 +39,13 @@ const request: TimeOffRequest = {
 };
 const today = '2026-11-12';
 const employee: Extract<Session, { role: 'employee' }> = { role: 'employee', name: 'Alex', employeeKey: 'alex' };
-const metadata = { id: 'new-request', createdAt: '2026-11-12T10:00:00Z', today };
+const metadata = { id: 'new-time-off-request', createdAt: '2026-11-12T10:00:00Z', today };
 
 afterEach(() => {
   vi.restoreAllMocks();
 });
 
-test('creates a pending request with explicit metadata and trims notes without mutating the draft', () => {
+test('creates a pending time off request with explicit metadata and trims notes without mutating the draft', () => {
   const input = Object.freeze({ ...draft, note: '  Family trip  ' });
   const created = createTimeOffRequest(input, employee, Object.freeze([]), metadata);
   expect(created).toEqual({
@@ -51,42 +60,51 @@ test('creates a pending request with explicit metadata and trims notes without m
   expect(input.note).toBe('  Family trip  ');
 });
 
-test('creation rejects invalid drafts and overlaps with the supplied current requests', () => {
+test('creation rejects invalid drafts and overlaps with the supplied current time off requests', () => {
   expect(() => createTimeOffRequest({ ...draft, leaveType: 'unknown' }, employee, [], metadata)).toThrow(
-    RequestValidationError,
+    TimeOffRequestValidationError,
   );
-  expect(() => createTimeOffRequest(draft, employee, [request], metadata)).toThrow(RequestValidationError);
+  expect(() => createTimeOffRequest(draft, employee, [timeOffRequest], metadata)).toThrow(
+    TimeOffRequestValidationError,
+  );
 });
 
-test.each(['approved', 'rejected'] as const)('reviews pending requests as %s without mutating inputs', (status) => {
-  const other = Object.freeze({ ...request, id: 'other' });
-  const current = Object.freeze([Object.freeze({ ...request }), other]);
-  const reviewedAt = '2026-11-12T11:00:00Z';
-  const reviewed = reviewTimeOffRequest(current, request.id, status, '  Decision note  ', reviewedAt);
-  expect(reviewed[0]).toEqual({ ...request, status, reviewerNote: 'Decision note', reviewedAt });
-  expect(reviewed[1]).toBe(other);
-  expect(current[0].status).toBe('pending');
-});
+test.each(['approved', 'rejected'] as const)(
+  'reviews pending time off requests as %s without mutating inputs',
+  (status) => {
+    const other = Object.freeze({ ...timeOffRequest, id: 'other' });
+    const current = Object.freeze([Object.freeze({ ...timeOffRequest }), other]);
+    const reviewedAt = '2026-11-12T11:00:00Z';
+    const reviewed = reviewTimeOffRequest(current, timeOffRequest.id, status, '  Decision note  ', reviewedAt);
+    expect(reviewed[0]).toEqual({ ...timeOffRequest, status, reviewerNote: 'Decision note', reviewedAt });
+    expect(reviewed[1]).toBe(other);
+    expect(current[0].status).toBe('pending');
+  },
+);
 
-test('review rejects missing and already-reviewed requests with a typed decision error', () => {
+test('review rejects missing and already-reviewed time off requests with a typed decision error', () => {
   const reviewedAt = '2026-11-12T11:00:00Z';
-  expect(() => reviewTimeOffRequest([request], 'missing', 'approved', '', reviewedAt)).toThrow(RequestDecisionError);
+  expect(() => reviewTimeOffRequest([timeOffRequest], 'missing', 'approved', '', reviewedAt)).toThrow(
+    TimeOffRequestDecisionError,
+  );
   for (const status of ['approved', 'rejected'] as const) {
     expect(() =>
-      reviewTimeOffRequest([{ ...request, status, reviewedAt }], request.id, 'approved', '', reviewedAt),
-    ).toThrow(RequestDecisionError);
+      reviewTimeOffRequest([{ ...timeOffRequest, status, reviewedAt }], timeOffRequest.id, 'approved', '', reviewedAt),
+    ).toThrow(TimeOffRequestDecisionError);
   }
 });
 
 test('allows today, one-day periods and all supported leave types', () => {
   for (const leaveType of ['paid-time-off', 'sick-day', 'parental-leave']) {
-    expect(validateRequest({ ...draft, endDate: today, leaveType }, 'alex', [], today)).toEqual({});
+    expect(validateTimeOffRequest({ ...draft, endDate: today, leaveType }, 'alex', [], today)).toEqual({});
   }
 });
 
 test('rejects missing or impossible dates, past dates, reversed periods and unknown leave types', () => {
   const anyString: unknown = expect.any(String);
-  expect(validateRequest({ ...draft, startDate: '', endDate: '', leaveType: '' }, 'alex', [], today)).toMatchObject({
+  expect(
+    validateTimeOffRequest({ ...draft, startDate: '', endDate: '', leaveType: '' }, 'alex', [], today),
+  ).toMatchObject({
     startDate: anyString,
     endDate: anyString,
     leaveType: anyString,
@@ -95,9 +113,9 @@ test('rejects missing or impossible dates, past dates, reversed periods and unkn
   expect(isDate('2028-02-29')).toBe(true);
   expect(isDate('2026-13-01')).toBe(false);
   expect(
-    validateRequest({ ...draft, startDate: '2026-11-11', endDate: '2026-11-11' }, 'alex', [], today),
+    validateTimeOffRequest({ ...draft, startDate: '2026-11-11', endDate: '2026-11-11' }, 'alex', [], today),
   ).toHaveProperty('startDate');
-  expect(validateRequest({ ...draft, startDate: '2026-11-16' }, 'alex', [], today)).toHaveProperty('endDate');
+  expect(validateTimeOffRequest({ ...draft, startDate: '2026-11-16' }, 'alex', [], today)).toHaveProperty('endDate');
 });
 
 test('prevents inclusive overlaps for pending and approved leave, including containment', () => {
@@ -108,37 +126,41 @@ test('prevents inclusive overlaps for pending and approved leave, including cont
       ['2026-11-12', '2026-11-20'],
       ['2026-11-13', '2026-11-13'],
     ]) {
-      expect(validateRequest({ ...draft, startDate, endDate }, 'alex', [{ ...request, status }], today)).toHaveProperty(
-        'startDate',
-        'These dates overlap one of your pending or approved requests.',
-      );
+      expect(
+        validateTimeOffRequest({ ...draft, startDate, endDate }, 'alex', [{ ...timeOffRequest, status }], today),
+      ).toHaveProperty('startDate', 'These dates overlap one of your pending or approved time off requests.');
     }
   }
   expect(
-    validateRequest({ ...draft, startDate: '2026-11-16', endDate: '2026-11-16' }, 'alex', [request], today),
+    validateTimeOffRequest(
+      { ...draft, startDate: '2026-11-16', endDate: '2026-11-16' },
+      'alex',
+      [timeOffRequest],
+      today,
+    ),
   ).toEqual({});
 });
 
-test('rejected requests release dates and another employee can request the same dates', () => {
-  expect(validateRequest(draft, 'alex', [{ ...request, status: 'rejected' }], today)).toEqual({});
-  expect(validateRequest(draft, 'bob', [request], today)).toEqual({});
-  expect(requestsOnDate([request, { ...request, id: 'rejected', status: 'rejected' }], '2026-11-13')).toEqual([
-    request,
-  ]);
-  expect(requestsOnDate([request], '2026-11-15')).toEqual([]);
+test('rejected time off requests release dates and another employee can time off request the same dates', () => {
+  expect(validateTimeOffRequest(draft, 'alex', [{ ...timeOffRequest, status: 'rejected' }], today)).toEqual({});
+  expect(validateTimeOffRequest(draft, 'bob', [timeOffRequest], today)).toEqual({});
+  expect(
+    timeOffRequestsOnDate([timeOffRequest, { ...timeOffRequest, id: 'rejected', status: 'rejected' }], '2026-11-13'),
+  ).toEqual([timeOffRequest]);
+  expect(timeOffRequestsOnDate([timeOffRequest], '2026-11-15')).toEqual([]);
 });
 
 test.each(['2026-11-14', '2026-11-15', '2026-11-17', '2027-03-26', '2027-03-29'])(
   'rejects unavailable endpoints on %s through validation and creation',
   (date) => {
-    const errors = validateRequest({ ...draft, startDate: date, endDate: date }, 'alex', [], today);
+    const errors = validateTimeOffRequest({ ...draft, startDate: date, endDate: date }, 'alex', [], today);
     expect(errors.startDate).toMatch(/Start date (must be a weekday|cannot be a public holiday)/);
     expect(errors.endDate).toMatch(/End date (must be a weekday|cannot be a public holiday)/);
     for (const input of [
       { ...draft, startDate: date, endDate: '2027-04-01' },
       { ...draft, endDate: date },
     ]) {
-      expect(() => createTimeOffRequest(input, employee, [], metadata)).toThrow(RequestValidationError);
+      expect(() => createTimeOffRequest(input, employee, [], metadata)).toThrow(TimeOffRequestValidationError);
     }
   },
 );
@@ -146,12 +168,12 @@ test.each(['2026-11-14', '2026-11-15', '2026-11-17', '2027-03-26', '2027-03-29']
 test('allows ranges spanning weekends and holidays for every leave type', () => {
   for (const leaveType of ['paid-time-off', 'sick-day', 'parental-leave']) {
     const spanning = { ...draft, startDate: '2026-11-13', endDate: '2026-11-18', leaveType };
-    expect(validateRequest(spanning, 'alex', [], today)).toEqual({});
+    expect(validateTimeOffRequest(spanning, 'alex', [], today)).toEqual({});
     expect(createTimeOffRequest(spanning, employee, [], metadata)).toMatchObject(spanning);
   }
 });
 
-test.each(['pending', 'approved'] as const)('counts only working days in %s request ranges', (status) => {
+test.each(['pending', 'approved'] as const)('counts only working days in %s time off request ranges', (status) => {
   for (const { startDate, endDate, excluded, included } of [
     {
       startDate: '2026-11-13',
@@ -172,10 +194,10 @@ test.each(['pending', 'approved'] as const)('counts only working days in %s requ
       included: ['2027-03-25', '2027-03-30'],
     },
   ]) {
-    const saved = Object.freeze({ ...request, startDate, endDate, status });
+    const saved = Object.freeze({ ...timeOffRequest, startDate, endDate, status });
     const rejected = { ...saved, id: 'rejected', status: 'rejected' as const };
-    for (const date of excluded) expect(requestsOnDate([saved, rejected], date)).toEqual([]);
-    for (const date of included) expect(requestsOnDate([saved, rejected], date)).toEqual([saved]);
+    for (const date of excluded) expect(timeOffRequestsOnDate([saved, rejected], date)).toEqual([]);
+    for (const date of included) expect(timeOffRequestsOnDate([saved, rejected], date)).toEqual([saved]);
   }
 });
 
@@ -185,11 +207,11 @@ test('excludes additional configured holidays from pending and approved coverage
     lookup(date, [{ date: '2026-11-16', name: 'Company holiday' }]),
   );
   const saved = [
-    { ...request, endDate: '2026-11-18' },
-    { ...request, id: 'approved', status: 'approved' as const, endDate: '2026-11-18' },
+    { ...timeOffRequest, endDate: '2026-11-18' },
+    { ...timeOffRequest, id: 'approved', status: 'approved' as const, endDate: '2026-11-18' },
   ];
-  expect(requestsOnDate(saved, '2026-11-16')).toEqual([]);
-  expect(requestsOnDate(saved, '2026-11-18')).toEqual(saved);
+  expect(timeOffRequestsOnDate(saved, '2026-11-16')).toEqual([]);
+  expect(timeOffRequestsOnDate(saved, '2026-11-18')).toEqual(saved);
 });
 
 test('builds Monday-first months across leap years and year boundaries using local dates', () => {
@@ -204,62 +226,68 @@ test('builds Monday-first months across leap years and year boundaries using loc
 
 test.each(['pending', 'approved'] as const)('fully cancels future %s leave and preserves its history', (status) => {
   const saved = Object.freeze({
-    ...request,
+    ...timeOffRequest,
     status,
     startDate: '2026-11-13',
     endDate: '2026-11-16',
     ...(status === 'approved' && { reviewedAt: '2026-11-11T11:00:00Z', reviewerNote: 'Enjoy your break' }),
   });
-  const other = Object.freeze({ ...request, id: 'other' });
+  const other = Object.freeze({ ...timeOffRequest, id: 'other' });
   const current = Object.freeze([saved, other]);
   const cancelledAt = '2026-11-12T12:00:00Z';
   const cancelled = cancelTimeOffRequest(current, saved.id, 'alex', { today, cancelledAt });
   expect(cancelled[0]).toEqual({ ...saved, status: 'cancelled', cancelledFromDate: '2026-11-13', cancelledAt });
   expect(cancelled[1]).toBe(other);
   expect(saved.status).toBe(status);
-  expect(requestsOnDate([cancelled[0]], '2026-11-13')).toEqual([]);
-  expect(validateRequest({ ...draft, startDate: '2026-11-13' }, 'alex', [cancelled[0]], today)).toEqual({});
-  expect(() => reviewTimeOffRequest(cancelled, saved.id, 'approved', '', cancelledAt)).toThrow(RequestDecisionError);
+  expect(timeOffRequestsOnDate([cancelled[0]], '2026-11-13')).toEqual([]);
+  expect(validateTimeOffRequest({ ...draft, startDate: '2026-11-13' }, 'alex', [cancelled[0]], today)).toEqual({});
+  expect(() => reviewTimeOffRequest(cancelled, saved.id, 'approved', '', cancelledAt)).toThrow(
+    TimeOffRequestDecisionError,
+  );
 });
 
 test.each(['pending', 'approved'] as const)(
   'partially cancels ongoing %s leave and releases only future dates',
   (status) => {
-    const saved = { ...request, status, endDate: '2026-11-16' };
+    const saved = { ...timeOffRequest, status, endDate: '2026-11-16' };
     const cancelledAt = '2026-11-12T12:00:00Z';
     const cancelled = cancelTimeOffRequest([saved], saved.id, 'alex', { today, cancelledAt });
     expect(cancelled[0]).toEqual({ ...saved, cancelledFromDate: '2026-11-13', cancelledAt });
-    expect(requestsOnDate(cancelled, today)).toEqual(cancelled);
-    expect(requestsOnDate(cancelled, '2026-11-13')).toEqual([]);
-    expect(requestsOnDate(cancelled, '2026-11-16')).toEqual([]);
-    expect(validateRequest({ ...draft, endDate: today }, 'alex', cancelled, today)).toHaveProperty('startDate');
-    expect(validateRequest({ ...draft, startDate: '2026-11-13' }, 'alex', cancelled, today)).toEqual({});
-    expect(validateRequest(draft, 'alex', cancelled, today)).toHaveProperty('startDate');
+    expect(timeOffRequestsOnDate(cancelled, today)).toEqual(cancelled);
+    expect(timeOffRequestsOnDate(cancelled, '2026-11-13')).toEqual([]);
+    expect(timeOffRequestsOnDate(cancelled, '2026-11-16')).toEqual([]);
+    expect(validateTimeOffRequest({ ...draft, endDate: today }, 'alex', cancelled, today)).toHaveProperty('startDate');
+    expect(validateTimeOffRequest({ ...draft, startDate: '2026-11-13' }, 'alex', cancelled, today)).toEqual({});
+    expect(validateTimeOffRequest(draft, 'alex', cancelled, today)).toHaveProperty('startDate');
     expect(() => cancelTimeOffRequest(cancelled, saved.id, 'alex', { today, cancelledAt })).toThrow(
-      RequestCancellationError,
+      TimeOffRequestCancellationError,
     );
     if (status === 'pending') {
       for (const decision of ['approved', 'rejected'] as const) {
         const reviewed = reviewTimeOffRequest(cancelled, saved.id, decision, 'Retained dates', cancelledAt);
         expect(reviewed[0]).toMatchObject({ status: decision, cancelledFromDate: '2026-11-13', cancelledAt });
-        expect(requestsOnDate(reviewed, '2026-11-13')).toEqual([]);
+        expect(timeOffRequestsOnDate(reviewed, '2026-11-13')).toEqual([]);
       }
     }
   },
 );
 
-test('cancellation rejects unavailable requests, other employees and requests without future dates', () => {
+test('cancellation rejects unavailable time off requests, other employees and time off requests without future dates', () => {
   const metadata = { today, cancelledAt: '2026-11-12T12:00:00Z' };
-  expect(() => cancelTimeOffRequest([request], 'missing', 'alex', metadata)).toThrow(RequestCancellationError);
-  expect(() => cancelTimeOffRequest([request], request.id, 'bob', metadata)).toThrow(RequestCancellationError);
+  expect(() => cancelTimeOffRequest([timeOffRequest], 'missing', 'alex', metadata)).toThrow(
+    TimeOffRequestCancellationError,
+  );
+  expect(() => cancelTimeOffRequest([timeOffRequest], timeOffRequest.id, 'bob', metadata)).toThrow(
+    TimeOffRequestCancellationError,
+  );
   for (const saved of [
-    { ...request, status: 'rejected' as const },
-    { ...request, status: 'cancelled' as const },
-    { ...request, endDate: today },
-    { ...request, startDate: '2026-11-10', endDate: '2026-11-11' },
+    { ...timeOffRequest, status: 'rejected' as const },
+    { ...timeOffRequest, status: 'cancelled' as const },
+    { ...timeOffRequest, endDate: today },
+    { ...timeOffRequest, startDate: '2026-11-10', endDate: '2026-11-11' },
   ]) {
     expect(cancellationStartDate(saved, today)).toBeNull();
-    expect(() => cancelTimeOffRequest([saved], saved.id, 'alex', metadata)).toThrow(RequestCancellationError);
+    expect(() => cancelTimeOffRequest([saved], saved.id, 'alex', metadata)).toThrow(TimeOffRequestCancellationError);
   }
 });
 
@@ -268,5 +296,5 @@ test.each([
   ['2028-02-28', '2028-02-29'],
   ['2026-03-28', '2026-03-29'],
 ])('cancellation advances the local calendar date after %s', (today, tomorrow) => {
-  expect(cancellationStartDate({ ...request, startDate: today, endDate: '2028-12-31' }, today)).toBe(tomorrow);
+  expect(cancellationStartDate({ ...timeOffRequest, startDate: today, endDate: '2028-12-31' }, today)).toBe(tomorrow);
 });

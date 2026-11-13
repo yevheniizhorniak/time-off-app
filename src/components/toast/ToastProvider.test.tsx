@@ -167,7 +167,7 @@ test('showing notifications preserves keyboard focus', () => {
   trigger.focus();
   const { result } = renderHook(() => useToast(), { wrapper });
   act(() => {
-    result.current.showToast('Request submitted');
+    result.current.showToast('Time off request submitted');
   });
   expect(trigger).toHaveFocus();
 });

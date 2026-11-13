@@ -9,16 +9,16 @@ import TimeOffPageLayout from '../../features/time-off/components/time-off-page-
 import { dateKey } from '../../features/time-off/time-off-domain';
 import { leaveTypes } from '../../features/time-off/types/leave-type';
 
-import { useNewRequestForm } from './useNewRequestForm';
+import { useNewTimeOffRequestForm } from './useNewTimeOffRequestForm';
 
-import './NewRequest.scss';
+import './NewTimeOffRequest.scss';
 
-export default function NewRequest(): ReactElement {
-  const { formRef, draft, setDraft, errors, error, busy, storageError, submit } = useNewRequestForm();
+export default function NewTimeOffRequest(): ReactElement {
+  const { formRef, draft, setDraft, errors, error, busy, storageError, submit } = useNewTimeOffRequestForm();
 
   return (
     <TimeOffPageLayout title="Request time off">
-      <section className="app-panel app-request-form">
+      <section className="app-panel app-time-off-request-form">
         <form noValidate className="app-form" onSubmit={(event) => void submit(event)} ref={formRef}>
           <div className="app-date-fields">
             <TimeOffDateField
@@ -66,9 +66,9 @@ export default function NewRequest(): ReactElement {
             </p>
           )}
           <div className="app-actions">
-            <ToaButton label="Submit request" type="submit" loading={busy} disabled={!!storageError} />
+            <ToaButton label="Submit time off request" type="submit" loading={busy} disabled={!!storageError} />
             {!busy && (
-              <Link className="app-text-link" to="/requests">
+              <Link className="app-text-link" to="/time-off-requests">
                 Cancel
               </Link>
             )}

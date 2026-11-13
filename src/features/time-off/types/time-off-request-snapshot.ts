@@ -1,6 +1,6 @@
 import type { TimeOffRequest } from './time-off-request';
 
-export type RequestSnapshot = {
-  requests: TimeOffRequest[];
+export type TimeOffRequestSnapshot = {
+  timeOffRequests: TimeOffRequest[];
   storageError: string | null;
 };

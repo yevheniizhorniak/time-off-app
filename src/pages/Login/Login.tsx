@@ -17,13 +17,13 @@ export default function Login(): ReactElement {
   const [nameError, setNameError] = useState('');
   const [error, setError] = useState('');
 
-  if (session) return <Navigate to="/requests" replace />;
+  if (session) return <Navigate to="/time-off-requests" replace />;
 
   function login(next: Session): void {
     setError('');
     try {
       signIn(next);
-      navigate('/requests', { replace: true });
+      navigate('/time-off-requests', { replace: true });
     } catch (failure) {
       setError((failure as Error).message);
     }

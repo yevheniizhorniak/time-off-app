@@ -11,7 +11,7 @@ const meta = {
   title: 'Components/Tooltip',
   component: ToaTooltip,
   args: {
-    content: 'Add any details that will help your supervisor review the request.',
+    content: 'Add any details that will help your supervisor review the time off request.',
     children: (
       <button className="toa-tooltip-example__button" type="button">
         About notes
@@ -39,7 +39,7 @@ export const ExistingButton: Story = {
 export const LongText: Story = {
   args: {
     content:
-      'Notes are optional. You can include information to help your supervisor review your request. Long words also wrap safely: ALongReferenceWithoutSpacesThatMustStayInsideThePhoneViewportEvenAtNarrowWidths.',
+      'Notes are optional. You can include information to help your supervisor review your time off request. Long words also wrap safely: ALongReferenceWithoutSpacesThatMustStayInsideThePhoneViewportEvenAtNarrowWidths.',
   },
 };
 

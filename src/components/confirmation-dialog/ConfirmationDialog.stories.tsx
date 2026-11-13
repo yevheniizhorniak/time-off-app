@@ -15,7 +15,7 @@ const meta = {
   args: {
     isOpen: false,
     title: 'Approve time off request?',
-    message: 'This will approve the request and update its status.',
+    message: 'This will approve the time off request and update its status.',
     onConfirm: fn(),
     onCancel: fn(),
   },

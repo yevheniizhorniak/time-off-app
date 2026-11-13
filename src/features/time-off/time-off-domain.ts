@@ -4,15 +4,15 @@ import type { Session } from '../auth/types/session';
 
 import { isWeekend } from './holidays/is-weekend';
 import { timeOffHolidayName } from './holidays/time-off-holiday-name';
-import {
-  RequestCancellationError,
-  RequestDecisionError,
-  RequestValidationError,
-  type RequestErrors,
-} from './types/errors';
 import { isLeaveType, leaveTypes, type LeaveType } from './types/leave-type';
-import type { RequestDraft } from './types/request-draft';
 import type { TimeOffRequest } from './types/time-off-request';
+import type { TimeOffRequestDraft } from './types/time-off-request-draft';
+import {
+  TimeOffRequestCancellationError,
+  TimeOffRequestDecisionError,
+  TimeOffRequestValidationError,
+  type TimeOffRequestErrors,
+} from './types/time-off-request-errors';
 
 export { dateKey } from '../../components/calendar/date-key';
 export { formatDate } from '../../components/calendar/format-date';
@@ -24,24 +24,24 @@ export function leaveTypeLabel(type: LeaveType): string {
 }
 
 /** Active leave on working weekdays, excluding configured public holidays. */
-export function requestsOnDate(requests: readonly TimeOffRequest[], date: string): TimeOffRequest[] {
+export function timeOffRequestsOnDate(timeOffRequests: readonly TimeOffRequest[], date: string): TimeOffRequest[] {
   if (isWeekend(date) || timeOffHolidayName(date)) return [];
-  return requests.filter(
-    (request) =>
-      (request.status === 'pending' || request.status === 'approved') &&
-      request.startDate <= date &&
-      request.endDate >= date &&
-      (!request.cancelledFromDate || date < request.cancelledFromDate),
+  return timeOffRequests.filter(
+    (timeOffRequest) =>
+      (timeOffRequest.status === 'pending' || timeOffRequest.status === 'approved') &&
+      timeOffRequest.startDate <= date &&
+      timeOffRequest.endDate >= date &&
+      (!timeOffRequest.cancelledFromDate || date < timeOffRequest.cancelledFromDate),
   );
 }
 
-export function validateRequest(
-  draft: RequestDraft,
+export function validateTimeOffRequest(
+  draft: TimeOffRequestDraft,
   key: string,
-  requests: readonly TimeOffRequest[],
+  timeOffRequests: readonly TimeOffRequest[],
   today = dateKey(),
-): RequestErrors {
-  const errors: RequestErrors = {};
+): TimeOffRequestErrors {
+  const errors: TimeOffRequestErrors = {};
   if (!isDate(draft.startDate)) errors.startDate = 'Enter a valid start date.';
   else if (draft.startDate < today) errors.startDate = 'Start date must be today or later.';
   if (!isDate(draft.endDate)) errors.endDate = 'Enter a valid end date.';
@@ -60,28 +60,28 @@ export function validateRequest(
   if (
     !errors.startDate &&
     !errors.endDate &&
-    requests.some(
-      (request) =>
-        request.employeeKey === key &&
-        (request.status === 'pending' || request.status === 'approved') &&
-        draft.startDate <= request.endDate &&
-        draft.endDate >= request.startDate &&
-        (!request.cancelledFromDate || draft.startDate < request.cancelledFromDate),
+    timeOffRequests.some(
+      (timeOffRequest) =>
+        timeOffRequest.employeeKey === key &&
+        (timeOffRequest.status === 'pending' || timeOffRequest.status === 'approved') &&
+        draft.startDate <= timeOffRequest.endDate &&
+        draft.endDate >= timeOffRequest.startDate &&
+        (!timeOffRequest.cancelledFromDate || draft.startDate < timeOffRequest.cancelledFromDate),
     )
   ) {
-    errors.startDate = 'These dates overlap one of your pending or approved requests.';
+    errors.startDate = 'These dates overlap one of your pending or approved time off requests.';
   }
   return errors;
 }
 
 export function createTimeOffRequest(
-  draft: RequestDraft,
+  draft: TimeOffRequestDraft,
   employee: Extract<Session, { role: 'employee' }>,
-  requests: readonly TimeOffRequest[],
+  timeOffRequests: readonly TimeOffRequest[],
   metadata: { id: string; createdAt: string; today: string },
 ): TimeOffRequest {
-  const errors = validateRequest(draft, employee.employeeKey, requests, metadata.today);
-  if (Object.keys(errors).length > 0) throw new RequestValidationError(errors);
+  const errors = validateTimeOffRequest(draft, employee.employeeKey, timeOffRequests, metadata.today);
+  if (Object.keys(errors).length > 0) throw new TimeOffRequestValidationError(errors);
   if (!isLeaveType(draft.leaveType)) throw new Error('Choose a time off type.');
   return {
     ...draft,
@@ -96,42 +96,44 @@ export function createTimeOffRequest(
 }
 
 export function reviewTimeOffRequest(
-  requests: readonly TimeOffRequest[],
+  timeOffRequests: readonly TimeOffRequest[],
   id: string,
   status: 'approved' | 'rejected',
   note: string,
   reviewedAt: string,
 ): TimeOffRequest[] {
-  const request = requests.find((item) => item.id === id);
-  if (!request || request.status !== 'pending') throw new RequestDecisionError();
-  return requests.map((item) => (item.id === id ? { ...item, status, reviewerNote: note.trim(), reviewedAt } : item));
+  const timeOffRequest = timeOffRequests.find((item) => item.id === id);
+  if (!timeOffRequest || timeOffRequest.status !== 'pending') throw new TimeOffRequestDecisionError();
+  return timeOffRequests.map((item) =>
+    item.id === id ? { ...item, status, reviewerNote: note.trim(), reviewedAt } : item,
+  );
 }
 
-/** First cancellable date, or null when the request has no remaining cancellable dates. */
-export function cancellationStartDate(request: TimeOffRequest, today = dateKey()): string | null {
+/** First cancellable date, or null when the time off request has no remaining cancellable dates. */
+export function cancellationStartDate(timeOffRequest: TimeOffRequest, today = dateKey()): string | null {
   if (
-    (request.status !== 'pending' && request.status !== 'approved') ||
-    request.cancelledFromDate ||
-    request.endDate <= today
+    (timeOffRequest.status !== 'pending' && timeOffRequest.status !== 'approved') ||
+    timeOffRequest.cancelledFromDate ||
+    timeOffRequest.endDate <= today
   ) {
     return null;
   }
   const tomorrow = new Date(`${today}T12:00:00`);
   tomorrow.setDate(tomorrow.getDate() + 1);
-  return request.startDate > today ? request.startDate : dateKey(tomorrow);
+  return timeOffRequest.startDate > today ? timeOffRequest.startDate : dateKey(tomorrow);
 }
 
 export function cancelTimeOffRequest(
-  requests: readonly TimeOffRequest[],
+  timeOffRequests: readonly TimeOffRequest[],
   id: string,
   employeeKey: string,
   metadata: { today: string; cancelledAt: string },
 ): TimeOffRequest[] {
-  const request = requests.find((item) => item.id === id);
-  if (!request || request.employeeKey !== employeeKey) throw new RequestCancellationError();
-  const cancelledFromDate = cancellationStartDate(request, metadata.today);
-  if (!cancelledFromDate) throw new RequestCancellationError();
-  return requests.map((item) =>
+  const timeOffRequest = timeOffRequests.find((item) => item.id === id);
+  if (!timeOffRequest || timeOffRequest.employeeKey !== employeeKey) throw new TimeOffRequestCancellationError();
+  const cancelledFromDate = cancellationStartDate(timeOffRequest, metadata.today);
+  if (!cancelledFromDate) throw new TimeOffRequestCancellationError();
+  return timeOffRequests.map((item) =>
     item.id === id
       ? {
           ...item,

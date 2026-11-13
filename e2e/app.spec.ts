@@ -8,10 +8,10 @@ test.beforeEach(async ({ page }) => {
 async function loginEmployee(page: Page, name = 'Alex'): Promise<void> {
   await page.getByLabel('Employee name').fill(name);
   await page.getByRole('button', { name: 'Log in as employee', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Your requests', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your time off requests', exact: true })).toBeVisible();
 }
 
-async function selectRequestDate(page: Page, label: string, date: string): Promise<void> {
+async function selectTimeOffRequestDate(page: Page, label: string, date: string): Promise<void> {
   await page.getByRole('button', { name: label, exact: true }).click();
   const dialog = page.getByRole('dialog', { name: `Choose ${label.toLowerCase()}` });
   const formatted = new Date(`${date}T12:00:00`).toLocaleDateString('en-US', {
@@ -24,11 +24,11 @@ async function selectRequestDate(page: Page, label: string, date: string): Promi
   await expect(page.getByRole('button', { name: label, exact: true })).toBeFocused();
 }
 
-async function fillRequest(page: Page, start = '2026-11-13', end = '2026-11-16'): Promise<void> {
+async function fillTimeOffRequest(page: Page, start = '2026-11-13', end = '2026-11-16'): Promise<void> {
   await page.getByRole('link', { name: 'Request time off', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Your requests', exact: true })).toBeHidden();
-  await selectRequestDate(page, 'Start date', start);
-  await selectRequestDate(page, 'End date', end);
+  await expect(page.getByRole('heading', { name: 'Your time off requests', exact: true })).toBeHidden();
+  await selectTimeOffRequestDate(page, 'Start date', start);
+  await selectTimeOffRequestDate(page, 'End date', end);
   await page.getByLabel('Time off type').selectOption('paid-time-off');
 }
 
@@ -38,27 +38,96 @@ async function switchUser(page: Page): Promise<void> {
   await expect(page.getByLabel('Employee name')).toBeVisible();
 }
 
-for (const path of ['/login', '/requests', '/requests/new', '/home', '/', '/unknown']) {
+for (const path of [
+  '/login',
+  '/time-off-requests',
+  '/time-off-requests/new',
+  '/requests',
+  '/requests/new',
+  '/home',
+  '/',
+  '/unknown',
+]) {
   test(`only shows login when visiting ${path} without a session`, async ({ page }) => {
     await page.goto(path);
     await expect(page).toHaveURL(/\/login$/);
     await expect(page.getByLabel('Employee name')).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Your requests|Team requests/ })).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: /Your time off requests|Team time off requests/ })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Start date', exact: true })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Switch user', exact: true })).toHaveCount(0);
   });
 }
 
-test('restores access to protected pages on refresh and blocks browser Back after sign-out', async ({ page }) => {
+test('redirects legacy time off request URLs and preserves role guards and browser history', async ({ page }) => {
   await loginEmployee(page);
-  await expect(page).toHaveURL(/\/requests$/);
-  await page.goto('/login');
-  await expect(page).toHaveURL(/\/requests$/);
-  await page.getByRole('link', { name: 'Request time off', exact: true }).click();
-  await expect(page).toHaveURL(/\/requests\/new$/);
+  await page.goto('/requests/new');
+  await expect(page).toHaveURL(/\/time-off-requests\/new$/);
   await expect(page.getByRole('button', { name: 'Start date', exact: true })).toBeVisible();
   await page.reload();
-  await expect(page).toHaveURL(/\/requests\/new$/);
+  await expect(page).toHaveURL(/\/time-off-requests\/new$/);
+  await page.goto('/requests');
+  await expect(page).toHaveURL(/\/time-off-requests$/);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/time-off-requests\/new$/);
+  await expect(page.getByRole('button', { name: 'Start date', exact: true })).toBeVisible();
+  await page.goForward();
+  await expect(page).toHaveURL(/\/time-off-requests$/);
+  await switchUser(page);
+  await page.getByRole('button', { name: 'Log in as a supervisor', exact: true }).click();
+  for (const path of ['/requests', '/requests/new']) {
+    await page.goto(path);
+    await expect(page).toHaveURL(/\/time-off-requests$/);
+    await expect(page.getByRole('heading', { name: 'Team time off requests', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Start date', exact: true })).toHaveCount(0);
+  }
+});
+
+test('shows legacy time off requests and converts storage on the next submission', async ({ page }) => {
+  const legacyRaw = JSON.stringify({
+    version: 1,
+    requests: [
+      {
+        id: 'legacy',
+        employeeKey: 'alex',
+        employeeName: 'Alex',
+        startDate: '2026-11-13',
+        endDate: '2026-11-16',
+        leaveType: 'paid-time-off',
+        note: 'Saved before the rename',
+        status: 'pending',
+        createdAt: '2026-11-12T08:00:00Z',
+      },
+    ],
+  });
+  await page.evaluate((raw) => localStorage.setItem('time-off-app.requests', raw), legacyRaw);
+  await page.reload();
+  await loginEmployee(page);
+  await expect(page.getByRole('article')).toContainText('Saved before the rename');
+  expect(await page.evaluate(() => localStorage.getItem('time-off-app.time-off-requests'))).toBeNull();
+  await fillTimeOffRequest(page, '2026-11-18', '2026-11-18');
+  await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
+  await expect(page.getByRole('article')).toHaveCount(2);
+  const saved: unknown = await page.evaluate(() => JSON.parse(localStorage.getItem('time-off-app.time-off-requests')!));
+  expect(saved).toMatchObject({
+    version: 2,
+    timeOffRequests: [expect.objectContaining({ id: 'legacy', note: 'Saved before the rename' }), expect.any(Object)],
+  });
+  expect(saved).not.toHaveProperty('requests');
+  expect(await page.evaluate(() => localStorage.getItem('time-off-app.requests'))).toBe(legacyRaw);
+  await page.reload();
+  await expect(page.getByRole('article')).toHaveCount(2);
+});
+
+test('restores access to protected pages on refresh and blocks browser Back after sign-out', async ({ page }) => {
+  await loginEmployee(page);
+  await expect(page).toHaveURL(/\/time-off-requests$/);
+  await page.goto('/login');
+  await expect(page).toHaveURL(/\/time-off-requests$/);
+  await page.getByRole('link', { name: 'Request time off', exact: true }).click();
+  await expect(page).toHaveURL(/\/time-off-requests\/new$/);
+  await expect(page.getByRole('button', { name: 'Start date', exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page).toHaveURL(/\/time-off-requests\/new$/);
   await expect(page.getByRole('button', { name: 'Start date', exact: true })).toBeVisible();
 
   await switchUser(page);
@@ -66,38 +135,42 @@ test('restores access to protected pages on refresh and blocks browser Back afte
   await page.goBack();
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByLabel('Employee name')).toBeVisible();
-  await expect(page.getByRole('heading', { name: /Your requests|Team requests/ })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: /Your time off requests|Team time off requests/ })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Start date', exact: true })).toHaveCount(0);
 });
 
-test('submits requests, reviews both outcomes, restores sessions and isolates employees', async ({ page }) => {
+test('submits time off requests, reviews both outcomes, restores sessions and isolates employees', async ({ page }) => {
   await loginEmployee(page);
-  await fillRequest(page);
+  await fillTimeOffRequest(page);
   await page.getByLabel('Notes (optional)').fill('Family trip');
-  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
+  await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
   await expect(page.getByRole('article')).toContainText('pending');
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Your requests' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your time off requests' })).toBeVisible();
   await expect(page.getByRole('article')).toContainText('Family trip');
 
   await switchUser(page);
   await loginEmployee(page, 'Bob');
   await expect(page.getByRole('article')).toHaveCount(0);
-  await fillRequest(page);
+  await fillTimeOffRequest(page);
   await page.getByLabel('Notes (optional)').fill('Appointment');
-  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
+  await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
   await expect(page.getByRole('article')).toHaveCount(1);
   await switchUser(page);
 
   await page.getByRole('button', { name: 'Log in as a supervisor', exact: true }).click();
   await expect(page.getByRole('article')).toHaveCount(2);
   const calendar = page.getByRole('region', { name: 'Team calendar' });
-  await expect(calendar.getByRole('button', { pressed: true })).toHaveAccessibleName('Nov 13, 2026, 2 requests');
-  await expect(calendar.getByRole('button', { name: 'Nov 12, 2026, 0 requests', exact: true })).toBeDisabled();
-  await expect(calendar.getByRole('button', { name: 'Nov 14, 2026, 0 requests', exact: true })).toBeDisabled();
-  await calendar.getByRole('button', { name: 'Nov 16, 2026, 2 requests', exact: true }).click();
-  await expect(calendar.getByRole('button', { pressed: true })).toHaveAccessibleName('Nov 16, 2026, 2 requests');
-  await calendar.getByRole('button', { name: 'Nov 13, 2026, 2 requests', exact: true }).click();
+  await expect(calendar.getByRole('button', { pressed: true })).toHaveAccessibleName(
+    'Nov 13, 2026, 2 time off requests',
+  );
+  await expect(calendar.getByRole('button', { name: 'Nov 12, 2026, 0 time off requests', exact: true })).toBeDisabled();
+  await expect(calendar.getByRole('button', { name: 'Nov 14, 2026, 0 time off requests', exact: true })).toBeDisabled();
+  await calendar.getByRole('button', { name: 'Nov 16, 2026, 2 time off requests', exact: true }).click();
+  await expect(calendar.getByRole('button', { pressed: true })).toHaveAccessibleName(
+    'Nov 16, 2026, 2 time off requests',
+  );
+  await calendar.getByRole('button', { name: 'Nov 13, 2026, 2 time off requests', exact: true }).click();
   await expect(calendar.getByRole('list')).toContainText('Alex');
   await expect(calendar.getByRole('list')).toContainText('Bob');
 
@@ -120,60 +193,60 @@ test('submits requests, reviews both outcomes, restores sessions and isolates em
   await switchUser(page);
   await loginEmployee(page, 'Bob');
   await expect(page.getByRole('article')).toContainText('Please choose another week');
-  await fillRequest(page);
-  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
+  await fillTimeOffRequest(page);
+  await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
   await expect(page.getByRole('article')).toHaveCount(2);
 });
 
-test('validates dates and inclusive overlaps while allowing a one-day request today', async ({ page }) => {
+test('validates dates and inclusive overlaps while allowing a one-day time off request today', async ({ page }) => {
   await page.getByLabel('Employee name').fill('   ');
   await page.getByRole('button', { name: 'Log in as employee', exact: true }).click();
   await expect(page.getByText('Enter your name.', { exact: true })).toBeVisible();
   await loginEmployee(page);
   await page.getByRole('link', { name: 'Request time off', exact: true }).click();
-  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
+  await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Start date', exact: true })).toBeFocused();
   await expect(page.getByLabel('Time off type')).toHaveAttribute('aria-invalid', 'true');
   await page.getByRole('button', { name: 'Start date', exact: true }).click();
   await expect(page.getByRole('dialog').getByRole('button', { name: 'Nov 11, 2026', exact: true })).toBeDisabled();
   await page.keyboard.press('Escape');
-  await selectRequestDate(page, 'End date', '2026-11-12');
-  await selectRequestDate(page, 'Start date', '2026-11-13');
+  await selectTimeOffRequestDate(page, 'End date', '2026-11-12');
+  await selectTimeOffRequestDate(page, 'Start date', '2026-11-13');
   await page.getByLabel('Time off type').selectOption('sick-day');
-  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
+  await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
   await expect(page.getByText('End date must be on or after the start date.')).toBeVisible();
-  await selectRequestDate(page, 'Start date', '2026-11-12');
-  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
+  await selectTimeOffRequestDate(page, 'Start date', '2026-11-12');
+  await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
   await expect(page.getByRole('article')).toContainText('Sick day');
-  await fillRequest(page, '2026-11-12', '2026-11-13');
-  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
-  await expect(page.getByText('These dates overlap one of your pending or approved requests.')).toBeVisible();
+  await fillTimeOffRequest(page, '2026-11-12', '2026-11-13');
+  await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
+  await expect(page.getByText('These dates overlap one of your pending or approved time off requests.')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Start date', exact: true })).toHaveText('Nov 12, 2026');
 });
 
 test('preserves form input on failed saves and supports retry', async ({ page }) => {
   await loginEmployee(page);
-  await fillRequest(page);
+  await fillTimeOffRequest(page);
   await page.getByLabel('Notes (optional)').fill('Keep this note');
   await page.evaluate(() => {
     document.documentElement.dataset.failSave = 'true';
     const original = Storage.prototype.setItem;
     Storage.prototype.setItem = function (key, value) {
-      if (key === 'time-off-app.requests' && document.documentElement.dataset.failSave === 'true') {
+      if (key === 'time-off-app.time-off-requests' && document.documentElement.dataset.failSave === 'true') {
         throw new DOMException('Storage full', 'QuotaExceededError');
       }
       original.call(this, key, value);
     };
   });
-  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
+  await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText('Your changes could not be saved');
   await expect(page.getByLabel('Notes (optional)')).toHaveValue('Keep this note');
   await expect(page.getByRole('button', { name: 'Start date', exact: true })).toHaveText('Nov 13, 2026');
-  expect(await page.evaluate(() => localStorage.getItem('time-off-app.requests'))).toBeNull();
+  expect(await page.evaluate(() => localStorage.getItem('time-off-app.time-off-requests'))).toBeNull();
   await page.evaluate(() => {
     document.documentElement.dataset.failSave = 'false';
   });
-  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
+  await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
   await expect(page.getByRole('article')).toContainText('Keep this note');
 });
 
@@ -182,6 +255,7 @@ test('disables weekends and Czech holidays in calendar dialogs and allows ranges
 }, testInfo) => {
   await loginEmployee(page);
   await page.getByRole('link', { name: 'Request time off', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Your time off requests', exact: true })).toBeHidden();
   const start = page.getByRole('button', { name: 'Start date', exact: true });
   await start.focus();
   await page.keyboard.press('Enter');
@@ -197,10 +271,16 @@ test('disables weekends and Czech holidays in calendar dialogs and allows ranges
     'Freedom and Democracy Day',
   );
   expect(await dialog.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
-  await page.emulateMedia({ colorScheme: 'light' });
   await page.screenshot({ path: testInfo.outputPath('date-picker-light.png'), fullPage: true });
   const lightBackground = await holiday.evaluate((element) => getComputedStyle(element).backgroundColor);
-  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  const formPage = page.locator('.ion-page:has(> ion-content)').filter({
+    has: page.getByRole('heading', { name: 'Request time off', exact: true }),
+  });
+  await formPage.getByRole('button', { name: 'Switch to dark theme', exact: true }).click();
+  await expect(page.locator('html')).toHaveCSS('color-scheme', 'dark');
+  await start.click();
   await expect(holiday).toBeVisible();
   await expect
     .poll(() => holiday.evaluate((element) => getComputedStyle(element).backgroundColor))
@@ -216,26 +296,26 @@ test('disables weekends and Czech holidays in calendar dialogs and allows ranges
   await page.keyboard.press('Escape');
   await expect(start).toBeFocused();
   await expect(start).toHaveText('Choose a date');
-  await selectRequestDate(page, 'Start date', '2026-11-13');
+  await selectTimeOffRequestDate(page, 'Start date', '2026-11-13');
   await page.getByRole('button', { name: 'End date', exact: true }).click();
   const endDialog = page.getByRole('dialog', { name: 'Choose end date' });
   await expect(endDialog.getByRole('button', { name: 'Nov 12, 2026', exact: true })).toBeDisabled();
   await endDialog.getByRole('button', { name: 'Cancel', exact: true }).click();
-  await selectRequestDate(page, 'End date', '2026-11-18');
+  await selectTimeOffRequestDate(page, 'End date', '2026-11-18');
   await page.getByLabel('Time off type').selectOption('paid-time-off');
-  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
+  await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
   await expect(page.getByRole('article')).toContainText('pending');
   await switchUser(page);
   await page.getByRole('button', { name: 'Log in as a supervisor', exact: true }).click();
   const calendar = page.getByRole('region', { name: 'Team calendar' });
   for (const status of ['pending', 'approved']) {
     for (const day of [14, 15, 17]) {
-      const excluded = calendar.getByRole('button', { name: `Nov ${day}, 2026, 0 requests`, exact: true });
+      const excluded = calendar.getByRole('button', { name: `Nov ${day}, 2026, 0 time off requests`, exact: true });
       await expect(excluded).toBeDisabled();
-      await expect(excluded.locator('.request-calendar__count')).toHaveCount(0);
+      await expect(excluded.locator('.time-off-request-calendar__count')).toHaveCount(0);
     }
     for (const day of [13, 16, 18]) {
-      await calendar.getByRole('button', { name: `Nov ${day}, 2026, 1 request`, exact: true }).click();
+      await calendar.getByRole('button', { name: `Nov ${day}, 2026, 1 time off request`, exact: true }).click();
       await expect(calendar.getByRole('heading', { name: `Nov ${day}, 2026`, exact: true })).toBeVisible();
       await expect(calendar.getByRole('list')).toContainText(`Alex · Paid Time Off · ${status}`);
     }
@@ -247,26 +327,26 @@ test('disables weekends and Czech holidays in calendar dialogs and allows ranges
 });
 
 test('reports corrupt saved data, protects it from overwrite and reloads after repair', async ({ page }) => {
-  await page.evaluate(() => localStorage.setItem('time-off-app.requests', '{broken'));
+  await page.evaluate(() => localStorage.setItem('time-off-app.time-off-requests', '{broken'));
   await page.reload();
-  await expect(page.getByRole('alert')).toContainText('Saved requests could not be read');
+  await expect(page.getByRole('alert')).toContainText('Saved time off requests could not be read');
   await loginEmployee(page);
-  await fillRequest(page);
-  await expect(page.getByRole('button', { name: 'Submit request', exact: true })).toBeDisabled();
-  expect(await page.evaluate(() => localStorage.getItem('time-off-app.requests'))).toBe('{broken');
-  await page.evaluate(() => localStorage.removeItem('time-off-app.requests'));
-  await page.getByRole('button', { name: 'Retry loading requests' }).click();
-  await expect(page.getByRole('button', { name: 'Submit request', exact: true })).toBeEnabled();
-  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
+  await fillTimeOffRequest(page);
+  await expect(page.getByRole('button', { name: 'Submit time off request', exact: true })).toBeDisabled();
+  expect(await page.evaluate(() => localStorage.getItem('time-off-app.time-off-requests'))).toBe('{broken');
+  await page.evaluate(() => localStorage.removeItem('time-off-app.time-off-requests'));
+  await page.getByRole('button', { name: 'Retry loading time off requests' }).click();
+  await expect(page.getByRole('button', { name: 'Submit time off request', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
   await expect(page.getByRole('article')).toHaveCount(1);
 });
 
 test('guards routes, navigates calendar across years and fits the viewport', async ({ page }, testInfo) => {
-  await page.goto('/requests/new');
+  await page.goto('/time-off-requests/new');
   await expect(page).toHaveURL(/\/login$/);
   await page.getByRole('button', { name: 'Log in as a supervisor', exact: true }).click();
-  await page.goto('/requests/new');
-  await expect(page).toHaveURL(/\/requests$/);
+  await page.goto('/time-off-requests/new');
+  await expect(page).toHaveURL(/\/time-off-requests$/);
   await expect(page.locator('html')).toHaveAttribute('mode', testInfo.project.name === 'iOS Chrome' ? 'ios' : 'md');
   await page.getByRole('button', { name: 'Next month' }).click();
   await expect(page.getByRole('heading', { name: 'December 2026', exact: true })).toBeVisible();
@@ -275,14 +355,16 @@ test('guards routes, navigates calendar across years and fits the viewport', asy
   await page.getByRole('button', { name: 'Previous month' }).click();
   await expect(page.getByRole('heading', { name: 'December 2026', exact: true })).toBeVisible();
   const calendar = page.getByRole('region', { name: 'Team calendar' });
-  await expect(calendar.getByRole('button', { name: 'Dec 31, 2026, 0 requests', exact: true })).toBeDisabled();
+  await expect(calendar.getByRole('button', { name: 'Dec 31, 2026, 0 time off requests', exact: true })).toBeDisabled();
   await expect(calendar.getByRole('button', { pressed: true })).toHaveCount(0);
   await expect(calendar.getByText('No time off this month.')).toBeVisible();
   expect(await page.locator('main.time-off-app').evaluate((main) => main.scrollWidth <= main.clientWidth)).toBe(true);
-  await page.emulateMedia({ colorScheme: 'dark' });
-  await expect(page.getByRole('heading', { name: 'Team requests' })).toBeVisible();
+  await page.getByRole('button', { name: 'Switch to dark theme', exact: true }).click();
+  await expect(page.locator('html')).toHaveCSS('color-scheme', 'dark');
+  await expect(page.getByRole('heading', { name: 'Team time off requests' })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('supervisor-dark.png'), fullPage: true });
-  await page.emulateMedia({ colorScheme: 'light' });
+  await page.getByRole('button', { name: 'Switch to light theme', exact: true }).click();
+  await expect(page.locator('html')).toHaveCSS('color-scheme', 'light');
   await page.screenshot({ path: testInfo.outputPath('supervisor-light.png'), fullPage: true });
 });
 
@@ -293,16 +375,16 @@ test('supports keyboard login and the legacy home entry point', async ({ page })
   await page.keyboard.press('Tab');
   await expect(page.getByRole('button', { name: 'Log in as employee', exact: true })).toBeFocused();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('heading', { name: 'Your requests' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your time off requests' })).toBeVisible();
   await page.goto('/home');
-  await expect(page).toHaveURL(/\/requests$/);
+  await expect(page).toHaveURL(/\/time-off-requests$/);
 });
 
 for (const status of ['pending', 'approved']) {
   test(`confirms cancellation of future ${status} leave and retains its history`, async ({ page }) => {
     await loginEmployee(page);
-    await fillRequest(page);
-    await page.getByRole('button', { name: 'Submit request', exact: true }).click();
+    await fillTimeOffRequest(page);
+    await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
     if (status === 'approved') {
       await switchUser(page);
       await page.getByRole('button', { name: 'Log in as a supervisor', exact: true }).click();
@@ -312,13 +394,13 @@ for (const status of ['pending', 'approved']) {
       await switchUser(page);
       await loginEmployee(page);
     }
-    const cancel = page.getByRole('button', { name: 'Cancel request', exact: true });
+    const cancel = page.getByRole('button', { name: 'Cancel time off request', exact: true });
     const dialog = page.getByRole('dialog', { name: 'Cancel time off?', exact: true });
-    const original = await page.evaluate(() => localStorage.getItem('time-off-app.requests'));
+    const original = await page.evaluate(() => localStorage.getItem('time-off-app.time-off-requests'));
     await cancel.focus();
     await page.keyboard.press('Enter');
     await expect(dialog).toContainText('Nov 13, 2026 to Nov 16, 2026');
-    await dialog.getByRole('button', { name: 'Keep request', exact: true }).click();
+    await dialog.getByRole('button', { name: 'Keep time off request', exact: true }).click();
     await expect(dialog).toBeHidden();
     await expect(cancel).toBeFocused();
     await cancel.click();
@@ -328,7 +410,7 @@ for (const status of ['pending', 'approved']) {
     await cancel.click();
     await page.mouse.click(1, 1);
     await expect(dialog).toBeHidden();
-    expect(await page.evaluate(() => localStorage.getItem('time-off-app.requests'))).toBe(original);
+    expect(await page.evaluate(() => localStorage.getItem('time-off-app.time-off-requests'))).toBe(original);
 
     await cancel.click();
     await dialog.getByRole('button', { name: 'Cancel time off', exact: true }).click();
@@ -345,86 +427,90 @@ for (const status of ['pending', 'approved']) {
     await expect(page.getByRole('article')).toHaveCount(0);
     await switchUser(page);
     await page.getByRole('button', { name: 'Log in as a supervisor', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Reviewed and cancelled requests' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Reviewed and cancelled time off requests' })).toBeVisible();
     await expect(page.getByRole('article')).toContainText('cancelled');
     await expect(page.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Cancel request', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Cancel time off request', exact: true })).toHaveCount(0);
     await expect(page.getByRole('region', { name: 'Team calendar' })).toContainText('No time off this month.');
 
     await switchUser(page);
     await loginEmployee(page);
-    await fillRequest(page);
-    await page.getByRole('button', { name: 'Submit request', exact: true }).click();
+    await fillTimeOffRequest(page);
+    await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
     await expect(page.getByRole('article')).toHaveCount(2);
   });
 }
 
-test('partial cancellation retains today and allows a new request for the released dates', async ({ page }) => {
+test('partial cancellation retains today and allows a new time off request for the released dates', async ({
+  page,
+}) => {
   await loginEmployee(page);
-  await fillRequest(page, '2026-11-12', '2026-11-16');
+  await fillTimeOffRequest(page, '2026-11-12', '2026-11-16');
   await page.getByLabel('Notes (optional)').fill('Original leave');
-  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
-  await page.getByRole('button', { name: 'Cancel request', exact: true }).click();
+  await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
+  await page.getByRole('button', { name: 'Cancel time off request', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Cancel time off?', exact: true });
   await expect(dialog).toContainText('Nov 13, 2026 to Nov 16, 2026');
   await expect(dialog).toContainText('Cancellation starts tomorrow.');
   await dialog.getByRole('button', { name: 'Cancel time off', exact: true }).click();
   await expect(page.getByRole('article')).toContainText('Cancelled Nov 13, 2026 to Nov 16, 2026');
-  await expect(page.getByRole('article').locator('.request-status')).toHaveText('pending');
-  await expect(page.getByRole('button', { name: 'Cancel request', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('article').locator('.time-off-request-status')).toHaveText('pending');
+  await expect(page.getByRole('button', { name: 'Cancel time off request', exact: true })).toHaveCount(0);
   await page.reload();
   await expect(page.getByRole('article')).toContainText('Cancelled Nov 13, 2026 to Nov 16, 2026');
 
   await switchUser(page);
   await page.getByRole('button', { name: 'Log in as a supervisor', exact: true }).click();
   const calendar = page.getByRole('region', { name: 'Team calendar' });
-  await expect(calendar.getByRole('button', { name: 'Nov 12, 2026, 1 request', exact: true })).toBeEnabled();
-  await expect(calendar.getByRole('button', { name: 'Nov 13, 2026, 0 requests', exact: true })).toBeDisabled();
-  await expect(calendar.getByRole('button', { name: 'Nov 16, 2026, 0 requests', exact: true })).toBeDisabled();
+  await expect(calendar.getByRole('button', { name: 'Nov 12, 2026, 1 time off request', exact: true })).toBeEnabled();
+  await expect(calendar.getByRole('button', { name: 'Nov 13, 2026, 0 time off requests', exact: true })).toBeDisabled();
+  await expect(calendar.getByRole('button', { name: 'Nov 16, 2026, 0 time off requests', exact: true })).toBeDisabled();
   await page.getByRole('button', { name: 'Approve', exact: true }).click();
-  await expect(page.getByRole('article').locator('.request-status')).toHaveText('approved');
+  await expect(page.getByRole('article').locator('.time-off-request-status')).toHaveText('approved');
   await expect(page.getByRole('article')).toContainText('Cancelled Nov 13, 2026 to Nov 16, 2026');
 
   await switchUser(page);
   await loginEmployee(page);
-  await fillRequest(page, '2026-11-12', '2026-11-12');
-  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
-  await expect(page.getByText('These dates overlap one of your pending or approved requests.')).toBeVisible();
-  await selectRequestDate(page, 'End date', '2026-11-16');
-  await selectRequestDate(page, 'Start date', '2026-11-13');
-  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
+  await fillTimeOffRequest(page, '2026-11-12', '2026-11-12');
+  await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
+  await expect(page.getByText('These dates overlap one of your pending or approved time off requests.')).toBeVisible();
+  await selectTimeOffRequestDate(page, 'End date', '2026-11-16');
+  await selectTimeOffRequestDate(page, 'Start date', '2026-11-13');
+  await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
   await expect(page.getByRole('article')).toHaveCount(2);
 });
 
-test('failed cancellation preserves the request and allows confirmation and save to be retried', async ({ page }) => {
+test('failed cancellation preserves the time off request and allows confirmation and save to be retried', async ({
+  page,
+}) => {
   await loginEmployee(page);
-  await fillRequest(page);
-  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
-  const original = await page.evaluate(() => localStorage.getItem('time-off-app.requests'));
+  await fillTimeOffRequest(page);
+  await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
+  const original = await page.evaluate(() => localStorage.getItem('time-off-app.time-off-requests'));
   await page.evaluate(() => {
     document.documentElement.dataset.failSave = 'true';
     const original = Storage.prototype.setItem;
     Storage.prototype.setItem = function (key, value) {
-      if (key === 'time-off-app.requests' && document.documentElement.dataset.failSave === 'true') {
+      if (key === 'time-off-app.time-off-requests' && document.documentElement.dataset.failSave === 'true') {
         throw new DOMException('Storage full', 'QuotaExceededError');
       }
       original.call(this, key, value);
     };
   });
-  const cancel = page.getByRole('button', { name: 'Cancel request', exact: true });
+  const cancel = page.getByRole('button', { name: 'Cancel time off request', exact: true });
   const dialog = page.getByRole('dialog', { name: 'Cancel time off?', exact: true });
   await cancel.click();
   await dialog.getByRole('button', { name: 'Cancel time off', exact: true }).click();
   await expect(dialog).toBeHidden();
   await expect(page.getByRole('alert')).toContainText('Your changes could not be saved');
-  await expect(page.getByRole('article').locator('.request-status')).toHaveText('pending');
+  await expect(page.getByRole('article').locator('.time-off-request-status')).toHaveText('pending');
   await expect(cancel).toBeEnabled();
-  expect(await page.evaluate(() => localStorage.getItem('time-off-app.requests'))).toBe(original);
+  expect(await page.evaluate(() => localStorage.getItem('time-off-app.time-off-requests'))).toBe(original);
   await page.evaluate(() => {
     document.documentElement.dataset.failSave = 'false';
   });
   await cancel.click();
   await dialog.getByRole('button', { name: 'Cancel time off', exact: true }).click();
-  await expect(page.getByRole('article').locator('.request-status')).toHaveText('cancelled');
+  await expect(page.getByRole('article').locator('.time-off-request-status')).toHaveText('cancelled');
   await expect(page.getByRole('alert')).toHaveCount(0);
 });

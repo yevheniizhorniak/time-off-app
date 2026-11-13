@@ -4,15 +4,15 @@ import { isRecord } from '../../../type-safety/is-record';
 import { isTimestamp } from '../../../type-safety/is-timestamp';
 
 import { isLeaveType, type LeaveType } from './leave-type';
-import type { RequestDraft } from './request-draft';
-import type { RequestStatus } from './request-status';
+import type { TimeOffRequestDraft } from './time-off-request-draft';
+import type { TimeOffRequestStatus } from './time-off-request-status';
 
-export type TimeOffRequest = Omit<RequestDraft, 'leaveType'> & {
+export type TimeOffRequest = Omit<TimeOffRequestDraft, 'leaveType'> & {
   id: string;
   employeeName: string;
   employeeKey: string;
   leaveType: LeaveType;
-  status: RequestStatus;
+  status: TimeOffRequestStatus;
   createdAt: string;
   reviewedAt?: string;
   reviewerNote?: string;

@@ -15,8 +15,8 @@ function ToastExample({ message, stacked = false }: { message: string; stacked?:
       onClick={() => {
         showToast(message);
         if (stacked) {
-          showToast('Your request is waiting for review.');
-          showToast('You can check its status in your requests.');
+          showToast('Your time off request is waiting for review.');
+          showToast('You can check its status in your time off requests.');
         }
       }}
       type="button"
@@ -34,7 +34,7 @@ const meta = {
       </ToaToastProvider>
     ),
   ],
-  args: { message: 'Your request has been submitted.', onDismiss: () => undefined },
+  args: { message: 'Your time off request has been submitted.', onDismiss: () => undefined },
 } satisfies Meta<typeof ToaToast>;
 
 export default meta;
@@ -52,7 +52,7 @@ export const Stacked: Story = {
 export const LongMessage: Story = {
   args: {
     message:
-      'Your time off request has been submitted successfully. Your supervisor will review the dates and you can check the approval status in your list of requests. Reference: request-with-a-very-long-unbroken-identifier-to-check-wrapping-on-narrow-screens.',
+      'Your time off request has been submitted successfully. Your supervisor will review the dates and you can check the approval status in your list of time off requests. Reference: time-off-request-with-a-very-long-unbroken-identifier-to-check-wrapping-on-narrow-screens.',
   },
   render: (args) => <ToastExample message={args.message} />,
 };

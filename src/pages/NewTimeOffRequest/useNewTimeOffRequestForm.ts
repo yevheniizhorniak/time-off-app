@@ -4,33 +4,36 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../components/toast/useToast';
 import { useSession } from '../../features/auth/useSession';
 import { useTimeOff } from '../../features/time-off/hooks/useTimeOff';
-import { validateRequest } from '../../features/time-off/time-off-domain';
-import { RequestValidationError, type RequestErrors } from '../../features/time-off/types/errors';
-import type { RequestDraft } from '../../features/time-off/types/request-draft';
+import { validateTimeOffRequest } from '../../features/time-off/time-off-domain';
+import type { TimeOffRequestDraft } from '../../features/time-off/types/time-off-request-draft';
+import {
+  TimeOffRequestValidationError,
+  type TimeOffRequestErrors,
+} from '../../features/time-off/types/time-off-request-errors';
 
-type NewRequestForm = {
+type NewTimeOffRequestForm = {
   formRef: RefObject<HTMLFormElement | null>;
-  draft: RequestDraft;
-  setDraft: Dispatch<SetStateAction<RequestDraft>>;
-  errors: RequestErrors;
+  draft: TimeOffRequestDraft;
+  setDraft: Dispatch<SetStateAction<TimeOffRequestDraft>>;
+  errors: TimeOffRequestErrors;
   error: string;
   busy: boolean;
   storageError: string | null;
   submit: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 };
 
-/** Validates and saves requests, reports failures, and navigates on success. */
-export function useNewRequestForm(): NewRequestForm {
+/** Validates and saves time off requests, reports failures, and navigates on success. */
+export function useNewTimeOffRequestForm(): NewTimeOffRequestForm {
   const { session } = useSession();
-  const { submitRequest, requests, busy, storageError } = useTimeOff();
+  const { submitTimeOffRequest, timeOffRequests, busy, storageError } = useTimeOff();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const formRef = useRef<HTMLFormElement>(null);
-  const [draft, setDraft] = useState<RequestDraft>({ startDate: '', endDate: '', leaveType: '', note: '' });
-  const [errors, setErrors] = useState<RequestErrors>({});
+  const [draft, setDraft] = useState<TimeOffRequestDraft>({ startDate: '', endDate: '', leaveType: '', note: '' });
+  const [errors, setErrors] = useState<TimeOffRequestErrors>({});
   const [error, setError] = useState('');
 
-  function showValidation(next: RequestErrors): void {
+  function showValidation(next: TimeOffRequestErrors): void {
     setErrors(next);
     requestAnimationFrame(() => formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus());
   }
@@ -39,18 +42,18 @@ export function useNewRequestForm(): NewRequestForm {
     event.preventDefault();
     setError('');
     if (session?.role !== 'employee') return;
-    const nextErrors = validateRequest(draft, session.employeeKey, requests);
+    const nextErrors = validateTimeOffRequest(draft, session.employeeKey, timeOffRequests);
     if (Object.keys(nextErrors).length > 0) {
       showValidation(nextErrors);
       return;
     }
     setErrors({});
     try {
-      await submitRequest(draft);
+      await submitTimeOffRequest(draft);
       showToast('Time off request submitted.');
-      navigate('/requests', { replace: true });
+      navigate('/time-off-requests', { replace: true });
     } catch (failure) {
-      if (failure instanceof RequestValidationError) showValidation(failure.errors);
+      if (failure instanceof TimeOffRequestValidationError) showValidation(failure.errors);
       else setError((failure as Error).message);
     }
   }

@@ -59,7 +59,7 @@ export const ReadOnly: Story = {
 };
 
 export const ValidationError: Story = {
-  args: { required: true, error: 'Add a note explaining your request.' },
+  args: { required: true, error: 'Add a note explaining your time off request.' },
 };
 
 export const Multiline: Story = {

@@ -5,7 +5,7 @@ import ApplicationRoutes from './ApplicationRoutes';
 import { ToaToastProvider } from './components/toast/ToastProvider';
 import { createSessionRepository } from './features/auth/browser-session-repository';
 import SessionProvider from './features/auth/session-provider/SessionProvider';
-import { createRequestRepository } from './features/time-off/browser-request-repository';
+import { createTimeOffRequestRepository } from './features/time-off/browser-time-off-request-repository';
 import TimeOffProvider from './features/time-off/time-off-provider/TimeOffProvider';
 import ThemeProvider from './theme/theme-provider/ThemeProvider';
 
@@ -32,7 +32,7 @@ import './theme/variables.scss';
 
 setupIonicReact();
 
-const repository = createRequestRepository(() => window.localStorage);
+const repository = createTimeOffRequestRepository(() => window.localStorage);
 const sessionRepository = createSessionRepository(() => window.sessionStorage);
 
 const App: React.FC = () => (

@@ -29,8 +29,8 @@ afterAll(() => {
   }
 });
 
-const title = 'Approve request?';
-const message = 'This will update the request status.';
+const title = 'Approve time off request?';
+const message = 'This will update the time off request status.';
 
 test('opens as an accessible dialog and closes when isOpen becomes false', () => {
   const onCancel = vi.fn();

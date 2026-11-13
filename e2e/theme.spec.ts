@@ -32,7 +32,7 @@ for (const osTheme of ['light', 'dark'] as const) {
     await expect(page.locator('html')).toHaveCSS('color-scheme', theme);
     await page.getByRole('button', { name: 'Switch user', exact: true }).click();
     await page.getByRole('button', { name: 'Log in as a supervisor', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Team requests', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Team time off requests', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: `Switch to ${osTheme} theme` })).toBeVisible();
 
     await page.setViewportSize({ width: 320, height: 740 });

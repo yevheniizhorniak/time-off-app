@@ -12,7 +12,10 @@ function ToastProviderExample(): React.JSX.Element {
 
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-      <ToaButton label="Show notification" onClick={() => setLatestId(showToast('Your request has been submitted.'))} />
+      <ToaButton
+        label="Show notification"
+        onClick={() => setLatestId(showToast('Your time off request has been submitted.'))}
+      />
       <ToaButton
         disabled={!latestId}
         label="Dismiss latest notification"

@@ -1,7 +1,7 @@
 @use '../../../../theme/typography';
 
 .time-off-app {
-  .request-card {
+  .time-off-request-card {
     background: var(--toa-surface-color);
     border: 1px solid var(--toa-color-border);
     border-radius: 16px;
@@ -33,7 +33,7 @@
     }
   }
 
-  .request-status {
+  .time-off-request-status {
     border: 1px solid currentColor;
     border-radius: 20px;
     flex-shrink: 0;
