@@ -19,7 +19,7 @@
     "prettier": "prettier \"**/*.{ts,tsx}\"",
     "typecheck:e2e": "tsc -p tsconfig.e2e.json",
     "test": "corepack pnpm run test:unit && corepack pnpm run test:e2e",
-    "test:unit": "vitest run",
+    "test:unit": "vitest run --coverage",
     "test:unit:watch": "vitest",
     "test:e2e": "playwright test"
   },
@@ -49,6 +49,7 @@
     "@types/react-dom": "19.0.4",
     "@vitejs/plugin-legacy": "^8.0.0",
     "@vitejs/plugin-react": "^6.0.0",
+    "@vitest/coverage-v8": "5.1.0",
     "eslint": "^10.13.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.7",

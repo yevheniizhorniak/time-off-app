@@ -8,6 +8,7 @@ export default defineConfig([
   {
     ignores: [
       'dist/**',
+      'coverage/**',
       'storybook-static/**',
       'android/**',
       'ios/**',
