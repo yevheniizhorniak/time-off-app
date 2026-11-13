@@ -48,9 +48,7 @@ export function ToaTextField({
 
   return (
     <div className="toa-text-field">
-      <ToaLabel htmlFor={controlId} required={inputProps.required}>
-        {label}
-      </ToaLabel>
+      <ToaLabel htmlFor={controlId} required={inputProps.required} text={label} />
       <input
         {...inputProps}
         aria-describedby={error ? errorId : undefined}

@@ -6,7 +6,7 @@ import { ToaLabel } from './Label';
 test('associates its content with the input through htmlFor', () => {
   render(
     <>
-      <ToaLabel htmlFor="employee-name">Employee name</ToaLabel>
+      <ToaLabel htmlFor="employee-name" text="Employee name" />
       <input id="employee-name" type="text" />
     </>,
   );
@@ -19,9 +19,7 @@ test('associates its content with the input through htmlFor', () => {
 test('keeps the required marker out of the input accessible name', () => {
   render(
     <>
-      <ToaLabel htmlFor="employee-name" required>
-        Employee name
-      </ToaLabel>
+      <ToaLabel htmlFor="employee-name" required text="Employee name" />
       <input id="employee-name" required type="text" />
     </>,
   );

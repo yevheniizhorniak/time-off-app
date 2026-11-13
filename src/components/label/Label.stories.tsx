@@ -7,7 +7,7 @@ const meta = {
   title: 'Components/Label',
   component: ToaLabel,
   args: {
-    children: 'Employee name',
+    text: 'Employee name',
     required: false,
   },
   render: function Field(args) {
@@ -37,6 +37,6 @@ export const Required: Story = {
 
 export const LongText: Story = {
   args: {
-    children: 'Additional details your supervisor should consider when reviewing this time off request',
+    text: 'Additional details your supervisor should consider when reviewing this time off request',
   },
 };

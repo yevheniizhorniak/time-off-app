@@ -83,9 +83,7 @@ export default function TimeOffDateField({
 
   return (
     <div className="time-off-date-field">
-      <ToaLabel htmlFor={id} required={required}>
-        {label}
-      </ToaLabel>
+      <ToaLabel htmlFor={id} required={required} text={label} />
       <button
         type="button"
         id={id}

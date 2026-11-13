@@ -36,9 +36,7 @@ export function ToaTextArea({
 
   return (
     <div className="toa-text-area">
-      <ToaLabel htmlFor={controlId} required={textareaProps.required}>
-        {label}
-      </ToaLabel>
+      <ToaLabel htmlFor={controlId} required={textareaProps.required} text={label} />
       <textarea
         {...textareaProps}
         aria-describedby={error ? errorId : undefined}
