@@ -1,3 +1,23 @@
+.time-off-toolbar {
+  ion-title {
+    height: auto;
+    padding-inline: 1rem;
+    position: static;
+    text-align: start;
+    width: auto;
+  }
+
+  &__theme {
+    margin-inline-end: 0.5rem;
+  }
+
+  @media (max-width: 360px) {
+    &__theme .toa-button {
+      padding-inline: 0.625rem;
+    }
+  }
+}
+
 .time-off-app {
   box-sizing: border-box;
   margin: 0 auto;
@@ -6,6 +26,7 @@
   color: var(--toa-text-color);
   line-height: var(--toa-line-height-body);
 
+  // TODO: it seems like it belongs to global stylesheet
   *,
   *::before,
   *::after {

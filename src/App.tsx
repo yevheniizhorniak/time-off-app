@@ -7,6 +7,7 @@ import { createSessionRepository } from './features/auth/browser-session-reposit
 import SessionProvider from './features/auth/session-provider/SessionProvider';
 import { createRequestRepository } from './features/time-off/browser-request-repository';
 import TimeOffProvider from './features/time-off/time-off-provider/TimeOffProvider';
+import ThemeProvider from './theme/theme-provider/ThemeProvider';
 
 // TODO: I should remove some of these
 /* Core CSS required for Ionic components to work properly */
@@ -25,12 +26,6 @@ import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 
-/** System dark mode. See https://ionicframework.com/docs/theming/dark-mode. */
-
-/* import '@ionic/react/css/palettes/dark.always.css'; */
-/* import '@ionic/react/css/palettes/dark.class.css'; */
-import '@ionic/react/css/palettes/dark.system.css';
-
 /* Theme variables */
 import '@fontsource-variable/inter';
 import './theme/variables.scss';
@@ -41,17 +36,19 @@ const repository = createRequestRepository(() => window.localStorage);
 const sessionRepository = createSessionRepository(() => window.sessionStorage);
 
 const App: React.FC = () => (
-  <IonApp>
-    <ToaToastProvider>
-      <SessionProvider repository={sessionRepository}>
-        <TimeOffProvider repository={repository}>
-          <IonReactRouter>
-            <ApplicationRoutes />
-          </IonReactRouter>
-        </TimeOffProvider>
-      </SessionProvider>
-    </ToaToastProvider>
-  </IonApp>
+  <ThemeProvider>
+    <IonApp>
+      <ToaToastProvider>
+        <SessionProvider repository={sessionRepository}>
+          <TimeOffProvider repository={repository}>
+            <IonReactRouter>
+              <ApplicationRoutes />
+            </IonReactRouter>
+          </TimeOffProvider>
+        </SessionProvider>
+      </ToaToastProvider>
+    </IonApp>
+  </ThemeProvider>
 );
 
 export default App;

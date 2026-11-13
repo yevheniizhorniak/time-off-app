@@ -3,6 +3,7 @@ import { useState, type ReactElement, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { ToaButton } from '../../../../components/button/Button';
+import { ToaThemeButton } from '../../../../components/theme-button/ThemeButton';
 import { useSession } from '../../../auth/useSession';
 import { useTimeOff } from '../../hooks/useTimeOff';
 
@@ -33,8 +34,11 @@ export default function TimeOffPageLayout({ children, title }: TimeOffPageLayout
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar className="time-off-toolbar">
           <IonTitle>Time off</IonTitle>
+          <div slot="end" className="time-off-toolbar__theme">
+            <ToaThemeButton />
+          </div>
         </IonToolbar>
       </IonHeader>
       <IonContent>

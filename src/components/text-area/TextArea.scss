@@ -18,7 +18,6 @@
     border-radius: 8px;
     box-sizing: border-box;
     color: inherit;
-    color-scheme: light dark;
     @include typography.text-body;
     min-height: 44px;
     min-width: 0;
@@ -52,13 +51,9 @@
   }
 
   &__error {
-    color: var(--toa-color-danger-shade);
+    color: var(--toa-color-field-error);
     @include typography.text-small;
     margin: 0;
     overflow-wrap: anywhere;
-
-    @media (prefers-color-scheme: dark) {
-      color: var(--toa-color-danger-tint);
-    }
   }
 }
