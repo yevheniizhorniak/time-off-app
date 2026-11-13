@@ -8,8 +8,9 @@ import { useToast } from '../../../../components/toast/useToast';
 import { dateKey } from '../../../../type-safety/date-key';
 import { useSession } from '../../../auth/useSession';
 import { useTimeOff } from '../../hooks/useTimeOff';
-import { cancellationStartDate, leaveTypeLabel } from '../../time-off-domain';
+import { leaveTypeLabel } from '../../leave-type-label';
 import type { TimeOffRequest } from '../../types/time-off-request';
+import { cancellationStartDate } from '../../validation/cancellation-start-date';
 
 import './TimeOffRequestCard.scss';
 

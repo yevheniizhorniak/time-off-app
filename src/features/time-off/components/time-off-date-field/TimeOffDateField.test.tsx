@@ -146,10 +146,17 @@ test('explains additional unavailable dates and updates availability while open'
   );
   const booked = screen.getByRole('button', { name: `${formatDate('2026-11-13')}, already requested` });
   expect(booked).toBeDisabled();
+  expect(booked.querySelector('.time-off-date-field__request-marker')).toBeInTheDocument();
+  expect(screen.getByText('Pending or approved time off')).toBeVisible();
   fireEvent.click(booked);
   expect(onChange).not.toHaveBeenCalled();
   expect(screen.getByRole('dialog')).toBeInTheDocument();
   rerender(<TimeOffDateField {...props} />);
+  expect(
+    screen
+      .getByRole('button', { name: formatDate('2026-11-13') })
+      .querySelector('.time-off-date-field__request-marker'),
+  ).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole('button', { name: formatDate('2026-11-13') }));
   expect(onChange).toHaveBeenCalledWith('2026-11-13');
 });

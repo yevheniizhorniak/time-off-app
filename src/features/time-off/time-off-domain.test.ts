@@ -4,15 +4,11 @@ import { monthDays } from '../../components/calendar/month-days';
 import { dateKey } from '../../type-safety/date-key';
 import { isDate } from '../../type-safety/is-date';
 
+import { cancelTimeOffRequest } from './cancel-time-off-request';
+import { createTimeOffRequest } from './create-time-off-request';
 import * as timeOffHolidays from './holidays/time-off-holiday-name';
-import {
-  cancellationStartDate,
-  cancelTimeOffRequest,
-  createTimeOffRequest,
-  timeOffRequestsOnDate,
-  reviewTimeOffRequest,
-  validateTimeOffRequest,
-} from './time-off-domain';
+import { reviewTimeOffRequest } from './review-time-off-request';
+import { timeOffRequestsOnDate } from './time-off-requests-on-date';
 import type { TimeOffEmployee } from './types/time-off-employee';
 import type { TimeOffRequest } from './types/time-off-request';
 import type { TimeOffRequestDraft } from './types/time-off-request-draft';
@@ -21,6 +17,8 @@ import {
   TimeOffRequestDecisionError,
   TimeOffRequestValidationError,
 } from './types/time-off-request-errors';
+import { cancellationStartDate } from './validation/cancellation-start-date';
+import { validateTimeOffRequest } from './validation/validate-time-off-request';
 
 const draft: TimeOffRequestDraft = {
   startDate: '2026-11-12',

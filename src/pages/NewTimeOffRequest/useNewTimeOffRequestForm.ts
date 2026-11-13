@@ -4,12 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../components/toast/useToast';
 import { useSession } from '../../features/auth/useSession';
 import { useTimeOff } from '../../features/time-off/hooks/useTimeOff';
-import { employeeHasTimeOffOnDate, validateTimeOffRequest } from '../../features/time-off/time-off-domain';
 import type { TimeOffRequestDraft } from '../../features/time-off/types/time-off-request-draft';
 import {
   TimeOffRequestValidationError,
   type TimeOffRequestErrors,
 } from '../../features/time-off/types/time-off-request-errors';
+import { employeeHasTimeOffOnDate } from '../../features/time-off/validation/employee-has-time-off-on-date';
+import { validateTimeOffRequest } from '../../features/time-off/validation/validate-time-off-request';
 
 type NewTimeOffRequestForm = {
   formRef: RefObject<HTMLFormElement | null>;

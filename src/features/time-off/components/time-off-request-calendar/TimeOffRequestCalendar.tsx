@@ -4,7 +4,8 @@ import { ToaCalendar } from '../../../../components/calendar/Calendar';
 import { formatDate } from '../../../../components/calendar/format-date';
 import { monthDays } from '../../../../components/calendar/month-days';
 import { dateKey } from '../../../../type-safety/date-key';
-import { leaveTypeLabel, timeOffRequestsOnDate } from '../../time-off-domain';
+import { leaveTypeLabel } from '../../leave-type-label';
+import { timeOffRequestsOnDate } from '../../time-off-requests-on-date';
 import type { TimeOffRequest } from '../../types/time-off-request';
 
 import './TimeOffRequestCalendar.scss';

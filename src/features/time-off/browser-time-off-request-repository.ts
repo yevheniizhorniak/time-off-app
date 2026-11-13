@@ -1,7 +1,9 @@
 import { dateKey } from '../../type-safety/date-key';
 import { isRecord } from '../../type-safety/is-record';
 
-import { cancelTimeOffRequest, createTimeOffRequest, reviewTimeOffRequest } from './time-off-domain';
+import { cancelTimeOffRequest } from './cancel-time-off-request';
+import { createTimeOffRequest } from './create-time-off-request';
+import { reviewTimeOffRequest } from './review-time-off-request';
 import { isTimeOffRequest, type TimeOffRequest } from './types/time-off-request';
 import type { TimeOffRequestRepository } from './types/time-off-request-repository';
 

@@ -120,14 +120,24 @@ export default function TimeOffDateField({
             const unavailableReason = getDateUnavailableReason?.(date);
             return `${formatDate(date)}${reason}${unavailableReason ? `, ${unavailableReason}` : ''}`;
           }}
-          renderDayContent={(date) =>
-            timeOffHolidayName(date) ? (
-              <span className="time-off-date-field__holiday-marker" aria-hidden="true" />
-            ) : null
-          }
+          renderDayContent={(date) => (
+            <>
+              {timeOffHolidayName(date) && <span className="time-off-date-field__holiday-marker" aria-hidden="true" />}
+              {getDateUnavailableReason?.(date) && (
+                <span className="time-off-date-field__request-marker" aria-hidden="true" />
+              )}
+            </>
+          )}
         />
         <p className="time-off-date-field__legend" id={`${id}-legend`}>
-          <span className="time-off-date-field__holiday-marker" aria-hidden="true" /> Public holiday
+          <span className="time-off-date-field__legend-item">
+            <span className="time-off-date-field__holiday-marker" aria-hidden="true" /> Public holiday
+          </span>
+          {getDateUnavailableReason && (
+            <span className="time-off-date-field__legend-item">
+              <span className="time-off-date-field__request-marker" aria-hidden="true" /> Pending or approved time off
+            </span>
+          )}
         </p>
         {holidays.length > 0 && (
           <ul className="time-off-date-field__holidays" aria-label="Public holidays this month">
