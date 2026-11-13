@@ -2,6 +2,8 @@
   --toa-font-family: 'Inter Variable', system-ui, sans-serif;
 
   --toa-color-primary: #0054e9;
+  --toa-color-primary-rgb: 0, 84, 233;
+  --toa-color-primary-tint: #1a65eb;
   --toa-color-primary-hover: #0047c7;
   --toa-color-primary-active: #003aab;
   --toa-color-primary-disabled: #a5b9df;
@@ -15,17 +17,10 @@
   --toa-color-secondary-text: #243447;
   --toa-color-secondary-disabled-text: #6b7785;
 
-  // TODO: maybe I need to keep the variables. also what is about apple?
-  --ion-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --ion-color-primary: #2457c5;
-  --ion-color-primary-rgb: 36, 87, 197;
-  --ion-color-primary-contrast: #fff;
-  --ion-color-primary-shade: #1c469f;
-  --ion-color-primary-tint: #3a68cb;
-  --ion-background-color: #f4f6fa;
-  --ion-text-color: #17243b;
-  --ion-item-background: #fff;
-  --ion-toolbar-background: #fff;
+  --toa-background-color: #f4f6fa;
+  --toa-text-color: #17243b;
+  --toa-surface-color: #ffffff;
+
   --app-border: #dce2eb;
   --app-muted: #56647a;
   --app-subtle: #e9eef8;
@@ -36,21 +31,44 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --ion-color-primary: #a0bbff;
-    --ion-color-primary-rgb: 160, 187, 255;
-    --ion-color-primary-contrast: #122143;
-    --ion-color-primary-shade: #89a7f2;
-    --ion-background-color: #101725;
-    --ion-text-color: #e7edf7;
-    --ion-item-background: #1a2435;
-    --ion-toolbar-background: #1a2435;
+    --toa-color-primary: #a0bbff;
+    --toa-color-primary-rgb: 160, 187, 255;
+    --toa-color-primary-tint: #aac2ff;
+    --toa-color-primary-hover: #89a7f2;
+    --toa-color-primary-active: #7293df;
+    --toa-color-primary-disabled: #35435a;
+    --toa-color-primary-text: #122143;
+    --toa-color-primary-disabled-text: #91a0b8;
+
+    --toa-color-secondary: #2d3b55;
+    --toa-color-secondary-hover: #354663;
+    --toa-color-secondary-active: #405375;
+    --toa-color-secondary-disabled: #1a2435;
+    --toa-color-secondary-text: #e7edf7;
+    --toa-color-secondary-disabled-text: #7f8da3;
+
+    --toa-background-color: #101725;
+    --toa-text-color: #e7edf7;
+    --toa-surface-color: #1a2435;
+
     --app-border: #35435a;
     --app-muted: #b5c1d4;
     --app-subtle: #2d3b55;
     --app-error: #ff9aaa;
     --app-approved: #7bd4a6;
     --app-pending: #f1cc73;
-
-    // TODO: Add dark theme colors
   }
+}
+
+:root {
+  --ion-font-family: var(--toa-font-family);
+  --ion-color-primary: var(--toa-color-primary);
+  --ion-color-primary-rgb: var(--toa-color-primary-rgb);
+  --ion-color-primary-contrast: var(--toa-color-primary-text);
+  --ion-color-primary-shade: var(--toa-color-primary-hover);
+  --ion-color-primary-tint: var(--toa-color-primary-tint);
+  --ion-background-color: var(--toa-background-color);
+  --ion-text-color: var(--toa-text-color);
+  --ion-item-background: var(--toa-surface-color);
+  --ion-toolbar-background: var(--toa-surface-color);
 }
