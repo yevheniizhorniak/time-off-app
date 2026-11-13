@@ -5,7 +5,7 @@ import Button from '../../components/button/Button';
 import TextField from '../../components/text-field/TextField';
 import { employeeKey, type Session } from '../../features/auth/session-domain';
 import { useSession } from '../../features/auth/useSession';
-import TimeOffPage from '../../features/time-off/components/time-off-page/TimeOffPage';
+import TimeOffPageLayout from '../../features/time-off/components/time-off-page-layout/TimeOffPageLayout';
 
 import './Login.scss';
 
@@ -39,7 +39,7 @@ export default function Login(): ReactElement {
   }
 
   return (
-    <TimeOffPage>
+    <TimeOffPageLayout>
       <section className="app-panel app-login">
         {sessionError && (
           <p className="app-error" role="alert">
@@ -66,6 +66,6 @@ export default function Login(): ReactElement {
           <Button label="Log in as a supervisor" onClick={() => login({ role: 'supervisor' })} />
         </div>
       </section>
-    </TimeOffPage>
+    </TimeOffPageLayout>
   );
 }

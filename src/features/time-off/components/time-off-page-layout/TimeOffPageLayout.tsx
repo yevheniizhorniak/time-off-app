@@ -6,16 +6,16 @@ import Button from '../../../../components/button/Button';
 import { useSession } from '../../../auth/useSession';
 import { useTimeOff } from '../../hooks/useTimeOff';
 
-import './TimeOffPage.scss';
+import './TimeOffPageLayout.scss';
 
-type TimeOffPageProps = {
+type TimeOffPageLayoutProps = {
   /** Screen content within Ionic's scrolling container. */
   children: ReactNode;
   /** Optional heading displayed above the screen content. */
   title?: string;
 };
 
-export default function TimeOffPage({ children, title }: TimeOffPageProps): ReactElement {
+export default function TimeOffPageLayout({ children, title }: TimeOffPageLayoutProps): ReactElement {
   const { session, signOut } = useSession();
   const { storageError, reload, busy } = useTimeOff();
   const navigate = useNavigate();

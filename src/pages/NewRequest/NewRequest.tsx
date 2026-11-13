@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 import Button from '../../components/button/Button';
 import Dropdown from '../../components/dropdown/Dropdown';
 import TextArea from '../../components/text-area/TextArea';
-import TextField from '../../components/text-field/TextField';
-import TimeOffPage from '../../features/time-off/components/time-off-page/TimeOffPage';
+import TimeOffDateField from '../../features/time-off/components/time-off-date-field/TimeOffDateField';
+import TimeOffPageLayout from '../../features/time-off/components/time-off-page-layout/TimeOffPageLayout';
 import { dateKey, leaveTypes } from '../../features/time-off/time-off-domain';
 
 import { useNewRequestForm } from './useNewRequestForm';
@@ -16,29 +16,27 @@ export default function NewRequest(): ReactElement {
   const { formRef, draft, setDraft, errors, error, busy, storageError, submit } = useNewRequestForm();
 
   return (
-    <TimeOffPage title="Request time off">
+    <TimeOffPageLayout title="Request time off">
       <section className="app-panel app-request-form">
         <form noValidate className="app-form" onSubmit={(event) => void submit(event)} ref={formRef}>
           <div className="app-date-fields">
-            <TextField
+            <TimeOffDateField
               label="Start date"
-              type="date"
               required
               min={dateKey()}
               value={draft.startDate}
               error={errors.startDate}
               disabled={busy}
-              onChange={(event) => setDraft({ ...draft, startDate: event.currentTarget.value })}
+              onChange={(startDate) => setDraft({ ...draft, startDate })}
             />
-            <TextField
+            <TimeOffDateField
               label="End date"
-              type="date"
               required
               min={draft.startDate || dateKey()}
               value={draft.endDate}
               error={errors.endDate}
               disabled={busy}
-              onChange={(event) => setDraft({ ...draft, endDate: event.currentTarget.value })}
+              onChange={(endDate) => setDraft({ ...draft, endDate })}
             />
           </div>
           <Dropdown
@@ -76,6 +74,6 @@ export default function NewRequest(): ReactElement {
           </div>
         </form>
       </section>
-    </TimeOffPage>
+    </TimeOffPageLayout>
   );
 }

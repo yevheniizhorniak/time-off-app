@@ -14,6 +14,8 @@ export type CalendarProps = {
   onMonthChange: (month: Date) => void;
   /** Emits the selected YYYY-MM-DD local date. The parent updates selection. */
   onDateChange: (date: string) => void;
+  /** Disables matching local dates. All dates are enabled by default. */
+  isDateDisabled?: (date: string) => boolean;
   /** Non-interactive day annotations. Describe them in `getDayAriaLabel`. */
   renderDayContent?: (date: string) => ReactNode;
   /**
@@ -29,6 +31,7 @@ export default function Calendar({
   selectedDate,
   onMonthChange,
   onDateChange,
+  isDateDisabled,
   renderDayContent,
   getDayAriaLabel = formatDate,
 }: CalendarProps): ReactElement {
@@ -57,6 +60,7 @@ export default function Calendar({
               type="button"
               className="toa-calendar__day"
               key={date}
+              disabled={isDateDisabled?.(date)}
               aria-label={getDayAriaLabel(date)}
               aria-pressed={date === selectedDate}
               aria-current={date === today ? 'date' : undefined}

@@ -1,6 +1,8 @@
 import { dateKey, isDate } from '../../dates/calendar-dates';
 import type { Session } from '../auth/session-domain';
 
+import { isWeekend, timeOffHolidayName } from './time-off-holidays';
+
 export { dateKey, formatDate, isDate, monthDays } from '../../dates/calendar-dates';
 
 export const leaveTypes = [
@@ -53,7 +55,9 @@ export function leaveTypeLabel(type: LeaveType): string {
   return leaveTypes.find((option) => option.value === type)!.label;
 }
 
+/** Active leave on working weekdays, excluding configured public holidays. */
 export function requestsOnDate(requests: readonly TimeOffRequest[], date: string): TimeOffRequest[] {
+  if (isWeekend(date) || timeOffHolidayName(date)) return [];
   return requests.filter(
     (request) => request.status !== 'rejected' && request.startDate <= date && request.endDate >= date,
   );
@@ -72,6 +76,13 @@ export function validateRequest(
   else if (draft.endDate < today) errors.endDate = 'End date must be today or later.';
   else if (!errors.startDate && draft.endDate < draft.startDate)
     errors.endDate = 'End date must be on or after the start date.';
+  for (const field of ['startDate', 'endDate'] as const) {
+    if (errors[field]) continue;
+    const label = field === 'startDate' ? 'Start date' : 'End date';
+    const holiday = timeOffHolidayName(draft[field]);
+    if (holiday) errors[field] = `${label} cannot be a public holiday (${holiday}).`;
+    else if (isWeekend(draft[field])) errors[field] = `${label} must be a weekday.`;
+  }
   if (!isLeaveType(draft.leaveType)) errors.leaveType = 'Choose a time off type.';
 
   if (

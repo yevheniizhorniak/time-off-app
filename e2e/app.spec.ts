@@ -11,11 +11,24 @@ async function loginEmployee(page: Page, name = 'Alex'): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Your requests', exact: true })).toBeVisible();
 }
 
-async function fillRequest(page: Page, start = '2026-11-13', end = '2026-11-15'): Promise<void> {
+async function selectRequestDate(page: Page, label: string, date: string): Promise<void> {
+  await page.getByRole('button', { name: label, exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: `Choose ${label.toLowerCase()}` });
+  const formatted = new Date(`${date}T12:00:00`).toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+  await dialog.getByRole('button', { name: formatted, exact: true }).click();
+  await expect(dialog).toBeHidden();
+  await expect(page.getByRole('button', { name: label, exact: true })).toBeFocused();
+}
+
+async function fillRequest(page: Page, start = '2026-11-13', end = '2026-11-16'): Promise<void> {
   await page.getByRole('link', { name: 'Request time off', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Your requests', exact: true })).toBeHidden();
-  await page.getByLabel('Start date').fill(start);
-  await page.getByLabel('End date').fill(end);
+  await selectRequestDate(page, 'Start date', start);
+  await selectRequestDate(page, 'End date', end);
   await page.getByLabel('Time off type').selectOption('paid-time-off');
 }
 
@@ -31,7 +44,7 @@ for (const path of ['/login', '/requests', '/requests/new', '/home', '/', '/unkn
     await expect(page).toHaveURL(/\/login$/);
     await expect(page.getByLabel('Employee name')).toBeVisible();
     await expect(page.getByRole('heading', { name: /Your requests|Team requests/ })).toHaveCount(0);
-    await expect(page.getByLabel('Start date')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Start date', exact: true })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Switch user', exact: true })).toHaveCount(0);
   });
 }
@@ -43,10 +56,10 @@ test('restores access to protected pages on refresh and blocks browser Back afte
   await expect(page).toHaveURL(/\/requests$/);
   await page.getByRole('link', { name: 'Request time off', exact: true }).click();
   await expect(page).toHaveURL(/\/requests\/new$/);
-  await expect(page.getByLabel('Start date')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Start date', exact: true })).toBeVisible();
   await page.reload();
   await expect(page).toHaveURL(/\/requests\/new$/);
-  await expect(page.getByLabel('Start date')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Start date', exact: true })).toBeVisible();
 
   await switchUser(page);
   await expect(page).toHaveURL(/\/login$/);
@@ -54,7 +67,7 @@ test('restores access to protected pages on refresh and blocks browser Back afte
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByLabel('Employee name')).toBeVisible();
   await expect(page.getByRole('heading', { name: /Your requests|Team requests/ })).toHaveCount(0);
-  await expect(page.getByLabel('Start date')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Start date', exact: true })).toHaveCount(0);
 });
 
 test('submits requests, reviews both outcomes, restores sessions and isolates employees', async ({ page }) => {
@@ -78,8 +91,13 @@ test('submits requests, reviews both outcomes, restores sessions and isolates em
 
   await page.getByRole('button', { name: 'Log in as a supervisor', exact: true }).click();
   await expect(page.getByRole('article')).toHaveCount(2);
-  await page.getByRole('button', { name: 'Nov 13, 2026, 2 requests', exact: true }).click();
   const calendar = page.getByRole('region', { name: 'Team calendar' });
+  await expect(calendar.getByRole('button', { pressed: true })).toHaveAccessibleName('Nov 13, 2026, 2 requests');
+  await expect(calendar.getByRole('button', { name: 'Nov 12, 2026, 0 requests', exact: true })).toBeDisabled();
+  await expect(calendar.getByRole('button', { name: 'Nov 14, 2026, 0 requests', exact: true })).toBeDisabled();
+  await calendar.getByRole('button', { name: 'Nov 16, 2026, 2 requests', exact: true }).click();
+  await expect(calendar.getByRole('button', { pressed: true })).toHaveAccessibleName('Nov 16, 2026, 2 requests');
+  await calendar.getByRole('button', { name: 'Nov 13, 2026, 2 requests', exact: true }).click();
   await expect(calendar.getByRole('list')).toContainText('Alex');
   await expect(calendar.getByRole('list')).toContainText('Bob');
 
@@ -114,24 +132,23 @@ test('validates dates and inclusive overlaps while allowing a one-day request to
   await loginEmployee(page);
   await page.getByRole('link', { name: 'Request time off', exact: true }).click();
   await page.getByRole('button', { name: 'Submit request', exact: true }).click();
-  await expect(page.getByLabel('Start date')).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Start date', exact: true })).toBeFocused();
   await expect(page.getByLabel('Time off type')).toHaveAttribute('aria-invalid', 'true');
-  await page.getByLabel('Start date').fill('2026-11-11');
-  await page.getByLabel('End date').fill('2026-11-11');
+  await page.getByRole('button', { name: 'Start date', exact: true }).click();
+  await expect(page.getByRole('dialog').getByRole('button', { name: 'Nov 11, 2026', exact: true })).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await selectRequestDate(page, 'End date', '2026-11-12');
+  await selectRequestDate(page, 'Start date', '2026-11-13');
   await page.getByLabel('Time off type').selectOption('sick-day');
   await page.getByRole('button', { name: 'Submit request', exact: true }).click();
-  await expect(page.getByText('Start date must be today or later.')).toBeVisible();
-  await page.getByLabel('Start date').fill('2026-11-13');
-  await page.getByLabel('End date').fill('2026-11-12');
-  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
   await expect(page.getByText('End date must be on or after the start date.')).toBeVisible();
-  await page.getByLabel('Start date').fill('2026-11-12');
+  await selectRequestDate(page, 'Start date', '2026-11-12');
   await page.getByRole('button', { name: 'Submit request', exact: true }).click();
   await expect(page.getByRole('article')).toContainText('Sick day');
   await fillRequest(page, '2026-11-12', '2026-11-13');
   await page.getByRole('button', { name: 'Submit request', exact: true }).click();
   await expect(page.getByText('These dates overlap one of your pending or approved requests.')).toBeVisible();
-  await expect(page.getByLabel('Start date')).toHaveValue('2026-11-12');
+  await expect(page.getByRole('button', { name: 'Start date', exact: true })).toHaveText('Nov 12, 2026');
 });
 
 test('preserves form input on failed saves and supports retry', async ({ page }) => {
@@ -151,13 +168,82 @@ test('preserves form input on failed saves and supports retry', async ({ page })
   await page.getByRole('button', { name: 'Submit request', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText('Your changes could not be saved');
   await expect(page.getByLabel('Notes (optional)')).toHaveValue('Keep this note');
-  await expect(page.getByLabel('Start date')).toHaveValue('2026-11-13');
+  await expect(page.getByRole('button', { name: 'Start date', exact: true })).toHaveText('Nov 13, 2026');
   expect(await page.evaluate(() => localStorage.getItem('time-off-app.requests'))).toBeNull();
   await page.evaluate(() => {
     document.documentElement.dataset.failSave = 'false';
   });
   await page.getByRole('button', { name: 'Submit request', exact: true }).click();
   await expect(page.getByRole('article')).toContainText('Keep this note');
+});
+
+test('disables weekends and Czech holidays in calendar dialogs and allows ranges across them', async ({
+  page,
+}, testInfo) => {
+  await loginEmployee(page);
+  await page.getByRole('link', { name: 'Request time off', exact: true }).click();
+  const start = page.getByRole('button', { name: 'Start date', exact: true });
+  await start.focus();
+  await page.keyboard.press('Enter');
+  const dialog = page.getByRole('dialog', { name: 'Choose start date' });
+  await expect(dialog).toBeVisible();
+  for (const day of [14, 15]) {
+    await expect(dialog.getByRole('button', { name: `Nov ${day}, 2026, weekend`, exact: true })).toBeDisabled();
+  }
+  const holiday = dialog.getByRole('button', { name: /Nov 17, 2026, public holiday: Freedom and Democracy Day/ });
+  await expect(holiday).toBeDisabled();
+  await expect(holiday.locator('.time-off-date-field__holiday-marker')).toBeVisible();
+  await expect(dialog.getByRole('list', { name: 'Public holidays this month' })).toContainText(
+    'Freedom and Democracy Day',
+  );
+  expect(await dialog.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.screenshot({ path: testInfo.outputPath('date-picker-light.png'), fullPage: true });
+  const lightBackground = await holiday.evaluate((element) => getComputedStyle(element).backgroundColor);
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await expect(holiday).toBeVisible();
+  await expect
+    .poll(() => holiday.evaluate((element) => getComputedStyle(element).backgroundColor))
+    .not.toBe(lightBackground);
+  await page.screenshot({ path: testInfo.outputPath('date-picker-dark.png'), fullPage: true });
+  await dialog.getByRole('button', { name: 'Next month' }).click();
+  await expect(
+    dialog.getByRole('button', { name: 'Dec 24, 2026, public holiday: Christmas Eve', exact: true }),
+  ).toBeDisabled();
+  await dialog.getByRole('button', { name: 'Next month' }).click();
+  await expect(dialog.getByRole('heading', { name: 'January 2027' })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: /Jan 1, 2027, public holiday: New Year's Day/ })).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await expect(start).toBeFocused();
+  await expect(start).toHaveText('Choose a date');
+  await selectRequestDate(page, 'Start date', '2026-11-13');
+  await page.getByRole('button', { name: 'End date', exact: true }).click();
+  const endDialog = page.getByRole('dialog', { name: 'Choose end date' });
+  await expect(endDialog.getByRole('button', { name: 'Nov 12, 2026', exact: true })).toBeDisabled();
+  await endDialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await selectRequestDate(page, 'End date', '2026-11-18');
+  await page.getByLabel('Time off type').selectOption('paid-time-off');
+  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
+  await expect(page.getByRole('article')).toContainText('pending');
+  await switchUser(page);
+  await page.getByRole('button', { name: 'Log in as a supervisor', exact: true }).click();
+  const calendar = page.getByRole('region', { name: 'Team calendar' });
+  for (const status of ['pending', 'approved']) {
+    for (const day of [14, 15, 17]) {
+      const excluded = calendar.getByRole('button', { name: `Nov ${day}, 2026, 0 requests`, exact: true });
+      await expect(excluded).toBeDisabled();
+      await expect(excluded.locator('.request-calendar__count')).toHaveCount(0);
+    }
+    for (const day of [13, 16, 18]) {
+      await calendar.getByRole('button', { name: `Nov ${day}, 2026, 1 request`, exact: true }).click();
+      await expect(calendar.getByRole('heading', { name: `Nov ${day}, 2026`, exact: true })).toBeVisible();
+      await expect(calendar.getByRole('list')).toContainText(`Alex · Paid Time Off · ${status}`);
+    }
+    if (status === 'pending') {
+      await page.getByRole('button', { name: 'Approve', exact: true }).click();
+      await expect(page.getByRole('article')).toContainText('approved');
+    }
+  }
 });
 
 test('reports corrupt saved data, protects it from overwrite and reloads after repair', async ({ page }) => {
@@ -188,8 +274,10 @@ test('guards routes, navigates calendar across years and fits the viewport', asy
   await expect(page.getByRole('heading', { name: 'January 2027', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Previous month' }).click();
   await expect(page.getByRole('heading', { name: 'December 2026', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Dec 31, 2026, 0 requests', exact: true }).click();
-  await expect(page.getByText('No time off on this day.')).toBeVisible();
+  const calendar = page.getByRole('region', { name: 'Team calendar' });
+  await expect(calendar.getByRole('button', { name: 'Dec 31, 2026, 0 requests', exact: true })).toBeDisabled();
+  await expect(calendar.getByRole('button', { pressed: true })).toHaveCount(0);
+  await expect(calendar.getByText('No time off this month.')).toBeVisible();
   expect(await page.locator('main.time-off-app').evaluate((main) => main.scrollWidth <= main.clientWidth)).toBe(true);
   await page.emulateMedia({ colorScheme: 'dark' });
   await expect(page.getByRole('heading', { name: 'Team requests' })).toBeVisible();

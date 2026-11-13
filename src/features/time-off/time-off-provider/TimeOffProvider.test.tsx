@@ -20,7 +20,7 @@ import TimeOffProvider from './TimeOffProvider';
 const employee: Session = { role: 'employee', name: 'Alex', employeeKey: 'alex' };
 const draft: RequestDraft = {
   startDate: '2026-11-12',
-  endDate: '2026-11-14',
+  endDate: '2026-11-13',
   leaveType: 'paid-time-off',
   note: ' Family trip ',
 };

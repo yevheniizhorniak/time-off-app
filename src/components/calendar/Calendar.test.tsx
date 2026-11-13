@@ -107,3 +107,23 @@ test('renders optional day annotations with consumer-provided accessible names',
   expect(within(annotated).getByText('★')).toHaveAttribute('aria-hidden', 'true');
   expect(screen.getAllByText('★')).toHaveLength(1);
 });
+
+test('disables consumer-specified days while preserving annotations and enabling other days', () => {
+  const onDateChange = vi.fn();
+  render(
+    <Calendar
+      {...props}
+      onDateChange={onDateChange}
+      isDateDisabled={(date) => date === '2026-11-17'}
+      getDayAriaLabel={(date) => `${formatDate(date)}${date === '2026-11-17' ? ', public holiday' : ''}`}
+      renderDayContent={(date) => (date === '2026-11-17' ? <span>Holiday</span> : null)}
+    />,
+  );
+  const holiday = screen.getByRole('button', { name: `${formatDate('2026-11-17')}, public holiday` });
+  expect(holiday).toBeDisabled();
+  expect(within(holiday).getByText('Holiday')).toBeInTheDocument();
+  fireEvent.click(holiday);
+  expect(onDateChange).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole('button', { name: formatDate('2026-11-18') }));
+  expect(onDateChange).toHaveBeenCalledExactlyOnceWith('2026-11-18');
+});

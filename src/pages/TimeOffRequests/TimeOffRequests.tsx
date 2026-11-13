@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useSession } from '../../features/auth/useSession';
 import RequestCalendar from '../../features/time-off/components/request-calendar/RequestCalendar';
 import RequestCard from '../../features/time-off/components/request-card/RequestCard';
-import TimeOffPage from '../../features/time-off/components/time-off-page/TimeOffPage';
+import TimeOffPageLayout from '../../features/time-off/components/time-off-page-layout/TimeOffPageLayout';
 import { useTimeOff } from '../../features/time-off/hooks/useTimeOff';
 import { dateKey } from '../../features/time-off/time-off-domain';
 
@@ -47,7 +47,7 @@ export default function TimeOffRequests(): ReactElement {
       ];
 
   return (
-    <TimeOffPage title={isEmployee ? 'Your requests' : 'Team requests'}>
+    <TimeOffPageLayout title={isEmployee ? 'Your requests' : 'Team requests'}>
       {isEmployee && (
         <div className="app-actions app-section-action">
           <Link className="app-link-button" to="/requests/new">
@@ -77,6 +77,6 @@ export default function TimeOffRequests(): ReactElement {
         </div>
         {!isEmployee && <RequestCalendar requests={requests} />}
       </div>
-    </TimeOffPage>
+    </TimeOffPageLayout>
   );
 }

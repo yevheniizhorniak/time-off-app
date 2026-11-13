@@ -1,7 +1,14 @@
 import { useId, useState, type ReactElement } from 'react';
 
 import Calendar from '../../../../components/calendar/Calendar';
-import { dateKey, formatDate, leaveTypeLabel, requestsOnDate, type TimeOffRequest } from '../../time-off-domain';
+import {
+  dateKey,
+  formatDate,
+  leaveTypeLabel,
+  monthDays,
+  requestsOnDate,
+  type TimeOffRequest,
+} from '../../time-off-domain';
 
 import './RequestCalendar.scss';
 
@@ -14,11 +21,18 @@ export default function RequestCalendar({ requests }: RequestCalendarProps): Rea
   const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1, 12));
   const [selected, setSelected] = useState(dateKey());
   const headingId = useId();
-  const selectedRequests = requestsOnDate(requests, selected);
+  const availableDates = monthDays(month).filter(
+    (date): date is string => date !== null && requestsOnDate(requests, date).length > 0,
+  );
+  const selectedDate = availableDates.includes(selected) ? selected : (availableDates[0] ?? '');
+  const selectedRequests = requestsOnDate(requests, selectedDate);
+
+  // Retain the fallback selection when later request updates make the old date available again.
+  if (selected !== selectedDate) setSelected(selectedDate);
 
   function changeMonth(next: Date): void {
     setMonth(next);
-    setSelected(dateKey(next));
+    setSelected('');
   }
 
   return (
@@ -27,9 +41,10 @@ export default function RequestCalendar({ requests }: RequestCalendarProps): Rea
       <p className="app-muted">Daily counts include pending and approved requests.</p>
       <Calendar
         month={month}
-        selectedDate={selected}
+        selectedDate={selectedDate}
         onMonthChange={changeMonth}
         onDateChange={setSelected}
+        isDateDisabled={(date) => requestsOnDate(requests, date).length === 0}
         getDayAriaLabel={(date) => {
           const count = requestsOnDate(requests, date).length;
           return `${formatDate(date)}, ${count} ${count === 1 ? 'request' : 'requests'}`;
@@ -44,9 +59,9 @@ export default function RequestCalendar({ requests }: RequestCalendarProps): Rea
         }}
       />
       <div className="request-calendar__details" aria-live="polite">
-        <h3>{formatDate(selected)}</h3>
-        {selectedRequests.length === 0 ? (
-          <p className="app-muted">No time off on this day.</p>
+        {selectedDate && <h3>{formatDate(selectedDate)}</h3>}
+        {selectedDate === '' ? (
+          <p className="app-muted">No time off this month.</p>
         ) : (
           <ul>
             {selectedRequests.map((request) => (

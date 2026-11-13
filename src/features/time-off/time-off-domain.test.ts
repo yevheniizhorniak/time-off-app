@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest';
+import { afterEach, expect, test, vi } from 'vitest';
 
 import type { Session } from '../auth/session-domain';
 
@@ -15,8 +15,9 @@ import {
   type RequestDraft,
   type TimeOffRequest,
 } from './time-off-domain';
+import * as timeOffHolidays from './time-off-holidays';
 
-const draft: RequestDraft = { startDate: '2026-11-12', endDate: '2026-11-14', leaveType: 'paid-time-off', note: '' };
+const draft: RequestDraft = { startDate: '2026-11-12', endDate: '2026-11-13', leaveType: 'paid-time-off', note: '' };
 const request: TimeOffRequest = {
   ...draft,
   leaveType: 'paid-time-off',
@@ -29,6 +30,10 @@ const request: TimeOffRequest = {
 const today = '2026-11-12';
 const employee: Extract<Session, { role: 'employee' }> = { role: 'employee', name: 'Alex', employeeKey: 'alex' };
 const metadata = { id: 'new-request', createdAt: '2026-11-12T10:00:00Z', today };
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 test('creates a pending request with explicit metadata and trims notes without mutating the draft', () => {
   const input = Object.freeze({ ...draft, note: '  Family trip  ' });
@@ -90,34 +95,99 @@ test('rejects missing or impossible dates, past dates, reversed periods and unkn
   expect(
     validateRequest({ ...draft, startDate: '2026-11-11', endDate: '2026-11-11' }, 'alex', [], today),
   ).toHaveProperty('startDate');
-  expect(validateRequest({ ...draft, startDate: '2026-11-15' }, 'alex', [], today)).toHaveProperty('endDate');
+  expect(validateRequest({ ...draft, startDate: '2026-11-16' }, 'alex', [], today)).toHaveProperty('endDate');
 });
 
 test('prevents inclusive overlaps for pending and approved leave, including containment', () => {
   for (const status of ['pending', 'approved'] as const) {
     for (const [startDate, endDate] of [
-      ['2026-11-14', '2026-11-15'],
+      ['2026-11-13', '2026-11-16'],
       ['2026-11-12', '2026-11-12'],
       ['2026-11-12', '2026-11-20'],
       ['2026-11-13', '2026-11-13'],
     ]) {
       expect(validateRequest({ ...draft, startDate, endDate }, 'alex', [{ ...request, status }], today)).toHaveProperty(
         'startDate',
+        'These dates overlap one of your pending or approved requests.',
       );
     }
   }
   expect(
-    validateRequest({ ...draft, startDate: '2026-11-15', endDate: '2026-11-15' }, 'alex', [request], today),
+    validateRequest({ ...draft, startDate: '2026-11-16', endDate: '2026-11-16' }, 'alex', [request], today),
   ).toEqual({});
 });
 
 test('rejected requests release dates and another employee can request the same dates', () => {
   expect(validateRequest(draft, 'alex', [{ ...request, status: 'rejected' }], today)).toEqual({});
   expect(validateRequest(draft, 'bob', [request], today)).toEqual({});
-  expect(requestsOnDate([request, { ...request, id: 'rejected', status: 'rejected' }], '2026-11-14')).toEqual([
+  expect(requestsOnDate([request, { ...request, id: 'rejected', status: 'rejected' }], '2026-11-13')).toEqual([
     request,
   ]);
   expect(requestsOnDate([request], '2026-11-15')).toEqual([]);
+});
+
+test.each(['2026-11-14', '2026-11-15', '2026-11-17', '2027-03-26', '2027-03-29'])(
+  'rejects unavailable endpoints on %s through validation and creation',
+  (date) => {
+    const errors = validateRequest({ ...draft, startDate: date, endDate: date }, 'alex', [], today);
+    expect(errors.startDate).toMatch(/Start date (must be a weekday|cannot be a public holiday)/);
+    expect(errors.endDate).toMatch(/End date (must be a weekday|cannot be a public holiday)/);
+    for (const input of [
+      { ...draft, startDate: date, endDate: '2027-04-01' },
+      { ...draft, endDate: date },
+    ]) {
+      expect(() => createTimeOffRequest(input, employee, [], metadata)).toThrow(RequestValidationError);
+    }
+  },
+);
+
+test('allows ranges spanning weekends and holidays for every leave type', () => {
+  for (const leaveType of ['paid-time-off', 'sick-day', 'parental-leave']) {
+    const spanning = { ...draft, startDate: '2026-11-13', endDate: '2026-11-18', leaveType };
+    expect(validateRequest(spanning, 'alex', [], today)).toEqual({});
+    expect(createTimeOffRequest(spanning, employee, [], metadata)).toMatchObject(spanning);
+  }
+});
+
+test.each(['pending', 'approved'] as const)('counts only working days in %s request ranges', (status) => {
+  for (const { startDate, endDate, excluded, included } of [
+    {
+      startDate: '2026-11-13',
+      endDate: '2026-11-18',
+      excluded: ['2026-11-14', '2026-11-15', '2026-11-17'],
+      included: ['2026-11-13', '2026-11-16', '2026-11-18'],
+    },
+    {
+      startDate: '2026-12-23',
+      endDate: '2026-12-28',
+      excluded: ['2026-12-24', '2026-12-25', '2026-12-26', '2026-12-27'],
+      included: ['2026-12-23', '2026-12-28'],
+    },
+    {
+      startDate: '2027-03-25',
+      endDate: '2027-03-30',
+      excluded: ['2027-03-26', '2027-03-27', '2027-03-28', '2027-03-29'],
+      included: ['2027-03-25', '2027-03-30'],
+    },
+  ]) {
+    const saved = Object.freeze({ ...request, startDate, endDate, status });
+    const rejected = { ...saved, id: 'rejected', status: 'rejected' as const };
+    for (const date of excluded) expect(requestsOnDate([saved, rejected], date)).toEqual([]);
+    for (const date of included) expect(requestsOnDate([saved, rejected], date)).toEqual([saved]);
+  }
+});
+
+test('excludes additional configured holidays from pending and approved coverage', () => {
+  const lookup = timeOffHolidays.timeOffHolidayName;
+  vi.spyOn(timeOffHolidays, 'timeOffHolidayName').mockImplementation((date) =>
+    lookup(date, [{ date: '2026-11-16', name: 'Company holiday' }]),
+  );
+  const saved = [
+    { ...request, endDate: '2026-11-18' },
+    { ...request, id: 'approved', status: 'approved' as const, endDate: '2026-11-18' },
+  ];
+  expect(requestsOnDate(saved, '2026-11-16')).toEqual([]);
+  expect(requestsOnDate(saved, '2026-11-18')).toEqual(saved);
 });
 
 test('builds Monday-first months across leap years and year boundaries using local dates', () => {

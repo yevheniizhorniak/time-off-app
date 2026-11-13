@@ -61,11 +61,11 @@
     overflow-wrap: anywhere;
     padding: 0.25rem 0;
 
-    &:hover {
+    &:hover:not(:disabled) {
       background: var(--app-subtle, #e9eef8);
     }
 
-    &:active {
+    &:active:not(:disabled) {
       filter: brightness(0.85);
     }
 
@@ -81,6 +81,12 @@
     &:focus-visible {
       outline: 2px solid var(--ion-color-primary, #2457c5);
       outline-offset: 1px;
+    }
+
+    &:disabled {
+      color: var(--app-muted, #56647a);
+      cursor: not-allowed;
+      opacity: 0.55;
     }
   }
 }
