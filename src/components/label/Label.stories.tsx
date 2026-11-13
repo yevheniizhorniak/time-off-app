@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useId } from 'react';
 
-import Label from './Label';
+import { ToaLabel } from './Label';
 
 const meta = {
   title: 'Components/Label',
-  component: Label,
+  component: ToaLabel,
   args: {
     children: 'Employee name',
     required: false,
@@ -16,12 +16,12 @@ const meta = {
 
     return (
       <div style={{ display: 'grid', gap: '0.5rem', maxWidth: '24rem', padding: '1rem' }}>
-        <Label {...args} htmlFor={inputId} />
+        <ToaLabel {...args} htmlFor={inputId} />
         <input id={inputId} required={args.required} style={{ minWidth: 0 }} type="text" />
       </div>
     );
   },
-} satisfies Meta<typeof Label>;
+} satisfies Meta<typeof ToaLabel>;
 
 export default meta;
 

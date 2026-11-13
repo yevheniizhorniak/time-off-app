@@ -9,9 +9,9 @@ export type ToastActions = {
 
 export const ToastContext = createContext<ToastActions | undefined>(undefined);
 
-/** Throws outside ToastProvider. */
+/** Throws outside ToaToastProvider. */
 export function useToast(): ToastActions {
   const context = useContext(ToastContext);
-  if (!context) throw new Error('useToast must be used within a ToastProvider.');
+  if (!context) throw new Error('useToast must be used within a ToaToastProvider.');
   return context;
 }

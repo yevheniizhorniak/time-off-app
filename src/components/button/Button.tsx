@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactElement } from 'react';
 
-import LoadingSpinner from '../loading-spinner/LoadingSpinner';
+import { ToaLoadingSpinner } from '../loading-spinner/LoadingSpinner';
 
 import './Button.scss';
 
@@ -12,7 +12,7 @@ export type ToaButtonProps = Omit<ComponentProps<'button'>, 'children' | 'classN
 };
 
 /** Native button. Defaults to `type="button"`. */
-export default function ToaButton({
+export function ToaButton({
   disabled,
   label,
   loading = false,
@@ -30,7 +30,7 @@ export default function ToaButton({
       {label}
       {loading && (
         <span className="toa-button__spinner">
-          <LoadingSpinner decorative />
+          <ToaLoadingSpinner decorative />
         </span>
       )}
     </button>

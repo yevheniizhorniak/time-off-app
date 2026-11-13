@@ -1,6 +1,6 @@
 import { useId, useState, type ReactElement } from 'react';
 
-import Calendar from '../../../../components/calendar/Calendar';
+import { ToaCalendar } from '../../../../components/calendar/Calendar';
 import {
   dateKey,
   formatDate,
@@ -39,7 +39,7 @@ export default function RequestCalendar({ requests }: RequestCalendarProps): Rea
     <section className="request-calendar app-panel" aria-labelledby={headingId}>
       <h2 id={headingId}>Team calendar</h2>
       <p className="app-muted">Daily counts include pending and approved requests.</p>
-      <Calendar
+      <ToaCalendar
         month={month}
         selectedDate={selectedDate}
         onMonthChange={changeMonth}

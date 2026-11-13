@@ -1,13 +1,13 @@
 import { useEffect, useRef, type ReactElement, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
-import Toast from './Toast';
+import { ToaToast } from './Toast';
 import { ToastContext } from './useToast';
 import { useToastQueue } from './useToastQueue';
 
 import './ToastProvider.scss';
 
-export type ToastProviderProps = {
+export type ToaToastProviderProps = {
   /** Content with access to `useToast`. */
   children: ReactNode;
 };
@@ -17,7 +17,7 @@ export type ToastProviderProps = {
  * with polite announcements and expire after five seconds, paused on hover or focus.
  * Use inline feedback inside modal dialogs.
  */
-export default function ToastProvider({ children }: ToastProviderProps): ReactElement {
+export function ToaToastProvider({ children }: ToaToastProviderProps): ReactElement {
   const { notifications, actions, setPaused } = useToastQueue();
   const stackRef = useRef<HTMLDivElement>(null);
   const newestId = notifications.at(-1)?.id;
@@ -56,7 +56,7 @@ export default function ToastProvider({ children }: ToastProviderProps): ReactEl
                 onMouseEnter={() => setPaused(id, 'hover', true)}
                 onMouseLeave={() => setPaused(id, 'hover', false)}
               >
-                <Toast message={message} onDismiss={() => actions.dismissToast(id)} />
+                <ToaToast message={message} onDismiss={() => actions.dismissToast(id)} />
               </div>
             ))}
           </div>

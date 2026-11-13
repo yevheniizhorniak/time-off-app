@@ -1,16 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import Button from '../button/Button';
+import { ToaButton } from '../button/Button';
 
-import Toast from './Toast';
-import ToastProvider from './ToastProvider';
+import { ToaToast } from './Toast';
+import { ToaToastProvider } from './ToastProvider';
 import { useToast } from './useToast';
 
 function ToastExample({ message, stacked = false }: { message: string; stacked?: boolean }): React.JSX.Element {
   const { showToast } = useToast();
 
   return (
-    <Button
+    <ToaButton
       label={stacked ? 'Show three notifications' : 'Show notification'}
       onClick={() => {
         showToast(message);
@@ -26,16 +26,16 @@ function ToastExample({ message, stacked = false }: { message: string; stacked?:
 
 const meta = {
   title: 'Components/Toast',
-  component: Toast,
+  component: ToaToast,
   decorators: [
     (Story) => (
-      <ToastProvider>
+      <ToaToastProvider>
         <Story />
-      </ToastProvider>
+      </ToaToastProvider>
     ),
   ],
   args: { message: 'Your request has been submitted.', onDismiss: () => undefined },
-} satisfies Meta<typeof Toast>;
+} satisfies Meta<typeof ToaToast>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

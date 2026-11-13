@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterAll, beforeAll, expect, test, vi } from 'vitest';
 
-import ConfirmationDialog from './ConfirmationDialog';
+import { ToaConfirmationDialog } from './ConfirmationDialog';
 
 const originalShowModal = Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, 'showModal');
 const originalClose = Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, 'close');
@@ -36,7 +36,7 @@ test('opens as an accessible dialog and closes when isOpen becomes false', () =>
   const onCancel = vi.fn();
   const onConfirm = vi.fn();
   const { container, rerender } = render(
-    <ConfirmationDialog isOpen title={title} message={message} onCancel={onCancel} onConfirm={onConfirm} />,
+    <ToaConfirmationDialog isOpen title={title} message={message} onCancel={onCancel} onConfirm={onConfirm} />,
   );
 
   const dialog = screen.getByRole('dialog', { name: title });
@@ -46,7 +46,7 @@ test('opens as an accessible dialog and closes when isOpen becomes false', () =>
   expect(screen.getByRole('button', { name: 'Confirm' })).toBeInTheDocument();
 
   rerender(
-    <ConfirmationDialog isOpen={false} title={title} message={message} onCancel={onCancel} onConfirm={onConfirm} />,
+    <ToaConfirmationDialog isOpen={false} title={title} message={message} onCancel={onCancel} onConfirm={onConfirm} />,
   );
 
   expect(container.querySelector('dialog')).not.toHaveAttribute('open');
@@ -58,7 +58,7 @@ test('uses custom labels and invokes the matching button callback', () => {
   const onCancel = vi.fn();
   const onConfirm = vi.fn();
   render(
-    <ConfirmationDialog
+    <ToaConfirmationDialog
       cancelLabel="Keep pending"
       confirmLabel="Approve"
       isOpen
@@ -81,7 +81,7 @@ test('uses custom labels and invokes the matching button callback', () => {
 test('treats Escape as cancellation without letting the browser close controlled state', () => {
   const onCancel = vi.fn();
   const { container } = render(
-    <ConfirmationDialog isOpen title={title} message={message} onCancel={onCancel} onConfirm={vi.fn()} />,
+    <ToaConfirmationDialog isOpen title={title} message={message} onCancel={onCancel} onConfirm={vi.fn()} />,
   );
   const dialog = container.querySelector('dialog')!;
 
@@ -96,7 +96,7 @@ test('treats Escape as cancellation without letting the browser close controlled
 test('treats backdrop clicks as cancellation but ignores clicks inside the dialog', () => {
   const onCancel = vi.fn();
   const { container } = render(
-    <ConfirmationDialog isOpen title={title} message={message} onCancel={onCancel} onConfirm={vi.fn()} />,
+    <ToaConfirmationDialog isOpen title={title} message={message} onCancel={onCancel} onConfirm={vi.fn()} />,
   );
   const dialog = container.querySelector('dialog')!;
   vi.spyOn(dialog, 'getBoundingClientRect').mockReturnValue({

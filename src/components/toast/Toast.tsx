@@ -2,15 +2,15 @@ import type { ReactElement } from 'react';
 
 import './Toast.scss';
 
-export type ToastProps = {
+export type ToaToastProps = {
   /** Plain text notification. */
   message: string;
   /** Called on dismiss. The parent removes the notification. */
   onDismiss: () => void;
 };
 
-/** Dismissible notification. ToastProvider handles timing and announcements. */
-export default function Toast({ message, onDismiss }: ToastProps): ReactElement {
+/** Dismissible notification. ToaToastProvider handles timing and announcements. */
+export function ToaToast({ message, onDismiss }: ToaToastProps): ReactElement {
   return (
     <div className="toa-toast">
       <p className="toa-toast__message">{message}</p>

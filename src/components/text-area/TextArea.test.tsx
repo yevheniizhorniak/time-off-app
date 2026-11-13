@@ -2,11 +2,11 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import type { ChangeEvent } from 'react';
 import { expect, test, vi } from 'vitest';
 
-import TextArea from './TextArea';
+import { ToaTextArea } from './TextArea';
 
 test('forwards native changes and keeps the value controlled by its parent', () => {
   const onChange = vi.fn((event: ChangeEvent<HTMLTextAreaElement>) => event.currentTarget.value);
-  const { rerender } = render(<TextArea label="Notes" onChange={onChange} value="" />);
+  const { rerender } = render(<ToaTextArea label="Notes" onChange={onChange} value="" />);
   const control = screen.getByRole('textbox', { name: 'Notes' });
 
   fireEvent.change(control, { target: { value: 'First line\nSecond line' } });
@@ -15,16 +15,16 @@ test('forwards native changes and keeps the value controlled by its parent', () 
   expect(onChange).toHaveReturnedWith('First line\nSecond line');
   expect(control).toHaveValue('');
 
-  rerender(<TextArea label="Notes" onChange={onChange} value={'First line\nSecond line'} />);
+  rerender(<ToaTextArea label="Notes" onChange={onChange} value={'First line\nSecond line'} />);
   expect(control).toHaveValue('First line\nSecond line');
 });
 
 test('associates labels with unique, stable IDs and respects an explicit ID', () => {
   const fields = () => (
     <>
-      <TextArea label="First" onChange={vi.fn()} value="" />
-      <TextArea label="Second" onChange={vi.fn()} value="" />
-      <TextArea id="custom-text-area" label="Custom" onChange={vi.fn()} value="" />
+      <ToaTextArea label="First" onChange={vi.fn()} value="" />
+      <ToaTextArea label="Second" onChange={vi.fn()} value="" />
+      <ToaTextArea id="custom-text-area" label="Custom" onChange={vi.fn()} value="" />
     </>
   );
   const { rerender } = render(fields());
@@ -41,7 +41,7 @@ test('associates labels with unique, stable IDs and respects an explicit ID', ()
 
 test('associates validation feedback and removes stale errors', () => {
   const { rerender } = render(
-    <TextArea error="This field needs attention." label="Notes" onChange={vi.fn()} value="" />,
+    <ToaTextArea error="This field needs attention." label="Notes" onChange={vi.fn()} value="" />,
   );
   const control = screen.getByRole('textbox', { name: 'Notes' });
 
@@ -49,7 +49,7 @@ test('associates validation feedback and removes stale errors', () => {
   expect(control).toHaveAccessibleDescription('This field needs attention.');
   expect(control).toHaveAttribute('aria-describedby', screen.getByText('This field needs attention.').id);
 
-  rerender(<TextArea label="Notes" onChange={vi.fn()} value="" />);
+  rerender(<ToaTextArea label="Notes" onChange={vi.fn()} value="" />);
   expect(control).not.toHaveAttribute('aria-invalid');
   expect(control).not.toHaveAttribute('aria-describedby');
   expect(screen.queryByText('This field needs attention.')).not.toBeInTheDocument();
@@ -58,7 +58,7 @@ test('associates validation feedback and removes stale errors', () => {
 test('supports required validation and native form submission', () => {
   const { container, rerender } = render(
     <form>
-      <TextArea label="Notes" name="field" onChange={vi.fn()} required value="" />
+      <ToaTextArea label="Notes" name="field" onChange={vi.fn()} required value="" />
     </form>,
   );
   const control = screen.getByRole('textbox', { name: 'Notes' });
@@ -69,7 +69,7 @@ test('supports required validation and native form submission', () => {
 
   rerender(
     <form>
-      <TextArea label="Notes" name="field" onChange={vi.fn()} required value={'First line\nSecond line'} />
+      <ToaTextArea label="Notes" name="field" onChange={vi.fn()} required value={'First line\nSecond line'} />
     </form>,
   );
   expect(control).toBeValid();
@@ -79,8 +79,8 @@ test('supports required validation and native form submission', () => {
 test('disabled controls are excluded from submission while read-only values remain included', () => {
   const { container } = render(
     <form>
-      <TextArea disabled label="Disabled" name="disabled" onChange={vi.fn()} value="Disabled value" />
-      <TextArea label="Read only" name="readOnly" onChange={vi.fn()} readOnly required value="Read-only value" />
+      <ToaTextArea disabled label="Disabled" name="disabled" onChange={vi.fn()} value="Disabled value" />
+      <ToaTextArea label="Read only" name="readOnly" onChange={vi.fn()} readOnly required value="Read-only value" />
     </form>,
   );
 
@@ -93,11 +93,11 @@ test('disabled controls are excluded from submission while read-only values rema
 });
 
 test('defaults to four rows and allows a custom visible row count', () => {
-  const { rerender } = render(<TextArea label="Notes" onChange={vi.fn()} value="" />);
+  const { rerender } = render(<ToaTextArea label="Notes" onChange={vi.fn()} value="" />);
   const control = screen.getByRole('textbox', { name: 'Notes' });
 
   expect(control).toHaveAttribute('rows', '4');
 
-  rerender(<TextArea label="Notes" onChange={vi.fn()} rows={6} value="" />);
+  rerender(<ToaTextArea label="Notes" onChange={vi.fn()} rows={6} value="" />);
   expect(control).toHaveAttribute('rows', '6');
 });

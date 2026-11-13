@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 
-import Button from '../button/Button';
+import { ToaButton } from '../button/Button';
 
-import ToastProvider from './ToastProvider';
+import { ToaToastProvider } from './ToastProvider';
 import { useToast } from './useToast';
 
 function ToastProviderExample(): React.JSX.Element {
@@ -12,8 +12,8 @@ function ToastProviderExample(): React.JSX.Element {
 
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-      <Button label="Show notification" onClick={() => setLatestId(showToast('Your request has been submitted.'))} />
-      <Button
+      <ToaButton label="Show notification" onClick={() => setLatestId(showToast('Your request has been submitted.'))} />
+      <ToaButton
         disabled={!latestId}
         label="Dismiss latest notification"
         onClick={() => {
@@ -27,14 +27,14 @@ function ToastProviderExample(): React.JSX.Element {
 
 const meta = {
   title: 'Components/ToastProvider',
-  component: ToastProvider,
+  component: ToaToastProvider,
   args: {
     children: <ToastProviderExample />,
   },
   argTypes: {
     children: { control: false },
   },
-} satisfies Meta<typeof ToastProvider>;
+} satisfies Meta<typeof ToaToastProvider>;
 
 export default meta;
 

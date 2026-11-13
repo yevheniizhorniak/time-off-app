@@ -2,12 +2,12 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useArgs } from 'storybook/preview-api';
 import { fn } from 'storybook/test';
 
-import Calendar, { type CalendarProps } from './Calendar';
+import { ToaCalendar, type ToaCalendarProps } from './Calendar';
 import { formatDate } from './format-date';
 
 const meta = {
   title: 'Components/Calendar',
-  component: Calendar,
+  component: ToaCalendar,
   args: {
     month: new Date(2026, 10, 1, 12),
     selectedDate: '2026-11-12',
@@ -20,11 +20,11 @@ const meta = {
     getDayAriaLabel: { control: false },
   },
   render: function Render(args) {
-    const [, updateArgs] = useArgs<CalendarProps>();
+    const [, updateArgs] = useArgs<ToaCalendarProps>();
 
     return (
       <div style={{ boxSizing: 'border-box', maxWidth: '28rem', padding: '1rem', width: '100%' }}>
-        <Calendar
+        <ToaCalendar
           {...args}
           onMonthChange={(month) => {
             updateArgs({ month });
@@ -38,7 +38,7 @@ const meta = {
       </div>
     );
   },
-} satisfies Meta<typeof Calendar>;
+} satisfies Meta<typeof ToaCalendar>;
 
 export default meta;
 

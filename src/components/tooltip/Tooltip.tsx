@@ -5,7 +5,7 @@ import { useTooltip } from './useTooltip';
 
 import './Tooltip.scss';
 
-export type TooltipProps = {
+export type ToaTooltipProps = {
   /** Non-interactive description. */
   content: string;
   /** Enabled, focusable trigger that forwards `aria-describedby`. Actions and ref are preserved. */
@@ -16,7 +16,7 @@ export type TooltipProps = {
  * Shown on hover, focus, or tap. Dismiss with Escape, another tap, or an outside tap.
  * Tapping also activates the trigger.
  */
-export default function Tooltip({ content, children }: TooltipProps): ReactElement {
+export function ToaTooltip({ content, children }: ToaTooltipProps): ReactElement {
   const id = useId();
   const { isOpen, triggerRef, tooltipRef, triggerEvents, tooltipEvents } = useTooltip(content);
   const trigger = children as ReactElement<AriaAttributes>;

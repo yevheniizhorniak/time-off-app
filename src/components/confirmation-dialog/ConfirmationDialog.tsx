@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, type MouseEvent, type ReactElement, type Synt
 
 import './ConfirmationDialog.scss';
 
-export type ConfirmationDialogProps = {
+export type ToaConfirmationDialogProps = {
   /** Parent-controlled visibility. Set to `false` after either action to close. */
   isOpen: boolean;
   /** Visible heading and accessible name. */
@@ -20,7 +20,7 @@ export type ConfirmationDialogProps = {
 };
 
 /** Controlled native modal dialog. */
-export default function ConfirmationDialog({
+export function ToaConfirmationDialog({
   isOpen,
   title,
   message,
@@ -28,7 +28,7 @@ export default function ConfirmationDialog({
   onCancel,
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
-}: ConfirmationDialogProps): ReactElement {
+}: ToaConfirmationDialogProps): ReactElement {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const messageId = useId();

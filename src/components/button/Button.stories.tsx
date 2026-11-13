@@ -1,14 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import Button from './Button';
+import { ToaButton } from './Button';
 
 const meta = {
   title: 'Components/Button',
-  component: Button,
+  component: ToaButton,
   args: {
     label: 'Click me',
   },
-} satisfies Meta<typeof Button>;
+} satisfies Meta<typeof ToaButton>;
 
 export default meta;
 

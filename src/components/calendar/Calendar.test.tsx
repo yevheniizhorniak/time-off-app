@@ -1,11 +1,11 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, expect, test, vi } from 'vitest';
 
-import Calendar, { type CalendarProps } from './Calendar';
+import { ToaCalendar, type ToaCalendarProps } from './Calendar';
 import { dateKey } from './date-key';
 import { formatDate } from './format-date';
 
-const props: CalendarProps = {
+const props: ToaCalendarProps = {
   month: new Date(2026, 10, 1, 12),
   selectedDate: '2026-11-12',
   onMonthChange: vi.fn(),
@@ -19,7 +19,7 @@ afterEach(() => {
 
 test('emits date selections and waits for the parent to update selection', () => {
   const onDateChange = vi.fn();
-  const { rerender } = render(<Calendar {...props} onDateChange={onDateChange} />);
+  const { rerender } = render(<ToaCalendar {...props} onDateChange={onDateChange} />);
   const nextDay = screen.getByRole('button', { name: formatDate('2026-11-13') });
 
   fireEvent.click(nextDay);
@@ -28,7 +28,7 @@ test('emits date selections and waits for the parent to update selection', () =>
   expect(nextDay).toHaveAttribute('aria-pressed', 'false');
   expect(screen.getByRole('button', { pressed: true })).toHaveAccessibleName(formatDate('2026-11-12'));
 
-  rerender(<Calendar {...props} selectedDate="2026-11-13" onDateChange={onDateChange} />);
+  rerender(<ToaCalendar {...props} selectedDate="2026-11-13" onDateChange={onDateChange} />);
   expect(nextDay).toHaveAttribute('aria-pressed', 'true');
 });
 
@@ -37,7 +37,7 @@ test('emits adjacent months at local noon across years without changing selectio
   const onMonthChange = vi.fn();
   const onDateChange = vi.fn();
   const { rerender } = render(
-    <Calendar {...props} month={month} onMonthChange={onMonthChange} onDateChange={onDateChange} />,
+    <ToaCalendar {...props} month={month} onMonthChange={onMonthChange} onDateChange={onDateChange} />,
   );
 
   fireEvent.click(screen.getByRole('button', { name: 'Next month' }));
@@ -52,7 +52,7 @@ test('emits adjacent months at local noon across years without changing selectio
     month.toLocaleDateString(undefined, { month: 'long', year: 'numeric' }),
   );
 
-  rerender(<Calendar {...props} month={january} onMonthChange={onMonthChange} onDateChange={onDateChange} />);
+  rerender(<ToaCalendar {...props} month={january} onMonthChange={onMonthChange} onDateChange={onDateChange} />);
   expect(screen.getByRole('heading')).toHaveTextContent(
     january.toLocaleDateString(undefined, { month: 'long', year: 'numeric' }),
   );
@@ -63,7 +63,7 @@ test('emits adjacent months at local noon across years without changing selectio
 });
 
 test('aligns the first day under its Monday-first weekday and includes every day in leap months', () => {
-  const { rerender } = render(<Calendar {...props} />);
+  const { rerender } = render(<ToaCalendar {...props} />);
   const grid = screen.getByRole('group', { name: 'Choose a calendar date' });
   expect(
     Array.from(grid.children)
@@ -78,7 +78,7 @@ test('aligns the first day under its Monday-first weekday and includes every day
   expect(grid.children[13]).toHaveAccessibleName(formatDate('2026-11-01'));
   expect(within(grid).getAllByRole('button')).toHaveLength(30);
 
-  rerender(<Calendar {...props} month={new Date(2028, 1, 1, 12)} />);
+  rerender(<ToaCalendar {...props} month={new Date(2028, 1, 1, 12)} />);
   expect(within(grid).getAllByRole('button')).toHaveLength(29);
   expect(within(grid).getAllByRole('button').at(-1)).toHaveAccessibleName(formatDate('2028-02-29'));
 });
@@ -86,7 +86,7 @@ test('aligns the first day under its Monday-first weekday and includes every day
 test('marks today independently of the selected date and announces month updates', () => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date(2026, 10, 14, 0, 30));
-  render(<Calendar {...props} />);
+  render(<ToaCalendar {...props} />);
 
   expect(screen.getByRole('button', { name: formatDate('2026-11-14') })).toHaveAttribute('aria-current', 'date');
   const selected = screen.getByRole('button', { pressed: true });
@@ -96,7 +96,7 @@ test('marks today independently of the selected date and announces month updates
 
 test('renders optional day annotations with consumer-provided accessible names', () => {
   render(
-    <Calendar
+    <ToaCalendar
       {...props}
       getDayAriaLabel={(date) => `${formatDate(date)}, ${date === '2026-11-15' ? 'event scheduled' : 'no events'}`}
       renderDayContent={(date) => (date === '2026-11-15' ? <span aria-hidden="true">★</span> : null)}
@@ -111,7 +111,7 @@ test('renders optional day annotations with consumer-provided accessible names',
 test('disables consumer-specified days while preserving annotations and enabling other days', () => {
   const onDateChange = vi.fn();
   render(
-    <Calendar
+    <ToaCalendar
       {...props}
       onDateChange={onDateChange}
       isDateDisabled={(date) => date === '2026-11-17'}

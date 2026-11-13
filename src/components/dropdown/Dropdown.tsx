@@ -11,7 +11,7 @@ export type DropdownOption = {
   disabled?: boolean;
 };
 
-export type DropdownProps = Pick<ComponentProps<'select'>, 'id' | 'name' | 'disabled' | 'required'> & {
+export type ToaDropdownProps = Pick<ComponentProps<'select'>, 'id' | 'name' | 'disabled' | 'required'> & {
   /** Visible label and accessible name. */
   label: string;
   /** Selected option value. An empty string shows the placeholder. */
@@ -27,7 +27,7 @@ export type DropdownProps = Pick<ComponentProps<'select'>, 'id' | 'name' | 'disa
 };
 
 /** Controlled single-select field. Generates a control ID when `id` is omitted. */
-export default function Dropdown({
+export function ToaDropdown({
   id,
   label,
   value,
@@ -36,7 +36,7 @@ export default function Dropdown({
   placeholder = 'Select an option',
   error,
   ...selectProps
-}: DropdownProps): ReactElement {
+}: ToaDropdownProps): ReactElement {
   const generatedId = useId();
   const selectId = id ?? generatedId;
   const errorId = `${selectId}-error`;

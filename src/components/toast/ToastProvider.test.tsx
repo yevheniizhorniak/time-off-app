@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, renderHook, screen, within } from '@te
 import { StrictMode, type ReactNode } from 'react';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
-import ToastProvider from './ToastProvider';
+import { ToaToastProvider } from './ToastProvider';
 import { useToast } from './useToast';
 
 beforeEach(() => {
@@ -17,7 +17,7 @@ afterEach(() => {
 function wrapper({ children }: { children: ReactNode }): React.JSX.Element {
   return (
     <StrictMode>
-      <ToastProvider>{children}</ToastProvider>
+      <ToaToastProvider>{children}</ToaToastProvider>
     </StrictMode>
   );
 }
@@ -31,7 +31,7 @@ function advance(milliseconds: number): void {
 }
 
 test('requires a provider and explains how to fix missing context', () => {
-  expect(() => renderHook(() => useToast())).toThrow('useToast must be used within a ToastProvider.');
+  expect(() => renderHook(() => useToast())).toThrow('useToast must be used within a ToaToastProvider.');
 });
 
 test('portals an ordered stack, preserves repeated messages, and keeps announcements separate', () => {

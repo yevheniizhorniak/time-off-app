@@ -1,12 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import { expect, test } from 'vitest';
 
-import Label from './Label';
+import { ToaLabel } from './Label';
 
 test('associates its content with the input through htmlFor', () => {
   render(
     <>
-      <Label htmlFor="employee-name">Employee name</Label>
+      <ToaLabel htmlFor="employee-name">Employee name</ToaLabel>
       <input id="employee-name" type="text" />
     </>,
   );
@@ -19,9 +19,9 @@ test('associates its content with the input through htmlFor', () => {
 test('keeps the required marker out of the input accessible name', () => {
   render(
     <>
-      <Label htmlFor="employee-name" required>
+      <ToaLabel htmlFor="employee-name" required>
         Employee name
-      </Label>
+      </ToaLabel>
       <input id="employee-name" required type="text" />
     </>,
   );

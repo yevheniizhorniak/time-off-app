@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { expect, test, vi } from 'vitest';
 
-import ToaButton from './Button';
+import { ToaButton } from './Button';
 
 test('passes clicks through and defaults to a non-submit button', () => {
   const onClick = vi.fn();

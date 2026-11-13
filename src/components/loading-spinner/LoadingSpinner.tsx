@@ -2,7 +2,7 @@ import type { ReactElement } from 'react';
 
 import './LoadingSpinner.scss';
 
-export type LoadingSpinnerProps = {
+export type ToaLoadingSpinnerProps = {
   /** Accessible message, ignored when decorative. Defaults to `Loading`. */
   label?: string;
   /** Hides redundant loading announcements. Defaults to `false`. */
@@ -10,7 +10,7 @@ export type LoadingSpinnerProps = {
 };
 
 /** Animated loading indicator announced with `role="status"`. */
-export default function LoadingSpinner({ label = 'Loading', decorative = false }: LoadingSpinnerProps): ReactElement {
+export function ToaLoadingSpinner({ label = 'Loading', decorative = false }: ToaLoadingSpinnerProps): ReactElement {
   return (
     <span
       aria-hidden={decorative || undefined}

@@ -1,9 +1,9 @@
 import type { ReactElement } from 'react';
 import { Link } from 'react-router-dom';
 
-import Button from '../../components/button/Button';
-import Dropdown from '../../components/dropdown/Dropdown';
-import TextArea from '../../components/text-area/TextArea';
+import { ToaButton } from '../../components/button/Button';
+import { ToaDropdown } from '../../components/dropdown/Dropdown';
+import { ToaTextArea } from '../../components/text-area/TextArea';
 import TimeOffDateField from '../../features/time-off/components/time-off-date-field/TimeOffDateField';
 import TimeOffPageLayout from '../../features/time-off/components/time-off-page-layout/TimeOffPageLayout';
 import { dateKey, leaveTypes } from '../../features/time-off/time-off-domain';
@@ -39,7 +39,7 @@ export default function NewRequest(): ReactElement {
               onChange={(endDate) => setDraft({ ...draft, endDate })}
             />
           </div>
-          <Dropdown
+          <ToaDropdown
             label="Time off type"
             required
             options={leaveTypes}
@@ -48,7 +48,7 @@ export default function NewRequest(): ReactElement {
             disabled={busy}
             onChange={(event) => setDraft({ ...draft, leaveType: event.currentTarget.value })}
           />
-          <TextArea
+          <ToaTextArea
             label="Notes (optional)"
             value={draft.note}
             disabled={busy}
@@ -65,7 +65,7 @@ export default function NewRequest(): ReactElement {
             </p>
           )}
           <div className="app-actions">
-            <Button label="Submit request" type="submit" loading={busy} disabled={!!storageError} />
+            <ToaButton label="Submit request" type="submit" loading={busy} disabled={!!storageError} />
             {!busy && (
               <Link className="app-text-link" to="/requests">
                 Cancel

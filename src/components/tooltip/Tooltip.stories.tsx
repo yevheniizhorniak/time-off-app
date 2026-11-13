@@ -1,15 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 
-import Button from '../button/Button';
+import { ToaButton } from '../button/Button';
 
-import Tooltip from './Tooltip';
+import { ToaTooltip } from './Tooltip';
 
 import './Tooltip.stories.scss';
 
 const meta = {
   title: 'Components/Tooltip',
-  component: Tooltip,
+  component: ToaTooltip,
   args: {
     content: 'Add any details that will help your supervisor review the request.',
     children: (
@@ -25,7 +25,7 @@ const meta = {
       </div>
     ),
   ],
-} satisfies Meta<typeof Tooltip>;
+} satisfies Meta<typeof ToaTooltip>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -33,7 +33,7 @@ type Story = StoryObj<typeof meta>;
 export const NativeButton: Story = {};
 
 export const ExistingButton: Story = {
-  args: { children: <Button label="About notes" /> },
+  args: { children: <ToaButton label="About notes" /> },
 };
 
 export const LongText: Story = {
@@ -47,11 +47,11 @@ export const ViewportEdges: Story = {
   render: (args) => (
     <div className="toa-tooltip-example__edges">
       {['Top left', 'Top right', 'Bottom left', 'Bottom right'].map((label) => (
-        <Tooltip content={args.content} key={label}>
+        <ToaTooltip content={args.content} key={label}>
           <button className="toa-tooltip-example__button" type="button">
             {label}
           </button>
-        </Tooltip>
+        </ToaTooltip>
       ))}
     </div>
   ),
@@ -62,7 +62,7 @@ export const ScrollingContainer: Story = {
     <div className="toa-tooltip-example__scroll">
       <div className="toa-tooltip-example__scroll-content">
         <p>Scroll while the tooltip is open to check that it follows its trigger.</p>
-        <Tooltip {...args} />
+        <ToaTooltip {...args} />
         <p>The bubble can extend outside this scrolling container.</p>
       </div>
     </div>
@@ -74,9 +74,9 @@ export const PreservedAction: Story = {
     const [count, setCount] = useState(0);
     return (
       <>
-        <Tooltip content={args.content}>
-          <Button label="Count activation" onClick={() => setCount((value) => value + 1)} />
-        </Tooltip>
+        <ToaTooltip content={args.content}>
+          <ToaButton label="Count activation" onClick={() => setCount((value) => value + 1)} />
+        </ToaTooltip>
         <p aria-live="polite">Activations: {count}</p>
       </>
     );

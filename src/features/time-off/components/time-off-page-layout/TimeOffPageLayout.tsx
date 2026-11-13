@@ -2,7 +2,7 @@ import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/rea
 import { useState, type ReactElement, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import Button from '../../../../components/button/Button';
+import { ToaButton } from '../../../../components/button/Button';
 import { useSession } from '../../../auth/useSession';
 import { useTimeOff } from '../../hooks/useTimeOff';
 
@@ -44,7 +44,7 @@ export default function TimeOffPageLayout({ children, title }: TimeOffPageLayout
               {title && <h1>{title}</h1>}
               {session && <p className="app-muted">{session.role === 'employee' ? session.name : 'Supervisor'}</p>}
             </div>
-            {session && <Button label="Switch user" disabled={busy} onClick={switchUser} />}
+            {session && <ToaButton label="Switch user" disabled={busy} onClick={switchUser} />}
           </header>
           {error && (
             <p className="app-error" role="alert">
@@ -54,7 +54,7 @@ export default function TimeOffPageLayout({ children, title }: TimeOffPageLayout
           {storageError && (
             <div className="app-storage-error" role="alert">
               <p>{storageError}</p>
-              <Button label="Retry loading requests" disabled={busy} onClick={reload} />
+              <ToaButton label="Retry loading requests" disabled={busy} onClick={reload} />
             </div>
           )}
           {children}

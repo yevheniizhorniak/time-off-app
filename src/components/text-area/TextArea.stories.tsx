@@ -2,11 +2,11 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useArgs } from 'storybook/preview-api';
 import { fn } from 'storybook/test';
 
-import TextArea, { type TextAreaProps } from './TextArea';
+import { ToaTextArea, type ToaTextAreaProps } from './TextArea';
 
 const meta = {
   title: 'Components/TextArea',
-  component: TextArea,
+  component: ToaTextArea,
   argTypes: {
     placeholder: { table: { disable: true } },
     onChange: { control: false },
@@ -18,11 +18,11 @@ const meta = {
     onChange: fn(),
   },
   render: function Render(args) {
-    const [, updateArgs] = useArgs<TextAreaProps>();
+    const [, updateArgs] = useArgs<ToaTextAreaProps>();
 
     return (
       <div style={{ boxSizing: 'border-box', maxWidth: '28rem', padding: '1rem', width: '100%' }}>
-        <TextArea
+        <ToaTextArea
           {...args}
           onChange={(event) => {
             updateArgs({ value: event.currentTarget.value });
@@ -32,7 +32,7 @@ const meta = {
       </div>
     );
   },
-} satisfies Meta<typeof TextArea>;
+} satisfies Meta<typeof ToaTextArea>;
 
 export default meta;
 

@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from 'react';
 
-import Button from '../button/Button';
+import { ToaButton } from '../button/Button';
 
 import { dateKey } from './date-key';
 import { formatDate } from './format-date';
@@ -8,7 +8,7 @@ import { monthDays } from './month-days';
 
 import './Calendar.scss';
 
-export type CalendarProps = {
+export type ToaCalendarProps = {
   /** Only the local year and month are used. */
   month: Date;
   /** Selected YYYY-MM-DD local date. May be outside `month`. */
@@ -29,7 +29,7 @@ export type CalendarProps = {
 };
 
 /** Controlled, Monday-first calendar using local dates. */
-export default function Calendar({
+export function ToaCalendar({
   month,
   selectedDate,
   onMonthChange,
@@ -37,7 +37,7 @@ export default function Calendar({
   isDateDisabled,
   renderDayContent,
   getDayAriaLabel = formatDate,
-}: CalendarProps): ReactElement {
+}: ToaCalendarProps): ReactElement {
   const today = dateKey();
 
   function moveMonth(offset: number): void {
@@ -47,9 +47,9 @@ export default function Calendar({
   return (
     <div className="toa-calendar">
       <div className="toa-calendar__navigation">
-        <Button label="Previous" aria-label="Previous month" onClick={() => moveMonth(-1)} />
+        <ToaButton label="Previous" aria-label="Previous month" onClick={() => moveMonth(-1)} />
         <h3 aria-live="polite">{month.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</h3>
-        <Button label="Next" aria-label="Next month" onClick={() => moveMonth(1)} />
+        <ToaButton label="Next" aria-label="Next month" onClick={() => moveMonth(1)} />
       </div>
       <div className="toa-calendar__grid" role="group" aria-label="Choose a calendar date">
         {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (

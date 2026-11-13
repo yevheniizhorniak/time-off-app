@@ -1,10 +1,10 @@
 import { useId, useRef, useState, type MouseEvent, type ReactElement } from 'react';
 
-import Button from '../../../../components/button/Button';
-import Calendar from '../../../../components/calendar/Calendar';
+import { ToaButton } from '../../../../components/button/Button';
+import { ToaCalendar } from '../../../../components/calendar/Calendar';
 import { dateKey } from '../../../../components/calendar/date-key';
 import { formatDate } from '../../../../components/calendar/format-date';
-import Label from '../../../../components/label/Label';
+import { ToaLabel } from '../../../../components/label/Label';
 import { isDate } from '../../../../dates/is-date';
 import { isWeekend, timeOffHolidayName, timeOffHolidaysForYear } from '../../time-off-holidays';
 
@@ -83,9 +83,9 @@ export default function TimeOffDateField({
 
   return (
     <div className="time-off-date-field">
-      <Label htmlFor={id} required={required}>
+      <ToaLabel htmlFor={id} required={required}>
         {label}
-      </Label>
+      </ToaLabel>
       <button
         type="button"
         id={id}
@@ -122,7 +122,7 @@ export default function TimeOffDateField({
         onClick={dismissBackdrop}
       >
         <h2 id={`${id}-title`}>Choose {label.toLowerCase()}</h2>
-        <Calendar
+        <ToaCalendar
           month={month}
           selectedDate={value}
           onMonthChange={setMonth}
@@ -152,7 +152,7 @@ export default function TimeOffDateField({
           </ul>
         )}
         <div className="time-off-date-field__actions">
-          <Button label="Cancel" onClick={closeCalendar} />
+          <ToaButton label="Cancel" onClick={closeCalendar} />
         </div>
       </dialog>
     </div>

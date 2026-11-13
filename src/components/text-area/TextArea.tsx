@@ -1,10 +1,10 @@
 import { useId, type ChangeEventHandler, type ComponentProps, type ReactElement } from 'react';
 
-import Label from '../label/Label';
+import { ToaLabel } from '../label/Label';
 
 import './TextArea.scss';
 
-export type TextAreaProps = Pick<
+export type ToaTextAreaProps = Pick<
   ComponentProps<'textarea'>,
   'id' | 'name' | 'placeholder' | 'disabled' | 'required' | 'readOnly' | 'autoComplete' | 'minLength' | 'maxLength'
 > & {
@@ -21,7 +21,7 @@ export type TextAreaProps = Pick<
 };
 
 /** Controlled multiline input. Generates a control ID when `id` is omitted. */
-export default function TextArea({
+export function ToaTextArea({
   id,
   label,
   value,
@@ -29,16 +29,16 @@ export default function TextArea({
   error,
   rows = 4,
   ...textareaProps
-}: TextAreaProps): ReactElement {
+}: ToaTextAreaProps): ReactElement {
   const generatedId = useId();
   const controlId = id ?? generatedId;
   const errorId = `${controlId}-error`;
 
   return (
     <div className="toa-text-area">
-      <Label htmlFor={controlId} required={textareaProps.required}>
+      <ToaLabel htmlFor={controlId} required={textareaProps.required}>
         {label}
-      </Label>
+      </ToaLabel>
       <textarea
         {...textareaProps}
         aria-describedby={error ? errorId : undefined}

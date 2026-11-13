@@ -1,22 +1,22 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 
-import Button from '../button/Button';
+import { ToaButton } from '../button/Button';
 
-import ConfirmationDialog, { type ConfirmationDialogProps } from './ConfirmationDialog';
+import { ToaConfirmationDialog, type ToaConfirmationDialogProps } from './ConfirmationDialog';
 
 function ConfirmationDialogExample({
   title,
   message,
   confirmLabel,
   cancelLabel,
-}: Pick<ConfirmationDialogProps, 'title' | 'message' | 'confirmLabel' | 'cancelLabel'>): React.JSX.Element {
+}: Pick<ToaConfirmationDialogProps, 'title' | 'message' | 'confirmLabel' | 'cancelLabel'>): React.JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <>
-      <Button label="Open confirmation" onClick={() => setIsOpen(true)} type="button" />
-      <ConfirmationDialog
+      <ToaButton label="Open confirmation" onClick={() => setIsOpen(true)} type="button" />
+      <ToaConfirmationDialog
         cancelLabel={cancelLabel}
         confirmLabel={confirmLabel}
         isOpen={isOpen}
@@ -31,7 +31,7 @@ function ConfirmationDialogExample({
 
 const meta = {
   title: 'Components/ConfirmationDialog',
-  component: ConfirmationDialog,
+  component: ToaConfirmationDialog,
   args: {
     isOpen: false,
     title: 'Approve time off request?',
@@ -39,7 +39,7 @@ const meta = {
     onConfirm: () => undefined,
     onCancel: () => undefined,
   },
-} satisfies Meta<typeof ConfirmationDialog>;
+} satisfies Meta<typeof ToaConfirmationDialog>;
 
 export default meta;
 

@@ -1,8 +1,8 @@
 import { useState, type FormEvent, type ReactElement } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 
-import Button from '../../components/button/Button';
-import TextField from '../../components/text-field/TextField';
+import { ToaButton } from '../../components/button/Button';
+import { ToaTextField } from '../../components/text-field/TextField';
 import { employeeKey, type Session } from '../../features/auth/session-domain';
 import { useSession } from '../../features/auth/useSession';
 import TimeOffPageLayout from '../../features/time-off/components/time-off-page-layout/TimeOffPageLayout';
@@ -52,7 +52,7 @@ export default function Login(): ReactElement {
           </p>
         )}
         <form noValidate onSubmit={employeeLogin} className="app-form">
-          <TextField
+          <ToaTextField
             label="Employee name"
             autoComplete="name"
             value={name}
@@ -60,10 +60,10 @@ export default function Login(): ReactElement {
             error={nameError}
             onChange={(event) => setName(event.currentTarget.value)}
           />
-          <Button label="Log in as employee" type="submit" />
+          <ToaButton label="Log in as employee" type="submit" />
         </form>
         <div className="app-login__supervisor">
-          <Button label="Log in as a supervisor" onClick={() => login({ role: 'supervisor' })} />
+          <ToaButton label="Log in as a supervisor" onClick={() => login({ role: 'supervisor' })} />
         </div>
       </section>
     </TimeOffPageLayout>

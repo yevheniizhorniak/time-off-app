@@ -1,10 +1,10 @@
 import { useId, type ChangeEventHandler, type ComponentProps, type ReactElement } from 'react';
 
-import Label from '../label/Label';
+import { ToaLabel } from '../label/Label';
 
 import './TextField.scss';
 
-export type TextFieldProps = Pick<
+export type ToaTextFieldProps = Pick<
   ComponentProps<'input'>,
   | 'id'
   | 'name'
@@ -33,7 +33,7 @@ export type TextFieldProps = Pick<
 };
 
 /** Controlled single-line input. Generates a control ID when `id` is omitted. */
-export default function TextField({
+export function ToaTextField({
   id,
   label,
   value,
@@ -41,16 +41,16 @@ export default function TextField({
   error,
   type = 'text',
   ...inputProps
-}: TextFieldProps): ReactElement {
+}: ToaTextFieldProps): ReactElement {
   const generatedId = useId();
   const controlId = id ?? generatedId;
   const errorId = `${controlId}-error`;
 
   return (
     <div className="toa-text-field">
-      <Label htmlFor={controlId} required={inputProps.required}>
+      <ToaLabel htmlFor={controlId} required={inputProps.required}>
         {label}
-      </Label>
+      </ToaLabel>
       <input
         {...inputProps}
         aria-describedby={error ? errorId : undefined}

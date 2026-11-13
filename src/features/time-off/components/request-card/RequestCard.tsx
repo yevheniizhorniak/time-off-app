@@ -1,8 +1,8 @@
 import { useState, type ReactElement } from 'react';
 
-import Button from '../../../../components/button/Button';
-import ConfirmationDialog from '../../../../components/confirmation-dialog/ConfirmationDialog';
-import TextArea from '../../../../components/text-area/TextArea';
+import { ToaButton } from '../../../../components/button/Button';
+import { ToaConfirmationDialog } from '../../../../components/confirmation-dialog/ConfirmationDialog';
+import { ToaTextArea } from '../../../../components/text-area/TextArea';
 import { useToast } from '../../../../components/toast/useToast';
 import { useSession } from '../../../auth/useSession';
 import { useTimeOff } from '../../hooks/useTimeOff';
@@ -89,14 +89,14 @@ export default function RequestCard({ request }: RequestCardProps): ReactElement
       )}
       {canCancel && (
         <div className="app-actions">
-          <Button
+          <ToaButton
             label="Cancel request"
             disabled={busy || !!storageError}
             onClick={() => setConfirmingCancellation(true)}
           />
         </div>
       )}
-      <ConfirmationDialog
+      <ToaConfirmationDialog
         isOpen={confirmingCancellation && canCancel}
         title="Cancel time off?"
         message={`Cancel your time off from ${formatDate(cancelledFromDate ?? request.startDate)} to ${formatDate(request.endDate)}?${request.startDate <= today ? ' Cancellation starts tomorrow. Your leave through today is retained.' : ''}`}
@@ -107,7 +107,7 @@ export default function RequestCard({ request }: RequestCardProps): ReactElement
       />
       {canReview && (
         <div className="request-card__review">
-          <TextArea
+          <ToaTextArea
             label="Decision note (optional)"
             value={note}
             onChange={(event) => setNote(event.currentTarget.value)}
@@ -115,8 +115,8 @@ export default function RequestCard({ request }: RequestCardProps): ReactElement
             disabled={busy}
           />
           <div className="app-actions">
-            <Button label="Approve" disabled={busy || !!storageError} onClick={() => void review('approved')} />
-            <Button label="Reject" disabled={busy || !!storageError} onClick={() => void review('rejected')} />
+            <ToaButton label="Approve" disabled={busy || !!storageError} onClick={() => void review('approved')} />
+            <ToaButton label="Reject" disabled={busy || !!storageError} onClick={() => void review('rejected')} />
           </div>
         </div>
       )}

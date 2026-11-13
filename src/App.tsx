@@ -2,7 +2,7 @@ import { IonApp, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 
 import ApplicationRoutes from './ApplicationRoutes';
-import ToastProvider from './components/toast/ToastProvider';
+import { ToaToastProvider } from './components/toast/ToastProvider';
 import { createSessionRepository } from './features/auth/browser-session-repository';
 import SessionProvider from './features/auth/session-provider/SessionProvider';
 import { createRequestRepository } from './features/time-off/browser-request-repository';
@@ -42,7 +42,7 @@ const sessionRepository = createSessionRepository(() => window.sessionStorage);
 
 const App: React.FC = () => (
   <IonApp>
-    <ToastProvider>
+    <ToaToastProvider>
       <SessionProvider repository={sessionRepository}>
         <TimeOffProvider repository={repository}>
           <IonReactRouter>
@@ -50,7 +50,7 @@ const App: React.FC = () => (
           </IonReactRouter>
         </TimeOffProvider>
       </SessionProvider>
-    </ToastProvider>
+    </ToaToastProvider>
   </IonApp>
 );
 

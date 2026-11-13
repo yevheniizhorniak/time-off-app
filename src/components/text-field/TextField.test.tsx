@@ -2,11 +2,11 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import type { ChangeEvent } from 'react';
 import { expect, test, vi } from 'vitest';
 
-import TextField from './TextField';
+import { ToaTextField } from './TextField';
 
 test('supports native date fields and date bounds', () => {
   const { rerender } = render(
-    <TextField
+    <ToaTextField
       label="Start date"
       type="date"
       min="2026-11-12"
@@ -17,7 +17,7 @@ test('supports native date fields and date bounds', () => {
   );
   expect(screen.getByLabelText('Start date')).toBeInvalid();
   rerender(
-    <TextField
+    <ToaTextField
       label="Start date"
       type="date"
       min="2026-11-12"
@@ -31,7 +31,7 @@ test('supports native date fields and date bounds', () => {
 
 test('forwards native changes and keeps the value controlled by its parent', () => {
   const onChange = vi.fn((event: ChangeEvent<HTMLInputElement>) => event.currentTarget.value);
-  const { rerender } = render(<TextField label="Employee name" onChange={onChange} value="" />);
+  const { rerender } = render(<ToaTextField label="Employee name" onChange={onChange} value="" />);
   const control = screen.getByRole('textbox', { name: 'Employee name' });
 
   fireEvent.change(control, { target: { value: 'Alex Morgan' } });
@@ -40,16 +40,16 @@ test('forwards native changes and keeps the value controlled by its parent', () 
   expect(onChange).toHaveReturnedWith('Alex Morgan');
   expect(control).toHaveValue('');
 
-  rerender(<TextField label="Employee name" onChange={onChange} value="Alex Morgan" />);
+  rerender(<ToaTextField label="Employee name" onChange={onChange} value="Alex Morgan" />);
   expect(control).toHaveValue('Alex Morgan');
 });
 
 test('associates labels with unique, stable IDs and respects an explicit ID', () => {
   const fields = () => (
     <>
-      <TextField label="First" onChange={vi.fn()} value="" />
-      <TextField label="Second" onChange={vi.fn()} value="" />
-      <TextField id="custom-text-field" label="Custom" onChange={vi.fn()} value="" />
+      <ToaTextField label="First" onChange={vi.fn()} value="" />
+      <ToaTextField label="Second" onChange={vi.fn()} value="" />
+      <ToaTextField id="custom-text-field" label="Custom" onChange={vi.fn()} value="" />
     </>
   );
   const { rerender } = render(fields());
@@ -66,7 +66,7 @@ test('associates labels with unique, stable IDs and respects an explicit ID', ()
 
 test('associates validation feedback and removes stale errors', () => {
   const { rerender } = render(
-    <TextField error="This field needs attention." label="Employee name" onChange={vi.fn()} value="" />,
+    <ToaTextField error="This field needs attention." label="Employee name" onChange={vi.fn()} value="" />,
   );
   const control = screen.getByRole('textbox', { name: 'Employee name' });
 
@@ -74,7 +74,7 @@ test('associates validation feedback and removes stale errors', () => {
   expect(control).toHaveAccessibleDescription('This field needs attention.');
   expect(control).toHaveAttribute('aria-describedby', screen.getByText('This field needs attention.').id);
 
-  rerender(<TextField label="Employee name" onChange={vi.fn()} value="" />);
+  rerender(<ToaTextField label="Employee name" onChange={vi.fn()} value="" />);
   expect(control).not.toHaveAttribute('aria-invalid');
   expect(control).not.toHaveAttribute('aria-describedby');
   expect(screen.queryByText('This field needs attention.')).not.toBeInTheDocument();
@@ -83,7 +83,7 @@ test('associates validation feedback and removes stale errors', () => {
 test('supports required validation and native form submission', () => {
   const { container, rerender } = render(
     <form>
-      <TextField label="Employee name" name="field" onChange={vi.fn()} required value="" />
+      <ToaTextField label="Employee name" name="field" onChange={vi.fn()} required value="" />
     </form>,
   );
   const control = screen.getByRole('textbox', { name: 'Employee name' });
@@ -94,7 +94,7 @@ test('supports required validation and native form submission', () => {
 
   rerender(
     <form>
-      <TextField label="Employee name" name="field" onChange={vi.fn()} required value={'Alex Morgan'} />
+      <ToaTextField label="Employee name" name="field" onChange={vi.fn()} required value={'Alex Morgan'} />
     </form>,
   );
   expect(control).toBeValid();
@@ -104,8 +104,8 @@ test('supports required validation and native form submission', () => {
 test('disabled controls are excluded from submission while read-only values remain included', () => {
   const { container } = render(
     <form>
-      <TextField disabled label="Disabled" name="disabled" onChange={vi.fn()} value="Disabled value" />
-      <TextField label="Read only" name="readOnly" onChange={vi.fn()} readOnly required value="Read-only value" />
+      <ToaTextField disabled label="Disabled" name="disabled" onChange={vi.fn()} value="Disabled value" />
+      <ToaTextField label="Read only" name="readOnly" onChange={vi.fn()} readOnly required value="Read-only value" />
     </form>,
   );
 
@@ -118,24 +118,24 @@ test('disabled controls are excluded from submission while read-only values rema
 });
 
 test('defaults to text and supports native email and pattern validation', () => {
-  const { rerender } = render(<TextField label="Email" onChange={vi.fn()} value="" />);
+  const { rerender } = render(<ToaTextField label="Email" onChange={vi.fn()} value="" />);
   const control = screen.getByRole('textbox', { name: 'Email' });
 
   expect(control).toHaveAttribute('type', 'text');
 
-  rerender(<TextField label="Email" onChange={vi.fn()} pattern=".+@example[.]com" type="email" value="invalid" />);
+  rerender(<ToaTextField label="Email" onChange={vi.fn()} pattern=".+@example[.]com" type="email" value="invalid" />);
   expect(control).toBeInvalid();
 
   rerender(
-    <TextField label="Email" onChange={vi.fn()} pattern=".+@example[.]com" type="email" value="alex@other.com" />,
+    <ToaTextField label="Email" onChange={vi.fn()} pattern=".+@example[.]com" type="email" value="alex@other.com" />,
   );
   expect(control).toBeInvalid();
 
   rerender(
-    <TextField label="Email" onChange={vi.fn()} pattern=".+@example[.]com" type="email" value="alex@example.com" />,
+    <ToaTextField label="Email" onChange={vi.fn()} pattern=".+@example[.]com" type="email" value="alex@example.com" />,
   );
   expect(control).toBeValid();
 
-  rerender(<TextField label="Password" onChange={vi.fn()} type="password" value="secret" />);
+  rerender(<ToaTextField label="Password" onChange={vi.fn()} type="password" value="secret" />);
   expect(screen.getByLabelText('Password')).toHaveAttribute('type', 'password');
 });

@@ -2,7 +2,7 @@ import type { ComponentProps, ReactElement, ReactNode } from 'react';
 
 import './Label.scss';
 
-export type LabelProps = Omit<ComponentProps<'label'>, 'children'> & {
+export type ToaLabelProps = Omit<ComponentProps<'label'>, 'children'> & {
   /** Visible, accessible label. */
   children: ReactNode;
   /** Decorative marker. Set the control's `required` separately. Defaults to `false`. */
@@ -10,7 +10,7 @@ export type LabelProps = Omit<ComponentProps<'label'>, 'children'> & {
 };
 
 /** Associates label content with a control through `htmlFor`. */
-export default function Label({ children, className = '', required = false, ...labelProps }: LabelProps): ReactElement {
+export function ToaLabel({ children, className = '', required = false, ...labelProps }: ToaLabelProps): ReactElement {
   return (
     <label {...labelProps} className={`toa-label ${className}`.trim()}>
       {children}

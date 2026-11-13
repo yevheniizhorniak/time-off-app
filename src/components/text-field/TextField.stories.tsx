@@ -2,11 +2,11 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useArgs } from 'storybook/preview-api';
 import { fn } from 'storybook/test';
 
-import TextField, { type TextFieldProps } from './TextField';
+import { ToaTextField, type ToaTextFieldProps } from './TextField';
 
 const meta = {
   title: 'Components/TextField',
-  component: TextField,
+  component: ToaTextField,
   argTypes: {
     placeholder: { table: { disable: true } },
     onChange: { control: false },
@@ -18,11 +18,11 @@ const meta = {
     onChange: fn(),
   },
   render: function Render(args) {
-    const [, updateArgs] = useArgs<TextFieldProps>();
+    const [, updateArgs] = useArgs<ToaTextFieldProps>();
 
     return (
       <div style={{ boxSizing: 'border-box', maxWidth: '28rem', padding: '1rem', width: '100%' }}>
-        <TextField
+        <ToaTextField
           {...args}
           onChange={(event) => {
             updateArgs({ value: event.currentTarget.value });
@@ -32,7 +32,7 @@ const meta = {
       </div>
     );
   },
-} satisfies Meta<typeof TextField>;
+} satisfies Meta<typeof ToaTextField>;
 
 export default meta;
 

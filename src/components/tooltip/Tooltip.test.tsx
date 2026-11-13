@@ -2,9 +2,9 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { createRef } from 'react';
 import { afterEach, expect, test, vi } from 'vitest';
 
-import Button from '../button/Button';
+import { ToaButton } from '../button/Button';
 
-import Tooltip from './Tooltip';
+import { ToaTooltip } from './Tooltip';
 
 afterEach(() => {
   vi.useRealTimers();
@@ -25,9 +25,9 @@ function pointer(
 
 function renderTooltip() {
   const result = render(
-    <Tooltip content="Optional extra information">
+    <ToaTooltip content="Optional extra information">
       <button type="button">Help</button>
-    </Tooltip>,
+    </ToaTooltip>,
   );
   return { ...result, trigger: screen.getByRole('button', { name: 'Help' }) };
 }
@@ -38,9 +38,9 @@ test('preserves the trigger name, ref, descriptions and actions without adding a
   const { container } = render(
     <>
       <p id="existing-description">Existing help</p>
-      <Tooltip content="Extra help">
-        <Button aria-describedby="existing-description" label="Help" onClick={onClick} ref={ref} />
-      </Tooltip>
+      <ToaTooltip content="Extra help">
+        <ToaButton aria-describedby="existing-description" label="Help" onClick={onClick} ref={ref} />
+      </ToaTooltip>
     </>,
   );
 
@@ -143,9 +143,9 @@ test('dismisses on outside pointer interaction or focus change without blocking 
   const onClick = vi.fn();
   render(
     <>
-      <Tooltip content="Help text">
+      <ToaTooltip content="Help text">
         <button type="button">Help</button>
-      </Tooltip>
+      </ToaTooltip>
       <button onClick={onClick}>Outside</button>
     </>,
   );
@@ -169,12 +169,12 @@ test('dismisses on outside pointer interaction or focus change without blocking 
 test('supports independent tooltip instances with unique descriptions', () => {
   render(
     <>
-      <Tooltip content="First description">
+      <ToaTooltip content="First description">
         <button>First</button>
-      </Tooltip>
-      <Tooltip content="Second description">
+      </ToaTooltip>
+      <ToaTooltip content="Second description">
         <button>Second</button>
-      </Tooltip>
+      </ToaTooltip>
     </>,
   );
   const first = screen.getByRole('button', { name: 'First' });
@@ -192,11 +192,11 @@ test('supports independent tooltip instances with unique descriptions', () => {
 
 test('still works when the child stops event propagation', () => {
   render(
-    <Tooltip content="Help text">
+    <ToaTooltip content="Help text">
       <button onClick={(event) => event.stopPropagation()} onFocus={(event) => event.stopPropagation()}>
         Help
       </button>
-    </Tooltip>,
+    </ToaTooltip>,
   );
   const trigger = screen.getByRole('button', { name: 'Help' });
   act(() => {
@@ -256,9 +256,9 @@ test('flips below the top edge, clamps horizontally, and follows scroll, resize 
   expect(tooltip).toHaveStyle({ top: '242px' });
   triggerTop = 400;
   rerender(
-    <Tooltip content="Updated information">
+    <ToaTooltip content="Updated information">
       <button type="button">Help</button>
-    </Tooltip>,
+    </ToaTooltip>,
   );
   expect(tooltip).toHaveStyle({ top: '342px' });
   expect(tooltip).toHaveTextContent('Updated information');

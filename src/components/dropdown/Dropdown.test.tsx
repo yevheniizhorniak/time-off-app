@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import type { ChangeEvent } from 'react';
 import { expect, test, vi } from 'vitest';
 
-import Dropdown from './Dropdown';
+import { ToaDropdown } from './Dropdown';
 
 const options = [
   { value: 'paid', label: 'Paid time off' },
@@ -11,7 +11,7 @@ const options = [
 
 test('forwards the native change event and keeps selection controlled by its parent', () => {
   const onChange = vi.fn((event: ChangeEvent<HTMLSelectElement>) => event.currentTarget.value);
-  const { rerender } = render(<Dropdown label="Time off type" onChange={onChange} options={options} value="" />);
+  const { rerender } = render(<ToaDropdown label="Time off type" onChange={onChange} options={options} value="" />);
   const select = screen.getByRole('combobox', { name: 'Time off type' });
 
   fireEvent.change(select, { target: { value: 'sick' } });
@@ -20,15 +20,15 @@ test('forwards the native change event and keeps selection controlled by its par
   expect(onChange).toHaveReturnedWith('sick');
   expect(select).toHaveValue('');
 
-  rerender(<Dropdown label="Time off type" onChange={onChange} options={options} value="sick" />);
+  rerender(<ToaDropdown label="Time off type" onChange={onChange} options={options} value="sick" />);
   expect(select).toHaveValue('sick');
 });
 
 test('associates each visible label with a unique, stable generated ID', () => {
   const fields = () => (
     <>
-      <Dropdown label="First type" onChange={vi.fn()} options={options} value="" />
-      <Dropdown label="Second type" onChange={vi.fn()} options={options} value="" />
+      <ToaDropdown label="First type" onChange={vi.fn()} options={options} value="" />
+      <ToaDropdown label="Second type" onChange={vi.fn()} options={options} value="" />
     </>
   );
   const { rerender } = render(fields());
@@ -45,7 +45,7 @@ test('associates each visible label with a unique, stable generated ID', () => {
 test('supports a supplied ID, required validation, and native form submission', () => {
   const { container, rerender } = render(
     <form>
-      <Dropdown
+      <ToaDropdown
         id="time-off-type"
         label="Time off type"
         name="type"
@@ -65,7 +65,7 @@ test('supports a supplied ID, required validation, and native form submission', 
 
   rerender(
     <form>
-      <Dropdown
+      <ToaDropdown
         id="time-off-type"
         label="Time off type"
         name="type"
@@ -82,7 +82,7 @@ test('supports a supplied ID, required validation, and native form submission', 
 
 test('connects validation feedback to the select and removes stale error attributes', () => {
   const { rerender } = render(
-    <Dropdown error="Choose a type." label="Time off type" onChange={vi.fn()} options={options} value="" />,
+    <ToaDropdown error="Choose a type." label="Time off type" onChange={vi.fn()} options={options} value="" />,
   );
   const select = screen.getByRole('combobox', { name: 'Time off type' });
 
@@ -90,7 +90,7 @@ test('connects validation feedback to the select and removes stale error attribu
   expect(select).toHaveAccessibleDescription('Choose a type.');
   expect(select).toHaveAttribute('aria-describedby', screen.getByText('Choose a type.').id);
 
-  rerender(<Dropdown label="Time off type" onChange={vi.fn()} options={options} value="paid" />);
+  rerender(<ToaDropdown label="Time off type" onChange={vi.fn()} options={options} value="paid" />);
   expect(select).not.toHaveAttribute('aria-invalid');
   expect(select).not.toHaveAttribute('aria-describedby');
   expect(screen.queryByText('Choose a type.')).not.toBeInTheDocument();
@@ -98,7 +98,7 @@ test('connects validation feedback to the select and removes stale error attribu
 
 test('supports a custom placeholder, disabled options, and a disabled field', () => {
   render(
-    <Dropdown
+    <ToaDropdown
       disabled
       label="Time off type"
       onChange={vi.fn()}

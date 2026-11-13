@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useArgs } from 'storybook/preview-api';
 import { fn } from 'storybook/test';
 
-import Dropdown, { type DropdownProps } from './Dropdown';
+import { ToaDropdown, type ToaDropdownProps } from './Dropdown';
 
 const options = [
   { value: 'paid', label: 'Paid time off' },
@@ -12,7 +12,7 @@ const options = [
 
 const meta = {
   title: 'Components/Dropdown',
-  component: Dropdown,
+  component: ToaDropdown,
   argTypes: {
     onChange: { control: false },
   },
@@ -23,11 +23,11 @@ const meta = {
     onChange: fn(),
   },
   render: function Render(args) {
-    const [, updateArgs] = useArgs<DropdownProps>();
+    const [, updateArgs] = useArgs<ToaDropdownProps>();
 
     return (
       <div style={{ boxSizing: 'border-box', maxWidth: '28rem', padding: '1rem', width: '100%' }}>
-        <Dropdown
+        <ToaDropdown
           {...args}
           onChange={(event) => {
             updateArgs({ value: event.currentTarget.value });
@@ -37,7 +37,7 @@ const meta = {
       </div>
     );
   },
-} satisfies Meta<typeof Dropdown>;
+} satisfies Meta<typeof ToaDropdown>;
 
 export default meta;
 
