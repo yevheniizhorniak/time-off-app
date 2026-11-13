@@ -2,17 +2,18 @@ import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
-import { createRequestRepository, createSessionRepository } from '../browser-storage-repositories';
-import SessionProvider from '../session-provider/SessionProvider';
+import { createSessionRepository } from '../../auth/browser-session-repository';
+import type { Session } from '../../auth/session-domain';
+import SessionProvider from '../../auth/session-provider/SessionProvider';
+import { useSession } from '../../auth/useSession';
+import { createRequestRepository } from '../browser-request-repository';
+import { useTimeOff } from '../hooks/useTimeOff';
 import {
   RequestDecisionError,
   RequestValidationError,
   type RequestDraft,
-  type Session,
   type TimeOffRequest,
 } from '../time-off-domain';
-import { useSession } from '../useSession';
-import { useTimeOff } from '../useTimeOff';
 
 import TimeOffProvider from './TimeOffProvider';
 

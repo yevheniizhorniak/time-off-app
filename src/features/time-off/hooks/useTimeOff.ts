@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-import type { RequestDraft, TimeOffRequest } from './time-off-domain';
+import type { RequestDraft, TimeOffRequest } from '../time-off-domain';
 
 export type TimeOffState = {
   requests: TimeOffRequest[];

@@ -1,9 +1,10 @@
 import { expect, test } from 'vitest';
 
+import type { Session } from '../auth/session-domain';
+
 import {
   createTimeOffRequest,
   dateKey,
-  employeeKey,
   isDate,
   monthDays,
   RequestDecisionError,
@@ -12,7 +13,6 @@ import {
   reviewTimeOffRequest,
   validateRequest,
   type RequestDraft,
-  type Session,
   type TimeOffRequest,
 } from './time-off-domain';
 
@@ -76,7 +76,6 @@ test('allows today, one-day periods and all supported leave types', () => {
   for (const leaveType of ['paid-time-off', 'sick-day', 'parental-leave']) {
     expect(validateRequest({ ...draft, endDate: today, leaveType }, 'alex', [], today)).toEqual({});
   }
-  expect(employeeKey('  ALex  ')).toBe('alex');
 });
 
 test('rejects missing or impossible dates, past dates, reversed periods and unknown leave types', () => {

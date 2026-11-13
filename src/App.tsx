@@ -2,9 +2,10 @@ import { IonApp, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 
 import ApplicationRoutes from './ApplicationRoutes';
-import ToastProvider from './components/toast/ToastProvider';
-import { createRequestRepository, createSessionRepository } from './features/time-off/browser-storage-repositories';
-import SessionProvider from './features/time-off/session-provider/SessionProvider';
+import ToastProvider from './components/toast-provider/ToastProvider';
+import { createSessionRepository } from './features/auth/browser-session-repository';
+import SessionProvider from './features/auth/session-provider/SessionProvider';
+import { createRequestRepository } from './features/time-off/browser-request-repository';
 import TimeOffProvider from './features/time-off/time-off-provider/TimeOffProvider';
 
 // TODO: I should remove some of these

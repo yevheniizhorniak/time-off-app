@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState, type ReactElement, type ReactNode } from 'react';
 
-import type { SessionRepository } from '../browser-storage-repositories';
-import type { Session } from '../time-off-domain';
+import type { Session } from '../session-domain';
+import type { SessionRepository } from '../session-repository';
 import { SessionContext, type SessionState } from '../useSession';
 
 type SessionProviderProps = {

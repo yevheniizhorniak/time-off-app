@@ -1,9 +1,12 @@
 import { useEffect, useRef, type ReactElement, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
-import Toast from './Toast';
+import Toast from '../toast/Toast';
+
 import { ToastContext } from './useToast';
 import { useToastQueue } from './useToastQueue';
+
+import './ToastProvider.scss';
 
 export type ToastProviderProps = {
   /** Application content that can call useToast. Mount one provider around the router. */

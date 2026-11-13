@@ -1,59 +1,19 @@
-import { useRef, useState, type FormEvent, type ReactElement } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import type { ReactElement } from 'react';
+import { Link } from 'react-router-dom';
 
 import Button from '../../components/button/Button';
 import Dropdown from '../../components/dropdown/Dropdown';
 import TextArea from '../../components/text-area/TextArea';
 import TextField from '../../components/text-field/TextField';
-import { useToast } from '../../components/toast/useToast';
-import {
-  dateKey,
-  leaveTypes,
-  RequestValidationError,
-  validateRequest,
-  type RequestDraft,
-  type RequestErrors,
-} from '../../features/time-off/time-off-domain';
-import TimeOffPage from '../../features/time-off/time-off-page/TimeOffPage';
-import { useSession } from '../../features/time-off/useSession';
-import { useTimeOff } from '../../features/time-off/useTimeOff';
+import TimeOffPage from '../../features/time-off/components/time-off-page/TimeOffPage';
+import { dateKey, leaveTypes } from '../../features/time-off/time-off-domain';
+
+import { useNewRequestForm } from './useNewRequestForm';
 
 import './NewRequest.scss';
 
 export default function NewRequest(): ReactElement {
-  const { session } = useSession();
-  const { submitRequest, requests, busy, storageError } = useTimeOff();
-  const { showToast } = useToast();
-  const navigate = useNavigate();
-  const formRef = useRef<HTMLFormElement>(null);
-  const [draft, setDraft] = useState<RequestDraft>({ startDate: '', endDate: '', leaveType: '', note: '' });
-  const [errors, setErrors] = useState<RequestErrors>({});
-  const [error, setError] = useState('');
-
-  function showValidation(next: RequestErrors): void {
-    setErrors(next);
-    requestAnimationFrame(() => formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus());
-  }
-
-  async function submit(event: FormEvent<HTMLFormElement>): Promise<void> {
-    event.preventDefault();
-    setError('');
-    if (session?.role !== 'employee') return;
-    const nextErrors = validateRequest(draft, session.employeeKey, requests);
-    if (Object.keys(nextErrors).length > 0) {
-      showValidation(nextErrors);
-      return;
-    }
-    setErrors({});
-    try {
-      await submitRequest(draft);
-      showToast('Time off request submitted.');
-      navigate('/requests', { replace: true });
-    } catch (failure) {
-      if (failure instanceof RequestValidationError) showValidation(failure.errors);
-      else setError((failure as Error).message);
-    }
-  }
+  const { formRef, draft, setDraft, errors, error, busy, storageError, submit } = useNewRequestForm();
 
   return (
     <TimeOffPage title="Request time off">

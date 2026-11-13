@@ -1,6 +1,6 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 
-import { createRequestRepository, createSessionRepository } from './browser-storage-repositories';
+import { createRequestRepository } from './browser-request-repository';
 import type { TimeOffRequest } from './time-off-domain';
 
 const request: TimeOffRequest = {
@@ -17,7 +17,6 @@ const request: TimeOffRequest = {
 
 beforeEach(() => {
   localStorage.clear();
-  sessionStorage.clear();
 });
 
 test('starts empty and preserves existing requests when applying later changes', async () => {
@@ -84,15 +83,4 @@ test('refreshes only for request storage changes and unsubscribes cleanly', () =
   unsubscribe();
   window.dispatchEvent(new StorageEvent('storage', { key: null }));
   expect(onChange).toHaveBeenCalledOnce();
-});
-
-test('restores simulated sessions and removes them on sign out', () => {
-  const repository = createSessionRepository(() => sessionStorage);
-  expect(repository.load()).toBeNull();
-  repository.save({ role: 'employee', name: 'Alex', employeeKey: 'alex' });
-  expect(repository.load()).toEqual({ role: 'employee', name: 'Alex', employeeKey: 'alex' });
-  repository.save({ role: 'supervisor' });
-  expect(repository.load()).toEqual({ role: 'supervisor' });
-  repository.save(null);
-  expect(repository.load()).toBeNull();
 });

@@ -3,9 +3,9 @@ import { Navigate, useNavigate } from 'react-router-dom';
 
 import Button from '../../components/button/Button';
 import TextField from '../../components/text-field/TextField';
-import { employeeKey, type Session } from '../../features/time-off/time-off-domain';
-import TimeOffPage from '../../features/time-off/time-off-page/TimeOffPage';
-import { useSession } from '../../features/time-off/useSession';
+import { employeeKey, type Session } from '../../features/auth/session-domain';
+import { useSession } from '../../features/auth/useSession';
+import TimeOffPage from '../../features/time-off/components/time-off-page/TimeOffPage';
 
 import './Login.scss';
 

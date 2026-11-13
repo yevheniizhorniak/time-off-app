@@ -1,19 +1,9 @@
-import { employeeKey, isDate, isLeaveType, type Session, type TimeOffRequest } from './time-off-domain';
+import { employeeKey } from '../auth/session-domain';
 
-export interface RequestRepository {
-  load(): TimeOffRequest[];
-  /** Reads the latest data and persists a complete change before resolving. */
-  update(change: (requests: TimeOffRequest[]) => TimeOffRequest[]): Promise<TimeOffRequest[]>;
-  subscribe(onChange: () => void): () => void;
-}
-
-export interface SessionRepository {
-  load(): Session | null;
-  save(session: Session | null): void;
-}
+import type { RequestRepository } from './request-repository';
+import { isDate, isLeaveType, type TimeOffRequest } from './time-off-domain';
 
 const requestKey = 'time-off-app.requests';
-const sessionKey = 'time-off-app.session';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -78,31 +68,6 @@ export function createRequestRepository(getStorage: () => Storage): RequestRepos
       }
       window.addEventListener('storage', handleStorage);
       return () => window.removeEventListener('storage', handleStorage);
-    },
-  };
-}
-
-export function createSessionRepository(getStorage: () => Storage): SessionRepository {
-  return {
-    load() {
-      const raw = getStorage().getItem(sessionKey);
-      if (raw === null) return null;
-      const session: unknown = JSON.parse(raw);
-      if (isRecord(session) && session.role === 'supervisor') return { role: 'supervisor' };
-      if (
-        isRecord(session) &&
-        session.role === 'employee' &&
-        typeof session.name === 'string' &&
-        session.name.trim() &&
-        session.employeeKey === employeeKey(session.name)
-      ) {
-        return { role: 'employee', name: session.name.trim(), employeeKey: session.employeeKey };
-      }
-      throw new Error('Saved session is invalid.');
-    },
-    save(session) {
-      if (session) getStorage().setItem(sessionKey, JSON.stringify(session));
-      else getStorage().removeItem(sessionKey);
     },
   };
 }

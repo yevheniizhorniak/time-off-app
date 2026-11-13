@@ -1,11 +1,11 @@
 import { useState, type ReactElement } from 'react';
 
-import Button from '../../../components/button/Button';
-import TextArea from '../../../components/text-area/TextArea';
-import { useToast } from '../../../components/toast/useToast';
-import { dateKey, formatDate, leaveTypeLabel, type TimeOffRequest } from '../time-off-domain';
-import { useSession } from '../useSession';
-import { useTimeOff } from '../useTimeOff';
+import Button from '../../../../components/button/Button';
+import TextArea from '../../../../components/text-area/TextArea';
+import { useToast } from '../../../../components/toast-provider/useToast';
+import { useSession } from '../../../auth/useSession';
+import { useTimeOff } from '../../hooks/useTimeOff';
+import { dateKey, formatDate, leaveTypeLabel, type TimeOffRequest } from '../../time-off-domain';
 
 import './RequestCard.scss';
 

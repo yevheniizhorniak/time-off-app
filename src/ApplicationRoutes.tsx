@@ -1,7 +1,7 @@
 import { IonRouterOutlet } from '@ionic/react';
 import { Navigate, Route } from 'react-router-dom';
 
-import { useSession } from './features/time-off/useSession';
+import { useSession } from './features/auth/useSession';
 import Login from './pages/Login/Login';
 import NewRequest from './pages/NewRequest/NewRequest';
 import TimeOffRequests from './pages/TimeOffRequests/TimeOffRequests';

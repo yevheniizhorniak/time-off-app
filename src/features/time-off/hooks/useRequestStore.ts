@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import type { RequestRepository } from './browser-storage-repositories';
-import { RequestDecisionError, RequestValidationError, type TimeOffRequest } from './time-off-domain';
+import type { RequestRepository } from '../request-repository';
+import { RequestDecisionError, RequestValidationError, type TimeOffRequest } from '../time-off-domain';
 
 type RequestSnapshot = {
   requests: TimeOffRequest[];

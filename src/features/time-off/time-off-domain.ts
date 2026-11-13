@@ -1,3 +1,8 @@
+import { dateKey, isDate } from '../../dates/calendar-dates';
+import type { Session } from '../auth/session-domain';
+
+export { dateKey, formatDate, isDate, monthDays } from '../../dates/calendar-dates';
+
 export const leaveTypes = [
   { value: 'paid-time-off', label: 'Paid Time Off' },
   { value: 'sick-day', label: 'Sick day' },
@@ -6,7 +11,6 @@ export const leaveTypes = [
 
 export type LeaveType = (typeof leaveTypes)[number]['value'];
 export type RequestStatus = 'pending' | 'approved' | 'rejected';
-export type Session = { role: 'employee'; name: string; employeeKey: string } | { role: 'supervisor' };
 
 export type RequestDraft = {
   startDate: string;
@@ -41,31 +45,8 @@ export class RequestDecisionError extends Error {
   }
 }
 
-export function employeeKey(name: string): string {
-  return name.trim().toLowerCase();
-}
-
-/** Local calendar date, independent of UTC offsets. */
-export function dateKey(date = new Date()): string {
-  return `${String(date.getFullYear()).padStart(4, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-}
-
-export function isDate(value: unknown): value is string {
-  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const parsed = new Date(`${value}T12:00:00`);
-  return !Number.isNaN(parsed.getTime()) && dateKey(parsed) === value;
-}
-
 export function isLeaveType(value: unknown): value is LeaveType {
   return leaveTypes.some((type) => type.value === value);
-}
-
-export function formatDate(value: string): string {
-  return new Date(`${value}T12:00:00`).toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
 }
 
 export function leaveTypeLabel(type: LeaveType): string {
@@ -140,16 +121,4 @@ export function reviewTimeOffRequest(
   const request = requests.find((item) => item.id === id);
   if (!request || request.status !== 'pending') throw new RequestDecisionError();
   return requests.map((item) => (item.id === id ? { ...item, status, reviewerNote: note.trim(), reviewedAt } : item));
-}
-
-export function monthDays(month: Date): (string | null)[] {
-  const first = new Date(month.getFullYear(), month.getMonth(), 1, 12);
-  const offset = (first.getDay() + 6) % 7;
-  const count = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
-  return [
-    ...Array<null>(offset).fill(null),
-    ...Array.from({ length: count }, (_, index) =>
-      dateKey(new Date(month.getFullYear(), month.getMonth(), index + 1, 12)),
-    ),
-  ];
 }

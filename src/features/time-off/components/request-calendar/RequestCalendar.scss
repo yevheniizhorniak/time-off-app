@@ -1,0 +1,40 @@
+.time-off-app {
+  .request-calendar {
+    align-self: start;
+    min-width: 0;
+    > h2 {
+      margin-bottom: 1rem;
+    }
+    > .app-muted {
+      margin-bottom: 1rem;
+    }
+    &__count {
+      background: var(--app-subtle);
+      border-radius: 10px;
+      color: var(--ion-text-color);
+      font-size: 0.625rem;
+      min-width: 16px;
+      padding: 0 3px;
+    }
+    &__details {
+      border-top: 1px solid var(--app-border);
+      padding-top: 1rem;
+    }
+    &__details p {
+      margin-top: 0.5rem;
+    }
+    ul {
+      margin: 0.75rem 0 0;
+      padding-left: 1.25rem;
+    }
+    li + li {
+      margin-top: 0.5rem;
+    }
+  }
+
+  @media (max-width: 360px) {
+    .request-calendar {
+      padding: 0.75rem;
+    }
+  }
+}

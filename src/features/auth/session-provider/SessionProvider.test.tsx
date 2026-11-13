@@ -2,8 +2,9 @@ import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, expect, test, vi } from 'vitest';
 
-import { createSessionRepository, type SessionRepository } from '../browser-storage-repositories';
-import type { Session } from '../time-off-domain';
+import { createSessionRepository } from '../browser-session-repository';
+import type { Session } from '../session-domain';
+import type { SessionRepository } from '../session-repository';
 import { useSession } from '../useSession';
 
 import SessionProvider from './SessionProvider';

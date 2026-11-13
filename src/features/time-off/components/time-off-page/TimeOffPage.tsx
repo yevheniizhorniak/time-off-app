@@ -2,9 +2,9 @@ import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/rea
 import { useState, type ReactElement, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import Button from '../../../components/button/Button';
-import { useSession } from '../useSession';
-import { useTimeOff } from '../useTimeOff';
+import Button from '../../../../components/button/Button';
+import { useSession } from '../../../auth/useSession';
+import { useTimeOff } from '../../hooks/useTimeOff';
 
 import './TimeOffPage.scss';
 
