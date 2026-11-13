@@ -1,15 +1,12 @@
 button.toa-button {
   background: var(--ion-color-primary, #0054e9);
   color: var(--ion-color-primary-contrast, #fff);
-  display: inline-flex; // TODO: Probably should be inline-block
-  align-items: center;
+  display: inline-block;
   border: 0;
   border-radius: 8px;
   cursor: pointer;
   font: inherit;
   font-weight: 600;
-  gap: 0.5rem;
-  justify-content: center;
   min-height: 44px;
   padding: 0.625rem 1rem;
 
@@ -30,6 +27,13 @@ button.toa-button {
     cursor: not-allowed;
     opacity: 0.6;
   }
+}
+
+.toa-button__content {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
 }
 
 .toa-button__spinner {

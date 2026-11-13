@@ -34,7 +34,7 @@ test('prevents clicks while disabled or loading and keeps the label accessible',
   expect(button).toBeDisabled();
   expect(button).toHaveAttribute('aria-busy', 'true');
   expect(button).toHaveTextContent('Save request');
-  expect(button.lastElementChild).toHaveClass('toa-button__spinner');
+  expect(button.querySelector('.toa-button__spinner')).toBeInTheDocument();
   expect(button.querySelector('.toa-button__spinner > .toa-loading-spinner')).toHaveAttribute('aria-hidden', 'true');
   expect(screen.queryByRole('status')).not.toBeInTheDocument();
   button.click();

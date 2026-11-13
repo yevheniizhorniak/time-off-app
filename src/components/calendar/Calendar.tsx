@@ -69,8 +69,10 @@ export function ToaCalendar({
               aria-current={date === today ? 'date' : undefined}
               onClick={() => onDateChange(date)}
             >
-              <span>{Number(date.slice(-2))}</span>
-              {renderDayContent?.(date)}
+              <span className="toa-calendar__day-content">
+                <span>{Number(date.slice(-2))}</span>
+                {renderDayContent?.(date)}
+              </span>
             </button>
           ) : (
             <span key={`blank-${index}`} />

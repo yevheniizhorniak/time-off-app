@@ -22,6 +22,7 @@
 
 # Code style
 
+- Preserve each component root’s conventional outer display, sizing, and participation in the surrounding layout. When internal arrangement would change that behavior, apply the layout rules to an appropriate inner wrapper. Block-level containers may use flex or grid when their outer behavior remains appropriate. Allow intentional differences required by the component’s API or design.
 - Name files after their specific responsibility and contents so readers can infer their purpose without opening them. Include relevant implementation details when they distinguish the module, such as `postgres-session-service.ts` instead of `auth.ts`. Avoid vague names such as `utils.ts` or `helpers.ts`; preserve framework-required names such as `route.ts` and `page.tsx`.
 - When a component has more than one associated file (including stories, styles, tests, or documentation), keep those files together in a dedicated component folder. Exception: preserve the starter entrypoint `src/App.tsx` and its companion `src/App.test.tsx` at the root of `src/`.
 - Define one React component per implementation file. Move helper components into their own files and import them. Related props, types, constants, and non-component helpers may stay with the component; Storybook files may contain multiple stories.

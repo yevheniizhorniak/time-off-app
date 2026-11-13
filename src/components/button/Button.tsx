@@ -27,12 +27,14 @@ export function ToaButton({
       type={type}
       {...buttonProps}
     >
-      {label}
-      {loading && (
-        <span className="toa-button__spinner">
-          <ToaLoadingSpinner decorative />
-        </span>
-      )}
+      <span className="toa-button__content">
+        {label}
+        {loading && (
+          <span className="toa-button__spinner">
+            <ToaLoadingSpinner decorative />
+          </span>
+        )}
+      </span>
     </button>
   );
 }
