@@ -14,8 +14,10 @@
     min-width: 44px;
     padding: 0.625rem 1rem;
 
-    &:hover:not(:disabled) {
-      background: var(--toa-color-primary-hover);
+    @media (hover: hover) and (pointer: fine) {
+      &:hover:not(:disabled) {
+        background: var(--toa-color-primary-hover);
+      }
     }
 
     &:active:not(:disabled) {

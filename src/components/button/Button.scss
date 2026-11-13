@@ -14,8 +14,10 @@ button.toa-button {
     background: var(--toa-color-primary);
     color: var(--toa-color-primary-text);
 
-    &:hover:not(:disabled) {
-      background: var(--toa-color-primary-hover);
+    @media (hover: hover) and (pointer: fine) {
+      &:hover:not(:disabled) {
+        background: var(--toa-color-primary-hover);
+      }
     }
 
     &:active:not(:disabled) {
@@ -33,8 +35,10 @@ button.toa-button {
     border-color: var(--toa-color-medium);
     color: var(--toa-text-color);
 
-    &:hover:not(:disabled) {
-      background: var(--toa-color-secondary-hover);
+    @media (hover: hover) and (pointer: fine) {
+      &:hover:not(:disabled) {
+        background: var(--toa-color-secondary-hover);
+      }
     }
 
     &:active:not(:disabled) {

@@ -62,8 +62,10 @@
     overflow-wrap: anywhere;
     padding: 0.25rem 0;
 
-    &:hover:not(:disabled):not([aria-pressed='true']) {
-      background: var(--toa-color-secondary-hover);
+    @media (hover: hover) and (pointer: fine) {
+      &:hover:not(:disabled):not([aria-pressed='true']) {
+        background: var(--toa-color-secondary-hover);
+      }
     }
 
     &:active:not(:disabled):not([aria-pressed='true']) {

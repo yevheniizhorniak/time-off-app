@@ -104,7 +104,11 @@ export default function TimeOffRequestCard({ timeOffRequest }: TimeOffRequestCar
           <ToaButton
             label="Cancel time off request"
             disabled={busy || loading || !!loadError}
-            onClick={() => setConfirmingCancellation(true)}
+            onClick={(event) => {
+              // Safari does not focus buttons on click; restore focus here on dismissal.
+              event.currentTarget.focus();
+              setConfirmingCancellation(true);
+            }}
           />
         </div>
       )}

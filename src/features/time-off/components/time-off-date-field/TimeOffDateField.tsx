@@ -1,4 +1,4 @@
-import { useId, useState, type ReactElement } from 'react';
+import { useId, useState, type MouseEvent, type ReactElement } from 'react';
 
 import { ToaButton } from '../../../../components/button/Button';
 import { ToaCalendar } from '../../../../components/calendar/Calendar';
@@ -51,7 +51,9 @@ export default function TimeOffDateField({
     return disabled || date < minimum || isWeekend(date) || !!timeOffHolidayName(date);
   }
 
-  function openCalendar(): void {
+  function openCalendar(event: MouseEvent<HTMLButtonElement>): void {
+    // Safari does not focus buttons on click; the dialog needs its return target.
+    event.currentTarget.focus();
     setMonth(new Date(`${isDate(value) ? value : minimum}T12:00:00`));
     setOpen(true);
   }

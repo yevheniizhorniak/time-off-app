@@ -37,8 +37,10 @@
       min-height: inherit;
     }
 
-    &:hover {
-      background: var(--toa-color-dark-hover);
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: var(--toa-color-dark-hover);
+      }
     }
 
     &:active {

@@ -11,8 +11,9 @@ secrets.
 2. Download **time-off-app-android-debug** from the successful run's summary and
    extract `app-debug.apk`. Artifacts expire after 14 days.
 
-The workflow installs dependencies and Playwright Chromium, then runs lint, all
-unit tests, and all three browser test projects before building. A failure stops
+The workflow installs dependencies and Playwright Chromium, then runs lint,
+all unit tests, and the Mobile Chrome and Desktop Chrome browser test projects
+before building. A failure stops
 the build and APK upload; available Playwright failure reports are uploaded.
 
 ## Build locally

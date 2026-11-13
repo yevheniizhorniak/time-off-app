@@ -313,7 +313,7 @@ test('guards routes, navigates calendar across years and fits the viewport', asy
   await page.getByRole('button', { name: 'Log in as a supervisor', exact: true }).click();
   await page.goto('/time-off-requests/new');
   await expect(page).toHaveURL(/\/time-off-requests$/);
-  await expect(page.locator('html')).toHaveAttribute('mode', testInfo.project.name === 'iOS Chrome' ? 'ios' : 'md');
+  await expect(page.locator('html')).toHaveAttribute('mode', testInfo.project.name === 'Mobile Safari' ? 'ios' : 'md');
   await page.getByRole('button', { name: 'Next month' }).click();
   await expect(page.getByRole('heading', { name: 'December 2026', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Next month' }).click();
@@ -361,6 +361,7 @@ for (const status of ['pending', 'approved']) {
     }
     const cancel = page.getByRole('button', { name: 'Cancel time off request', exact: true });
     const dialog = page.getByRole('dialog', { name: 'Cancel time off?', exact: true });
+    await expect(cancel).toBeEnabled();
     const original = await page.evaluate(() => localStorage.getItem('time-off-app.time-off-requests'));
     await cancel.focus();
     await page.keyboard.press('Enter');
@@ -451,6 +452,8 @@ test('failed cancellation preserves the time off request and allows confirmation
   await loginEmployee(page);
   await fillTimeOffRequest(page);
   await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
+  const cancel = page.getByRole('button', { name: 'Cancel time off request', exact: true });
+  await expect(cancel).toBeEnabled();
   const original = await page.evaluate(() => localStorage.getItem('time-off-app.time-off-requests'));
   await page.evaluate(() => {
     document.documentElement.dataset.failSave = 'true';
@@ -462,7 +465,6 @@ test('failed cancellation preserves the time off request and allows confirmation
       original.call(this, key, value);
     };
   });
-  const cancel = page.getByRole('button', { name: 'Cancel time off request', exact: true });
   const dialog = page.getByRole('dialog', { name: 'Cancel time off?', exact: true });
   await cancel.click();
   await dialog.getByRole('button', { name: 'Cancel time off', exact: true }).click();

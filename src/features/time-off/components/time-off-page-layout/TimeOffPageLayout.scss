@@ -22,7 +22,9 @@
   box-sizing: border-box;
   margin: 0 auto;
   max-width: 1180px;
-  padding: 1.5rem 1rem 3rem;
+  // IonHeader handles the top inset; routed IonContent has no side/bottom insets.
+  padding: 1.5rem max(0.75rem, env(safe-area-inset-right, 0px)) max(3rem, env(safe-area-inset-bottom, 0px))
+    max(0.75rem, env(safe-area-inset-left, 0px));
   color: var(--toa-text-color);
   line-height: var(--toa-line-height-body);
 
@@ -110,11 +112,10 @@
   }
 
   @media (min-width: 540px) {
-    padding: 2rem 1.5rem 4rem;
+    padding: 2rem max(1.5rem, env(safe-area-inset-right, 0px)) max(4rem, env(safe-area-inset-bottom, 0px))
+      max(1.5rem, env(safe-area-inset-left, 0px));
   }
   @media (max-width: 360px) {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
     .app-heading {
       gap: 0.5rem;
     }

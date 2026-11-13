@@ -44,8 +44,11 @@ jobs:
       - name: Lint
         run: corepack pnpm run lint
 
-      - name: Run all unit and browser tests
-        run: corepack pnpm run test
+      - name: Run unit tests
+        run: corepack pnpm run test:unit
+
+      - name: Run Chromium browser tests
+        run: corepack pnpm run test:e2e --project="Mobile Chrome" --project="Desktop Chrome"
 
       - name: Build Android debug APK
         run: corepack pnpm run build:android

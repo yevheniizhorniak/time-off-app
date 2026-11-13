@@ -22,8 +22,6 @@ corepack pnpm run dev
 corepack pnpm run storybook
 ```
 
-Open the local URL printed by Vite.
-
 ## Assumptions
 
 ### Product rules

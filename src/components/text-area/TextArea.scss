@@ -21,8 +21,10 @@
     resize: vertical;
     width: 100%;
 
-    &:hover:not(:disabled) {
-      border-color: var(--toa-color-primary);
+    @media (hover: hover) and (pointer: fine) {
+      &:hover:not(:disabled) {
+        border-color: var(--toa-color-primary);
+      }
     }
 
     &:active:not(:disabled) {

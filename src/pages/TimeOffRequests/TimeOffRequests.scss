@@ -16,8 +16,10 @@
     min-height: 44px;
     padding: 0.625rem 1rem;
     text-decoration: none;
-    &:hover {
-      background: var(--toa-color-primary-hover);
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: var(--toa-color-primary-hover);
+      }
     }
     &:active {
       background: var(--toa-color-primary-active);

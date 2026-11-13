@@ -4,8 +4,10 @@
     display: inline-flex;
     min-height: 44px;
     padding: 0.5rem;
-    &:hover {
-      color: var(--toa-color-primary-hover);
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        color: var(--toa-color-primary-hover);
+      }
     }
     &:active {
       color: var(--toa-color-primary-active);
