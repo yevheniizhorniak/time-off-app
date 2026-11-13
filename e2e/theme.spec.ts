@@ -17,6 +17,7 @@ for (const osTheme of ['light', 'dark'] as const) {
       theme === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(23, 36, 59)',
     );
 
+    await page.getByLabel('Employee name').clear();
     await page.getByRole('button', { name: 'Log in as employee', exact: true }).click();
     await expect(page.getByText('Enter your name.', { exact: true })).toHaveCSS(
       'color',

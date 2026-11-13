@@ -7,10 +7,13 @@ import type { TimeOffRequestRepository } from './types/time-off-request-reposito
 
 const timeOffRequestKey = 'time-off-app.time-off-requests';
 
-export function createTimeOffRequestRepository(getStorage: () => Storage): TimeOffRequestRepository {
-  function read(): TimeOffRequest[] {
+export function createTimeOffRequestRepository(
+  getStorage: () => Storage,
+  createInitialData: () => TimeOffRequest[] = () => [],
+): TimeOffRequestRepository {
+  function read(): TimeOffRequest[] | null {
     const raw = getStorage().getItem(timeOffRequestKey);
-    if (raw === null) return [];
+    if (raw === null) return null;
     const data: unknown = JSON.parse(raw);
     if (!isRecord(data) || data.version !== 2) {
       throw new Error('Saved time off requests have an unsupported format.');
@@ -26,9 +29,12 @@ export function createTimeOffRequestRepository(getStorage: () => Storage): TimeO
     return timeOffRequests;
   }
 
-  async function update(change: (current: TimeOffRequest[]) => TimeOffRequest[]): Promise<TimeOffRequest[]> {
+  async function update(change?: (current: TimeOffRequest[]) => TimeOffRequest[]): Promise<TimeOffRequest[]> {
     function commit(): TimeOffRequest[] {
-      const timeOffRequests = change(read());
+      const saved = read();
+      if (!change && saved !== null) return saved;
+      const current = saved ?? createInitialData();
+      const timeOffRequests = change ? change(current) : current;
       getStorage().setItem(timeOffRequestKey, JSON.stringify({ version: 2, timeOffRequests }));
       return timeOffRequests;
     }
@@ -39,7 +45,7 @@ export function createTimeOffRequestRepository(getStorage: () => Storage): TimeO
 
   return {
     async load() {
-      return read();
+      return read() ?? update();
     },
     submit(draft, employee) {
       return update((current) => {

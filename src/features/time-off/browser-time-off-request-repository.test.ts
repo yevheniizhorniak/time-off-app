@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
 import { createTimeOffRequestRepository } from './browser-time-off-request-repository';
+import { createDemoTimeOffRequests } from './demo-time-off-requests';
 import type { TimeOffRequest } from './types/time-off-request';
 import type { TimeOffRequestDraft } from './types/time-off-request-draft';
 import {
@@ -42,6 +43,121 @@ afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+});
+
+test('persists initial examples once and preserves dates and decisions on later loads', async () => {
+  const initialize = vi.fn(() => createDemoTimeOffRequests(new Date()));
+  const repository = createTimeOffRequestRepository(() => localStorage, initialize);
+  const examples = await repository.load();
+  expect(examples).toHaveLength(3);
+  expect(JSON.parse(localStorage.getItem('time-off-app.time-off-requests')!)).toEqual({
+    version: 2,
+    timeOffRequests: examples,
+  });
+  const pending = examples.find(({ status }) => status === 'pending')!;
+  const reviewed = await repository.review(pending.id, 'approved', 'Demo reviewed');
+  vi.setSystemTime(new Date('2027-01-03T12:00:00Z'));
+  expect(await createTimeOffRequestRepository(() => localStorage, initialize).load()).toEqual(reviewed);
+  expect(initialize).toHaveBeenCalledOnce();
+});
+
+test.each([{ saved: [] }, { saved: [timeOffRequest] }])(
+  'preserves existing collections instead of initializing: %j',
+  async ({ saved }) => {
+    saveTimeOffRequests(saved);
+    const initialize = vi.fn(() => createDemoTimeOffRequests(new Date()));
+    expect(await createTimeOffRequestRepository(() => localStorage, initialize).load()).toEqual(saved);
+    expect(initialize).not.toHaveBeenCalled();
+  },
+);
+
+test('preserves corrupt storage without invoking the initial-data factory', async () => {
+  localStorage.setItem('time-off-app.time-off-requests', '{broken');
+  const initialize = vi.fn(() => createDemoTimeOffRequests(new Date()));
+  await expect(createTimeOffRequestRepository(() => localStorage, initialize).load()).rejects.toThrow();
+  expect(initialize).not.toHaveBeenCalled();
+  expect(localStorage.getItem('time-off-app.time-off-requests')).toBe('{broken');
+});
+
+test('reports failed initialization writes and allows retry', async () => {
+  const repository = createTimeOffRequestRepository(
+    () => localStorage,
+    () => createDemoTimeOffRequests(new Date()),
+  );
+  const failure = new DOMException('Storage full', 'QuotaExceededError');
+  const write = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    throw failure;
+  });
+  await expect(repository.load()).rejects.toBe(failure);
+  expect(localStorage.getItem('time-off-app.time-off-requests')).toBeNull();
+  write.mockRestore();
+  expect(await repository.load()).toHaveLength(3);
+});
+
+test('reports initial-data factory failures without persisting a collection', async () => {
+  const failure = new Error('Cannot generate examples');
+  const repository = createTimeOffRequestRepository(
+    () => localStorage,
+    () => {
+      throw failure;
+    },
+  );
+  await expect(repository.load()).rejects.toBe(failure);
+  expect(localStorage.getItem('time-off-app.time-off-requests')).toBeNull();
+});
+
+test('initializes a command before the first load without losing examples', async () => {
+  const repository = createTimeOffRequestRepository(
+    () => localStorage,
+    () => createDemoTimeOffRequests(new Date()),
+  );
+  const submitted = await repository.submit(draft, employee);
+  expect(submitted).toHaveLength(4);
+  expect(submitted.filter(({ employeeKey }) => employeeKey === 'testusr')).toHaveLength(3);
+  expect(await repository.load()).toEqual(submitted);
+});
+
+test('rechecks initialization inside the same lock used by commands', async () => {
+  const granted = Promise.withResolvers<void>();
+  let queue = granted.promise;
+  const lock = vi.fn((_name: string, commit: () => TimeOffRequest[]) => {
+    const result = queue.then(commit);
+    queue = result.then(() => undefined);
+    return result;
+  });
+  vi.stubGlobal('navigator', { locks: { request: lock } });
+  const initialize = vi.fn(() => createDemoTimeOffRequests(new Date()));
+  const first = createTimeOffRequestRepository(() => localStorage, initialize);
+  const second = createTimeOffRequestRepository(() => localStorage, initialize);
+  const loading = first.load();
+  const submitting = second.submit(draft, employee);
+  const alsoLoading = second.load();
+  granted.resolve();
+  expect(await loading).toHaveLength(3);
+  const submitted = await submitting;
+  expect(submitted).toHaveLength(4);
+  expect(await alsoLoading).toEqual(submitted);
+  expect(initialize).toHaveBeenCalledOnce();
+  expect(lock).toHaveBeenCalledTimes(3);
+  expect(lock).toHaveBeenCalledWith('time-off-app.time-off-requests', expect.any(Function));
+});
+
+test('does not overwrite data written while initialization waits for its lock', async () => {
+  const granted = Promise.withResolvers<void>();
+  vi.stubGlobal('navigator', {
+    locks: {
+      request: async (_name: string, commit: () => TimeOffRequest[]) => {
+        await granted.promise;
+        return commit();
+      },
+    },
+  });
+  const initialize = vi.fn(() => createDemoTimeOffRequests(new Date()));
+  const loading = createTimeOffRequestRepository(() => localStorage, initialize).load();
+  saveTimeOffRequests([timeOffRequest]);
+  granted.resolve();
+  expect(await loading).toEqual([timeOffRequest]);
+  expect(initialize).not.toHaveBeenCalled();
 });
 
 test('submits and reviews against the latest collection, returning persisted snapshots', async () => {

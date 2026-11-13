@@ -5,6 +5,8 @@ test('returns focus to the name field after an empty login so typing can continu
   const name = page.getByRole('textbox', { name: 'Employee name' });
 
   await expect(name).not.toHaveAttribute('aria-invalid');
+  await expect(name).toHaveValue('testusr');
+  await name.clear();
   await page.getByRole('button', { name: 'Log in as employee', exact: true }).click();
 
   await expect(name).toHaveAttribute('aria-invalid', 'true');

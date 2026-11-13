@@ -6,6 +6,7 @@ import { ToaToastProvider } from './components/toast/ToastProvider';
 import { createSessionRepository } from './features/auth/browser-session-repository';
 import SessionProvider from './features/auth/session-provider/SessionProvider';
 import { createTimeOffRequestRepository } from './features/time-off/browser-time-off-request-repository';
+import { createDemoTimeOffRequests } from './features/time-off/demo-time-off-requests';
 import TimeOffProvider from './features/time-off/time-off-provider/TimeOffProvider';
 import ThemeProvider from './theme/theme-provider/ThemeProvider';
 
@@ -32,7 +33,10 @@ import './theme/variables.scss';
 
 setupIonicReact();
 
-const repository = createTimeOffRequestRepository(() => window.localStorage);
+const repository = createTimeOffRequestRepository(
+  () => window.localStorage,
+  () => createDemoTimeOffRequests(new Date()),
+);
 const sessionRepository = createSessionRepository(() => window.sessionStorage);
 
 const App: React.FC = () => (

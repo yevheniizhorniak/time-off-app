@@ -2,6 +2,11 @@ import { expect, test, type Page } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
   await page.clock.setFixedTime(new Date('2026-11-12T12:00:00+01:00'));
+  await page.addInitScript(() => {
+    if (localStorage.getItem('time-off-app.time-off-requests') === null) {
+      localStorage.setItem('time-off-app.time-off-requests', JSON.stringify({ version: 2, timeOffRequests: [] }));
+    }
+  });
   await page.goto('/');
 });
 
@@ -200,7 +205,10 @@ test('preserves form input on failed saves and supports retry', async ({ page })
   await expect(page.getByRole('alert')).toContainText('Your changes could not be saved');
   await expect(page.getByLabel('Notes (optional)')).toHaveValue('Keep this note');
   await expect(page.getByRole('button', { name: 'Start date', exact: true })).toHaveText('Nov 13, 2026');
-  expect(await page.evaluate(() => localStorage.getItem('time-off-app.time-off-requests'))).toBeNull();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('time-off-app.time-off-requests')!))).toEqual({
+    version: 2,
+    timeOffRequests: [],
+  });
   await page.evaluate(() => {
     document.documentElement.dataset.failSave = 'false';
   });
@@ -328,6 +336,7 @@ test('guards routes, navigates calendar across years and fits the viewport', asy
 
 test('supports keyboard login', async ({ page }) => {
   await page.goto('/login');
+  await page.getByLabel('Employee name').clear();
   await page.getByLabel('Employee name').focus();
   await page.keyboard.type('Keyboard user');
   await page.keyboard.press('Tab');

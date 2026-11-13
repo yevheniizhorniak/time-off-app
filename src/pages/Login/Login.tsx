@@ -14,7 +14,7 @@ export default function Login(): ReactElement {
   const { session, signIn, sessionError } = useSession();
   const navigate = useNavigate();
   const formRef = useRef<HTMLFormElement>(null);
-  const [name, setName] = useState('');
+  const [name, setName] = useState('testusr');
   const [nameError, setNameError] = useState('');
   const [error, setError] = useState('');
 
@@ -57,6 +57,7 @@ export default function Login(): ReactElement {
         <form noValidate onSubmit={employeeLogin} className="app-form" ref={formRef}>
           <ToaTextField
             label="Employee name"
+            placeholder="enter testusr for prepopulated data"
             autoComplete="name"
             value={name}
             required
