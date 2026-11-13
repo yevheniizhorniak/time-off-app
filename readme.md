@@ -50,6 +50,14 @@ The employee-name field defaults to `testusr` whenever the login page opens. It 
 
 See [Calendar policy](docs/calendar-policy.md) for calendar, holiday, and timezone rules.
 
+## AI Usage during the development
+
+During the implementation of this app AI agents were used to write initial implementation which was heavily reworked and guided. It was heavily used to write tests.
+
+AI wasn't used to define code standarts, architecture or scope of the implementation.
+
+Output of AI was heavily reworked, reviewed and guided.
+
 ## Android debug build
 
 See [Android build instructions](docs/android-build.md) to get a debug APK from
