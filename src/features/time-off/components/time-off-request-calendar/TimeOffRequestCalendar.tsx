@@ -10,11 +10,16 @@ import type { TimeOffRequest } from '../../types/time-off-request';
 import './TimeOffRequestCalendar.scss';
 
 type TimeOffRequestCalendarProps = {
-  /** Time off requests used to highlight pending and approved leave across the team. */
+  /** Requests visible to the viewer; pending and approved leave is highlighted. */
   timeOffRequests: readonly TimeOffRequest[];
+  /** Visible heading and accessible region name. Defaults to Team calendar. */
+  title?: string;
 };
 
-export default function TimeOffRequestCalendar({ timeOffRequests }: TimeOffRequestCalendarProps): ReactElement {
+export default function TimeOffRequestCalendar({
+  timeOffRequests,
+  title = 'Team calendar',
+}: TimeOffRequestCalendarProps): ReactElement {
   const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1, 12));
   const [selected, setSelected] = useState(dateKey());
   const headingId = useId();
@@ -34,7 +39,7 @@ export default function TimeOffRequestCalendar({ timeOffRequests }: TimeOffReque
 
   return (
     <section className="time-off-request-calendar app-panel" aria-labelledby={headingId}>
-      <h2 id={headingId}>Team calendar</h2>
+      <h2 id={headingId}>{title}</h2>
       <p className="app-muted">Daily counts include pending and approved time off requests.</p>
       <ToaCalendar
         month={month}

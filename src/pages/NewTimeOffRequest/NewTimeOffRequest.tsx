@@ -14,7 +14,8 @@ import { useNewTimeOffRequestForm } from './useNewTimeOffRequestForm';
 import './NewTimeOffRequest.scss';
 
 export default function NewTimeOffRequest(): ReactElement {
-  const { formRef, draft, setDraft, errors, error, busy, loading, loadError, submit } = useNewTimeOffRequestForm();
+  const { formRef, draft, setDraft, errors, error, busy, loading, loadError, getDateUnavailableReason, submit } =
+    useNewTimeOffRequestForm();
 
   return (
     <TimeOffPageLayout title="Request time off">
@@ -27,7 +28,8 @@ export default function NewTimeOffRequest(): ReactElement {
               min={dateKey()}
               value={draft.startDate}
               error={errors.startDate}
-              disabled={busy}
+              disabled={busy || loading || !!loadError}
+              getDateUnavailableReason={getDateUnavailableReason}
               onChange={(startDate) => setDraft({ ...draft, startDate })}
             />
             <TimeOffDateField
@@ -36,7 +38,8 @@ export default function NewTimeOffRequest(): ReactElement {
               min={draft.startDate || dateKey()}
               value={draft.endDate}
               error={errors.endDate}
-              disabled={busy}
+              disabled={busy || loading || !!loadError}
+              getDateUnavailableReason={getDateUnavailableReason}
               onChange={(endDate) => setDraft({ ...draft, endDate })}
             />
           </div>

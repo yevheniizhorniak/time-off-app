@@ -61,6 +61,40 @@ test('persists initial examples once and preserves dates and decisions on later 
   expect(initialize).toHaveBeenCalledOnce();
 });
 
+test.each(['reject', 'cancel'] as const)(
+  'persists exclusions from latest storage even after older leave is %s',
+  async (action) => {
+    const repository = createTimeOffRequestRepository(() => localStorage);
+    await repository.load();
+    const older = { ...timeOffRequest, startDate: '2026-11-13', endDate: '2026-11-16' };
+    saveTimeOffRequests([older]);
+    const saved = await repository.submit({ ...draft, startDate: '2026-11-12', endDate: '2026-11-18' }, employee);
+    const spanning = saved[1];
+    expect(spanning.excludedDates).toEqual(['2026-11-13', '2026-11-16']);
+    if (action === 'reject') await repository.review(older.id, 'rejected', '');
+    else await repository.cancel(older.id, 'alex');
+    await repository.review(spanning.id, 'approved', '');
+    const restored = await createTimeOffRequestRepository(() => localStorage).load();
+    expect(restored[1]).toMatchObject({ status: 'approved', excludedDates: ['2026-11-13', '2026-11-16'] });
+  },
+);
+
+test.each([
+  null,
+  '2026-11-13',
+  ['invalid'],
+  ['2026-11-12'],
+  ['2026-11-20'],
+  ['2026-11-21'],
+  ['2026-11-14'],
+  ['2026-11-17'],
+  ['2026-11-13', '2026-11-13'],
+  ['2026-11-16', '2026-11-13'],
+])('rejects malformed saved exclusions: %j', async (excludedDates) => {
+  saveTimeOffRequests([{ ...timeOffRequest, endDate: '2026-11-20', excludedDates }]);
+  await expect(createTimeOffRequestRepository(() => localStorage).load()).rejects.toThrow('unsupported format');
+});
+
 test.each([{ saved: [] }, { saved: [timeOffRequest] }])(
   'preserves existing collections instead of initializing: %j',
   async ({ saved }) => {

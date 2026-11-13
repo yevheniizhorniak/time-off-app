@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, expect, test, vi } from 'vitest';
 
@@ -58,29 +58,65 @@ function renderRequests(session: Session, repository: TimeOffRequestRepository):
   );
 }
 
-test.each(sessions)('hides premature empty states and the team calendar while loading for $role', async (session) => {
+test.each(sessions)('hides premature empty states and the calendar while loading for $role', async (session) => {
   const repository = createRepository();
   const pending = Promise.withResolvers<TimeOffRequest[]>();
   repository.load.mockReturnValue(pending.promise);
   renderRequests(session, repository);
   expect(screen.getByRole('status')).toHaveTextContent('Loading time off requests');
   expect(screen.queryAllByText('No time off requests yet.')).toHaveLength(0);
-  expect(screen.queryByRole('region', { name: 'Team calendar' })).not.toBeInTheDocument();
+  const title = session.role === 'employee' ? 'Your calendar' : 'Team calendar';
+  expect(screen.queryByRole('region', { name: title })).not.toBeInTheDocument();
   await act(async () => pending.resolve([]));
   expect(screen.queryByRole('status')).not.toBeInTheDocument();
   expect(screen.getAllByText('No time off requests yet.')).toHaveLength(2);
-  if (session.role === 'supervisor') expect(screen.getByRole('region', { name: 'Team calendar' })).toBeInTheDocument();
+  expect(screen.getByRole('region', { name: title })).toBeInTheDocument();
 });
 
-test('keeps the team calendar hidden after an initial failure and exposes retry', async () => {
-  const repository = createRepository();
-  repository.load.mockRejectedValueOnce(new Error('Offline'));
-  renderRequests({ role: 'supervisor' }, repository);
-  expect(await screen.findByRole('alert')).toHaveTextContent('could not be loaded');
-  expect(screen.queryAllByText('No time off requests yet.')).toHaveLength(0);
-  expect(screen.queryByRole('region', { name: 'Team calendar' })).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: 'Retry loading time off requests' }));
-  expect(await screen.findByRole('region', { name: 'Team calendar' })).toBeInTheDocument();
+test.each(sessions)(
+  'keeps the calendar hidden after an initial failure and exposes retry for $role',
+  async (session) => {
+    const repository = createRepository();
+    repository.load.mockRejectedValueOnce(new Error('Offline'));
+    renderRequests(session, repository);
+    const title = session.role === 'employee' ? 'Your calendar' : 'Team calendar';
+    expect(await screen.findByRole('alert')).toHaveTextContent('could not be loaded');
+    expect(screen.queryAllByText('No time off requests yet.')).toHaveLength(0);
+    expect(screen.queryByRole('region', { name: title })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry loading time off requests' }));
+    expect(await screen.findByRole('region', { name: title })).toBeInTheDocument();
+  },
+);
+
+test.each(sessions)('filters calendar counts and details to the viewer for $role', async (session) => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date(2026, 10, 12, 12));
+  try {
+    const repository = createRepository();
+    const alex = { ...timeOffRequest, startDate: '2026-11-12', endDate: '2026-11-13' };
+    repository.load.mockResolvedValue([
+      alex,
+      { ...alex, id: 'bob', employeeKey: 'bob', employeeName: 'Bob', endDate: '2026-11-16' },
+    ]);
+    renderRequests(session, repository);
+    const calendar = within(
+      await screen.findByRole('region', { name: session.role === 'employee' ? 'Your calendar' : 'Team calendar' }),
+    );
+    const count = session.role === 'employee' ? '1 time off request' : '2 time off requests';
+    expect(calendar.getByRole('button', { name: `Nov 12, 2026, ${count}` })).toBeEnabled();
+    expect(calendar.getByRole('list')).toHaveTextContent('Alex');
+    if (session.role === 'employee') {
+      expect(calendar.getByRole('list')).not.toHaveTextContent('Bob');
+      expect(calendar.getByRole('button', { name: 'Nov 16, 2026, 0 time off requests' })).toBeDisabled();
+    } else {
+      expect(calendar.getByRole('list')).toHaveTextContent('Bob');
+    }
+    fireEvent.click(calendar.getByRole('button', { name: 'Next month' }));
+    expect(calendar.getByRole('heading', { name: 'December 2026' })).toBeInTheDocument();
+    expect(calendar.getByText('No time off this month.')).toBeInTheDocument();
+  } finally {
+    vi.useRealTimers();
+  }
 });
 
 test.each(sessions)(

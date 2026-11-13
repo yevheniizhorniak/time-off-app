@@ -64,7 +64,7 @@ export default function TimeOffRequests(): ReactElement {
       {loadError && (
         <p className="app-muted">Time off request information may be unavailable until data can be loaded.</p>
       )}
-      <div className={isEmployee ? '' : 'app-supervisor-layout'}>
+      <div className="app-requests-layout">
         <div>
           {groups.map((group) => (
             <section className="time-off-request-group" key={group.title}>
@@ -85,7 +85,9 @@ export default function TimeOffRequests(): ReactElement {
             </section>
           ))}
         </div>
-        {!isEmployee && hasLoaded && <TimeOffRequestCalendar timeOffRequests={timeOffRequests} />}
+        {hasLoaded && (
+          <TimeOffRequestCalendar timeOffRequests={visible} title={isEmployee ? 'Your calendar' : 'Team calendar'} />
+        )}
       </div>
     </TimeOffPageLayout>
   );

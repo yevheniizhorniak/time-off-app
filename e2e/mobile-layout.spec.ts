@@ -54,6 +54,13 @@ for (const viewport of [
     await page.getByLabel('Time off type').selectOption('paid-time-off');
     await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
     await expect(page.getByRole('article')).toContainText('pending');
+    const personalCalendar = page.getByRole('region', { name: 'Your calendar' });
+    await expectNoHorizontalOverflow(personalCalendar);
+    await expectNoHorizontalOverflow(page.locator('main.time-off-app'));
+    const personalDay = personalCalendar.getByRole('button', { name: 'Nov 13, 2026, 1 time off request', exact: true });
+    await expectDayTarget(personalDay, viewport.width);
+    await personalDay.click();
+    await expect(personalDay).toHaveAttribute('aria-pressed', 'true');
     await page.getByRole('button', { name: 'Switch user', exact: true }).click();
     await page.getByRole('button', { name: 'Log in as a supervisor', exact: true }).click();
     const calendar = page.getByRole('region', { name: 'Team calendar' });

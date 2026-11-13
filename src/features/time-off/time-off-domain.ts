@@ -26,8 +26,18 @@ export function timeOffRequestsOnDate(timeOffRequests: readonly TimeOffRequest[]
       (timeOffRequest.status === 'pending' || timeOffRequest.status === 'approved') &&
       timeOffRequest.startDate <= date &&
       timeOffRequest.endDate >= date &&
+      !timeOffRequest.excludedDates?.includes(date) &&
       (!timeOffRequest.cancelledFromDate || date < timeOffRequest.cancelledFromDate),
   );
+}
+
+/** Active working-day coverage for one employee, including partial cancellations and exclusions. */
+export function employeeHasTimeOffOnDate(
+  timeOffRequests: readonly TimeOffRequest[],
+  employeeKey: string,
+  date: string,
+): boolean {
+  return timeOffRequestsOnDate(timeOffRequests, date).some((request) => request.employeeKey === employeeKey);
 }
 
 export function validateTimeOffRequest(
@@ -52,19 +62,10 @@ export function validateTimeOffRequest(
   }
   if (!isLeaveType(draft.leaveType)) errors.leaveType = 'Choose a time off type.';
 
-  if (
-    !errors.startDate &&
-    !errors.endDate &&
-    timeOffRequests.some(
-      (timeOffRequest) =>
-        timeOffRequest.employeeKey === key &&
-        (timeOffRequest.status === 'pending' || timeOffRequest.status === 'approved') &&
-        draft.startDate <= timeOffRequest.endDate &&
-        draft.endDate >= timeOffRequest.startDate &&
-        (!timeOffRequest.cancelledFromDate || draft.startDate < timeOffRequest.cancelledFromDate),
-    )
-  ) {
-    errors.startDate = 'These dates overlap one of your pending or approved time off requests.';
+  for (const field of ['startDate', 'endDate'] as const) {
+    if (!errors[field] && employeeHasTimeOffOnDate(timeOffRequests, key, draft[field])) {
+      errors[field] = 'This date is already covered by one of your pending or approved time off requests.';
+    }
   }
   return errors;
 }
@@ -78,6 +79,13 @@ export function createTimeOffRequest(
   const errors = validateTimeOffRequest(draft, employee.employeeKey, timeOffRequests, metadata.today);
   if (Object.keys(errors).length > 0) throw new TimeOffRequestValidationError(errors);
   if (!isLeaveType(draft.leaveType)) throw new Error('Choose a time off type.');
+  const excludedDates: string[] = [];
+  const day = new Date(`${draft.startDate}T12:00:00`);
+  day.setDate(day.getDate() + 1);
+  for (; dateKey(day) < draft.endDate; day.setDate(day.getDate() + 1)) {
+    const date = dateKey(day);
+    if (employeeHasTimeOffOnDate(timeOffRequests, employee.employeeKey, date)) excludedDates.push(date);
+  }
   return {
     ...draft,
     note: draft.note.trim(),
@@ -87,6 +95,7 @@ export function createTimeOffRequest(
     employeeName: employee.name,
     status: 'pending',
     createdAt: metadata.createdAt,
+    ...(excludedDates.length > 0 && { excludedDates }),
   };
 }
 

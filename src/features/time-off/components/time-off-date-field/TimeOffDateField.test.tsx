@@ -131,3 +131,25 @@ test('associates validation errors and disables the trigger while busy', () => {
   fireEvent.click(trigger);
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 });
+
+test('explains additional unavailable dates and updates availability while open', () => {
+  const onChange = vi.fn();
+  const props = { label: 'Start date', value: '', min: '2026-11-12', onChange };
+  const { rerender } = render(<TimeOffDateField {...props} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Start date' }));
+  expect(screen.getByRole('button', { name: formatDate('2026-11-13') })).toBeEnabled();
+  rerender(
+    <TimeOffDateField
+      {...props}
+      getDateUnavailableReason={(date) => (date === '2026-11-13' ? 'already requested' : undefined)}
+    />,
+  );
+  const booked = screen.getByRole('button', { name: `${formatDate('2026-11-13')}, already requested` });
+  expect(booked).toBeDisabled();
+  fireEvent.click(booked);
+  expect(onChange).not.toHaveBeenCalled();
+  expect(screen.getByRole('dialog')).toBeInTheDocument();
+  rerender(<TimeOffDateField {...props} />);
+  fireEvent.click(screen.getByRole('button', { name: formatDate('2026-11-13') }));
+  expect(onChange).toHaveBeenCalledWith('2026-11-13');
+});

@@ -72,6 +72,11 @@ export default function TimeOffRequestCard({ timeOffRequest }: TimeOffRequestCar
         <time dateTime={timeOffRequest.startDate}>{formatDate(timeOffRequest.startDate)}</time> –{' '}
         <time dateTime={timeOffRequest.endDate}>{formatDate(timeOffRequest.endDate)}</time>
       </p>
+      {!!timeOffRequest.excludedDates?.length && (
+        <p className="time-off-request-card__metadata">
+          Excluded dates (already requested): {timeOffRequest.excludedDates.map((date) => formatDate(date)).join(', ')}
+        </p>
+      )}
       {timeOffRequest.note && <p className="time-off-request-card__note">{timeOffRequest.note}</p>}
       <p className="time-off-request-card__metadata">
         Submitted {formatDate(dateKey(new Date(timeOffRequest.createdAt)))}

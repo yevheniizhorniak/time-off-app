@@ -28,6 +28,8 @@ type TimeOffDateFieldProps = {
   disabled?: boolean;
   /** Displays the required indicator and description. Defaults to false. */
   required?: boolean;
+  /** Additional unavailable dates and their accessible explanations. */
+  getDateUnavailableReason?: (date: string) => string | undefined;
 };
 
 export default function TimeOffDateField({
@@ -38,6 +40,7 @@ export default function TimeOffDateField({
   error,
   disabled = false,
   required = false,
+  getDateUnavailableReason,
 }: TimeOffDateFieldProps): ReactElement {
   const id = useId();
   const [open, setOpen] = useState(false);
@@ -48,7 +51,9 @@ export default function TimeOffDateField({
   );
 
   function isUnavailable(date: string): boolean {
-    return disabled || date < minimum || isWeekend(date) || !!timeOffHolidayName(date);
+    return (
+      disabled || date < minimum || isWeekend(date) || !!timeOffHolidayName(date) || !!getDateUnavailableReason?.(date)
+    );
   }
 
   function openCalendar(event: MouseEvent<HTMLButtonElement>): void {
@@ -87,6 +92,7 @@ export default function TimeOffDateField({
       </button>
       <p className="time-off-date-field__hint" id={`${id}-hint`}>
         {required && 'Required. '}Weekends and public holidays are unavailable.
+        {getDateUnavailableReason && ' Dates already requested are unavailable and skipped inside a new range.'}
       </p>
       {error && (
         <p className="time-off-date-field__error" id={`${id}-error`}>
@@ -111,7 +117,8 @@ export default function TimeOffDateField({
           getDayAriaLabel={(date) => {
             const holiday = timeOffHolidayName(date);
             const reason = holiday ? `, public holiday: ${holiday}` : isWeekend(date) ? ', weekend' : '';
-            return `${formatDate(date)}${reason}`;
+            const unavailableReason = getDateUnavailableReason?.(date);
+            return `${formatDate(date)}${reason}${unavailableReason ? `, ${unavailableReason}` : ''}`;
           }}
           renderDayContent={(date) =>
             timeOffHolidayName(date) ? (

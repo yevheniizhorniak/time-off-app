@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { expect, test, vi } from 'vitest';
 
@@ -11,6 +11,7 @@ import type { TimeOffRequestRepository } from '../../features/time-off/types/tim
 import ThemeProvider from '../../theme/theme-provider/ThemeProvider';
 
 import NewTimeOffRequest from './NewTimeOffRequest';
+import { useNewTimeOffRequestForm } from './useNewTimeOffRequestForm';
 
 test('blocks submission while loading or after a read failure, and keeps draft input across retry', async () => {
   const pending = Promise.withResolvers<TimeOffRequest[]>();
@@ -38,16 +39,66 @@ test('blocks submission while loading or after a read failure, and keeps draft i
   );
   const submit = screen.getByRole('button', { name: 'Submit time off request' });
   expect(submit).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Start date' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'End date' })).toBeDisabled();
   fireEvent.change(screen.getByLabelText('Notes (optional)'), { target: { value: 'Keep my draft' } });
   fireEvent.submit(submit.closest('form')!);
   expect(repository.submit).not.toHaveBeenCalled();
   expect(screen.queryByText('Check the highlighted fields.')).not.toBeInTheDocument();
   await act(async () => pending.reject(new Error('Offline')));
   expect(screen.getByRole('alert')).toHaveTextContent('could not be loaded');
+  expect(screen.getByRole('button', { name: 'Start date' })).toBeDisabled();
   expect(submit).toBeDisabled();
   fireEvent.submit(submit.closest('form')!);
   expect(repository.submit).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole('button', { name: 'Retry loading time off requests' }));
   await waitFor(() => expect(submit).toBeEnabled());
+  expect(screen.getByRole('button', { name: 'Start date' })).toBeEnabled();
   expect(screen.getByLabelText('Notes (optional)')).toHaveValue('Keep my draft');
+});
+
+test('updates employee date availability when request subscriptions publish new data', async () => {
+  const older: TimeOffRequest = {
+    id: 'older',
+    employeeKey: 'alex',
+    employeeName: 'Alex',
+    startDate: '2026-11-13',
+    endDate: '2026-11-16',
+    status: 'pending',
+    leaveType: 'sick-day',
+    note: '',
+    createdAt: '2026-11-12T10:00:00Z',
+  };
+  const repository = {
+    load: vi.fn<TimeOffRequestRepository['load']>().mockResolvedValue([]),
+    submit: vi.fn<TimeOffRequestRepository['submit']>().mockResolvedValue([]),
+    review: vi.fn<TimeOffRequestRepository['review']>().mockResolvedValue([]),
+    cancel: vi.fn<TimeOffRequestRepository['cancel']>().mockResolvedValue([]),
+    subscribe: vi.fn<TimeOffRequestRepository['subscribe']>(() => () => undefined),
+  };
+  const sessionRepository = createSessionRepository(() => sessionStorage);
+  sessionRepository.save({ role: 'employee', name: 'Alex', employeeKey: 'alex' });
+  const { result } = renderHook(useNewTimeOffRequestForm, {
+    wrapper: ({ children }) => (
+      <ToaToastProvider>
+        <SessionProvider repository={sessionRepository}>
+          <TimeOffProvider repository={repository}>
+            <MemoryRouter>{children}</MemoryRouter>
+          </TimeOffProvider>
+        </SessionProvider>
+      </ToaToastProvider>
+    ),
+  });
+  await waitFor(() => expect(result.current.loading).toBe(false));
+  expect(result.current.getDateUnavailableReason('2026-11-13')).toBeUndefined();
+  repository.load.mockResolvedValue([
+    older,
+    { ...older, id: 'bob', employeeName: 'Bob', employeeKey: 'bob', endDate: '2026-11-18' },
+  ]);
+  await act(async () => repository.subscribe.mock.calls[0][0]());
+  expect(result.current.getDateUnavailableReason('2026-11-13')).toMatch(/pending or approved/);
+  expect(result.current.getDateUnavailableReason('2026-11-18')).toBeUndefined();
+  repository.load.mockResolvedValue([{ ...older, status: 'cancelled' }]);
+  await act(async () => repository.subscribe.mock.calls[0][0]());
+  expect(result.current.getDateUnavailableReason('2026-11-13')).toBeUndefined();
 });

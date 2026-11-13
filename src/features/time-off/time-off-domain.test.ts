@@ -118,7 +118,7 @@ test('rejects missing or impossible dates, past dates, reversed periods and unkn
   expect(validateTimeOffRequest({ ...draft, startDate: '2026-11-16' }, 'alex', [], today)).toHaveProperty('endDate');
 });
 
-test('prevents inclusive overlaps for pending and approved leave, including containment', () => {
+test('prevents occupied endpoints for pending and approved leave', () => {
   for (const status of ['pending', 'approved'] as const) {
     for (const [startDate, endDate] of [
       ['2026-11-13', '2026-11-16'],
@@ -128,7 +128,10 @@ test('prevents inclusive overlaps for pending and approved leave, including cont
     ]) {
       expect(
         validateTimeOffRequest({ ...draft, startDate, endDate }, 'alex', [{ ...timeOffRequest, status }], today),
-      ).toHaveProperty('startDate', 'These dates overlap one of your pending or approved time off requests.');
+      ).toHaveProperty(
+        'startDate',
+        'This date is already covered by one of your pending or approved time off requests.',
+      );
     }
   }
   expect(
@@ -139,6 +142,36 @@ test('prevents inclusive overlaps for pending and approved leave, including cont
       today,
     ),
   ).toEqual({});
+});
+
+test('spanning ranges permanently exclude only occupied working dates for this employee', () => {
+  const spanning = { ...draft, startDate: '2026-11-12', endDate: '2026-11-20' };
+  const older: TimeOffRequest = {
+    ...timeOffRequest,
+    startDate: '2026-11-13',
+    endDate: '2026-11-19',
+    excludedDates: ['2026-11-18'],
+  };
+  const released = { ...older, cancelledFromDate: '2026-11-19', cancelledAt: metadata.createdAt };
+  const ignored: TimeOffRequest[] = [
+    { ...older, id: 'bob', employeeKey: 'bob', employeeName: 'Bob' },
+    { ...older, id: 'rejected', status: 'rejected' },
+    { ...older, id: 'cancelled', status: 'cancelled' },
+  ];
+  const saved = createTimeOffRequest(spanning, employee, [released, released, ...ignored], metadata);
+  expect(saved.excludedDates).toEqual(['2026-11-13', '2026-11-16']);
+  expect(timeOffRequestsOnDate([released, saved], '2026-11-13')).toEqual([released]);
+  expect(timeOffRequestsOnDate([released, saved], '2026-11-18')).toEqual([saved]);
+  expect(timeOffRequestsOnDate([saved], '2026-11-13')).toEqual([]);
+  expect(reviewTimeOffRequest([saved], saved.id, 'approved', '', metadata.createdAt)[0].excludedDates).toEqual(
+    saved.excludedDates,
+  );
+  expect(
+    cancelTimeOffRequest([saved], saved.id, 'alex', { today, cancelledAt: metadata.createdAt })[0].excludedDates,
+  ).toEqual(saved.excludedDates);
+  expect(validateTimeOffRequest({ ...spanning, endDate: '2026-11-16' }, 'alex', [released], today)).toHaveProperty(
+    'endDate',
+  );
 });
 
 test('rejected time off requests release dates and another employee can time off request the same dates', () => {

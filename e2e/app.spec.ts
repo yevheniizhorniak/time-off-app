@@ -110,6 +110,11 @@ test('submits time off requests, reviews both outcomes, restores sessions and is
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Your time off requests' })).toBeVisible();
   await expect(page.getByRole('article')).toContainText('Family trip');
+  const personalCalendar = page.getByRole('region', { name: 'Your calendar' });
+  await expect(
+    personalCalendar.getByRole('button', { name: 'Nov 13, 2026, 1 time off request', exact: true }),
+  ).toBeEnabled();
+  await expect(personalCalendar.getByRole('list')).toContainText('Alex');
 
   await switchUser(page);
   await loginEmployee(page, 'Bob');
@@ -118,6 +123,11 @@ test('submits time off requests, reviews both outcomes, restores sessions and is
   await page.getByLabel('Notes (optional)').fill('Appointment');
   await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
   await expect(page.getByRole('article')).toHaveCount(1);
+  await expect(
+    personalCalendar.getByRole('button', { name: 'Nov 13, 2026, 1 time off request', exact: true }),
+  ).toBeEnabled();
+  await expect(personalCalendar.getByRole('list')).toContainText('Bob');
+  await expect(personalCalendar.getByRole('list')).not.toContainText('Alex');
   await switchUser(page);
 
   await page.getByRole('button', { name: 'Log in as a supervisor', exact: true }).click();
@@ -160,7 +170,7 @@ test('submits time off requests, reviews both outcomes, restores sessions and is
   await expect(page.getByRole('article')).toHaveCount(2);
 });
 
-test('validates dates and inclusive overlaps while allowing a one-day time off request today', async ({ page }) => {
+test('validates dates and disables booked dates while allowing a one-day time off request today', async ({ page }) => {
   await page.getByLabel('Employee name').fill('   ');
   await page.getByRole('button', { name: 'Log in as employee', exact: true }).click();
   await expect(page.getByText('Enter your name.', { exact: true })).toBeVisible();
@@ -181,11 +191,68 @@ test('validates dates and inclusive overlaps while allowing a one-day time off r
   await selectTimeOffRequestDate(page, 'Start date', '2026-11-12');
   await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
   await expect(page.getByRole('article')).toContainText('Sick day');
-  await fillTimeOffRequest(page, '2026-11-12', '2026-11-13');
-  await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
-  await expect(page.getByText('These dates overlap one of your pending or approved time off requests.')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Start date', exact: true })).toHaveText('Nov 12, 2026');
+  await page.getByRole('link', { name: 'Request time off', exact: true }).click();
+  for (const label of ['Start date', 'End date']) {
+    await page.getByRole('button', { name: label, exact: true }).click();
+    await expect(
+      page.getByRole('dialog').getByRole('button', { name: /Nov 12, 2026, already covered/ }),
+    ).toBeDisabled();
+    await page.keyboard.press('Escape');
+  }
 });
+
+for (const status of ['pending', 'approved']) {
+  test(`skips ${status} leave inside a new range and preserves exclusions after cancellation`, async ({ page }) => {
+    await loginEmployee(page);
+    await fillTimeOffRequest(page);
+    await page.getByLabel('Notes (optional)').fill('Original leave');
+    await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
+    await expect(page.getByRole('article')).toContainText('Original leave');
+    if (status === 'approved') {
+      await switchUser(page);
+      await page.getByRole('button', { name: 'Log in as a supervisor', exact: true }).click();
+      await page.getByRole('button', { name: 'Approve', exact: true }).click();
+      await expect(page.getByRole('article')).toContainText('approved');
+      await switchUser(page);
+      await loginEmployee(page);
+    }
+    await fillTimeOffRequest(page, '2026-11-12', '2026-11-18');
+    await page.getByLabel('Notes (optional)').fill('Spanning leave');
+    await page.getByRole('button', { name: 'End date', exact: true }).click();
+    await expect(
+      page.getByRole('dialog').getByRole('button', { name: /Nov 13, 2026, already covered/ }),
+    ).toBeDisabled();
+    await expect(
+      page.getByRole('dialog').getByRole('button', { name: /Nov 16, 2026, already covered/ }),
+    ).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
+    const spanning = page.getByRole('article').filter({ hasText: 'Spanning leave' });
+    await expect(spanning).toContainText('Excluded dates (already requested): Nov 13, 2026, Nov 16, 2026');
+    await page.reload();
+    await expect(spanning).toContainText('Excluded dates (already requested)');
+    await page
+      .getByRole('article')
+      .filter({ hasText: 'Original leave' })
+      .getByRole('button', { name: 'Cancel time off request', exact: true })
+      .click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Cancel time off', exact: true }).click();
+    await expect(page.getByRole('article').filter({ hasText: 'Original leave' })).toContainText('cancelled');
+    await switchUser(page);
+    await page.getByRole('button', { name: 'Log in as a supervisor', exact: true }).click();
+    await expect(spanning).toContainText('Excluded dates (already requested)');
+    await spanning.getByRole('button', { name: 'Approve', exact: true }).click();
+    await expect(spanning).toContainText('approved');
+    const calendar = page.getByRole('region', { name: 'Team calendar' });
+    await expect(
+      calendar.getByRole('button', { name: 'Nov 13, 2026, 0 time off requests', exact: true }),
+    ).toBeDisabled();
+    await expect(
+      calendar.getByRole('button', { name: 'Nov 16, 2026, 0 time off requests', exact: true }),
+    ).toBeDisabled();
+    await expect(calendar.getByRole('button', { name: 'Nov 18, 2026, 1 time off request', exact: true })).toBeEnabled();
+  });
+}
 
 test('preserves form input on failed saves and supports retry', async ({ page }) => {
   await loginEmployee(page);
@@ -297,12 +364,20 @@ test('reports corrupt saved data, protects it from overwrite and reloads after r
   await page.reload();
   await expect(page.getByRole('alert')).toContainText('Time off requests could not be loaded');
   await loginEmployee(page);
-  await fillTimeOffRequest(page);
+  await page.getByRole('link', { name: 'Request time off', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Your time off requests', exact: true })).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Start date', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'End date', exact: true })).toBeDisabled();
+  await page.getByLabel('Time off type').selectOption('paid-time-off');
+  await page.getByLabel('Notes (optional)').fill('Retained after retry');
   await expect(page.getByRole('button', { name: 'Submit time off request', exact: true })).toBeDisabled();
   expect(await page.evaluate(() => localStorage.getItem('time-off-app.time-off-requests'))).toBe('{broken');
   await page.evaluate(() => localStorage.removeItem('time-off-app.time-off-requests'));
   await page.getByRole('button', { name: 'Retry loading time off requests' }).click();
   await expect(page.getByRole('button', { name: 'Submit time off request', exact: true })).toBeEnabled();
+  await expect(page.getByLabel('Notes (optional)')).toHaveValue('Retained after retry');
+  await selectTimeOffRequestDate(page, 'Start date', '2026-11-13');
+  await selectTimeOffRequestDate(page, 'End date', '2026-11-16');
   await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
   await expect(page.getByRole('article')).toHaveCount(1);
 });
@@ -437,11 +512,13 @@ test('partial cancellation retains today and allows a new time off request for t
 
   await switchUser(page);
   await loginEmployee(page);
-  await fillTimeOffRequest(page, '2026-11-12', '2026-11-12');
-  await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
-  await expect(page.getByText('These dates overlap one of your pending or approved time off requests.')).toBeVisible();
-  await selectTimeOffRequestDate(page, 'End date', '2026-11-16');
+  await page.getByRole('link', { name: 'Request time off', exact: true }).click();
+  await page.getByRole('button', { name: 'Start date', exact: true }).click();
+  await expect(page.getByRole('dialog').getByRole('button', { name: /Nov 12, 2026, already covered/ })).toBeDisabled();
+  await page.keyboard.press('Escape');
   await selectTimeOffRequestDate(page, 'Start date', '2026-11-13');
+  await selectTimeOffRequestDate(page, 'End date', '2026-11-16');
+  await page.getByLabel('Time off type').selectOption('paid-time-off');
   await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
   await expect(page.getByRole('article')).toHaveCount(2);
 });
