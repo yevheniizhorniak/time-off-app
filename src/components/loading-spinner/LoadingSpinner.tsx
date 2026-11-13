@@ -3,12 +3,13 @@ import type { ReactElement } from 'react';
 import './LoadingSpinner.scss';
 
 export type LoadingSpinnerProps = {
-  /** Accessible loading message. Defaults to `Loading`; ignored when decorative. */
+  /** Accessible message, ignored when decorative. Defaults to `Loading`. */
   label?: string;
-  /** Hides the spinner from assistive technology when surrounding content conveys loading. Defaults to `false`. */
+  /** Hides redundant loading announcements. Defaults to `false`. */
   decorative?: boolean;
 };
 
+/** Animated loading indicator announced with `role="status"`. */
 export default function LoadingSpinner({ label = 'Loading', decorative = false }: LoadingSpinnerProps): ReactElement {
   return (
     <span

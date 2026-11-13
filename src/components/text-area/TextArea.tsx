@@ -4,23 +4,23 @@ import Label from '../label/Label';
 
 import './TextArea.scss';
 
-/** Controlled native multiline text area with a visible label and optional validation feedback. */
 export type TextAreaProps = Pick<
   ComponentProps<'textarea'>,
   'id' | 'name' | 'placeholder' | 'disabled' | 'required' | 'readOnly' | 'autoComplete' | 'minLength' | 'maxLength'
 > & {
-  /** Visible label and accessible name for the text area. */
+  /** Visible label and accessible name. */
   label: string;
-  /** Current text; the parent owns and updates this value. */
+  /** Parent-controlled text. */
   value: string;
-  /** Native change handler; update `value` using `event.currentTarget.value`. */
+  /** Update `value` from `event.currentTarget.value`. */
   onChange: ChangeEventHandler<HTMLTextAreaElement>;
-  /** Validation message displayed below and associated with the invalid control. */
+  /** Marks the control invalid and associates this validation message. */
   error?: string;
   /** Number of visible text rows. Defaults to `4`. */
   rows?: number;
 };
 
+/** Controlled multiline input. Generates a control ID when `id` is omitted. */
 export default function TextArea({
   id,
   label,

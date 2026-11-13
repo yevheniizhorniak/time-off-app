@@ -3,12 +3,13 @@ import type { ComponentProps, ReactElement, ReactNode } from 'react';
 import './Label.scss';
 
 export type LabelProps = Omit<ComponentProps<'label'>, 'children'> & {
-  /** Visible content naming the associated form control. */
+  /** Visible, accessible label. */
   children: ReactNode;
-  /** Shows a decorative required marker. Defaults to `false`. Set `required` on the associated control separately. */
+  /** Decorative marker. Set the control's `required` separately. Defaults to `false`. */
   required?: boolean;
 };
 
+/** Associates label content with a control through `htmlFor`. */
 export default function Label({ children, className = '', required = false, ...labelProps }: LabelProps): ReactElement {
   return (
     <label {...labelProps} className={`toa-label ${className}`.trim()}>

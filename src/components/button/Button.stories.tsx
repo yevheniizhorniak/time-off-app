@@ -15,5 +15,3 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
-
-// TODO: Add api reference

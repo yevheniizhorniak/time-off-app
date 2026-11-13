@@ -22,7 +22,7 @@ type NewRequestForm = {
   submit: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 };
 
-/** Coordinates the request form's validation, persistence feedback, and successful navigation. */
+/** Validates and saves requests, reports failures, and navigates on success. */
 export function useNewRequestForm(): NewRequestForm {
   const { session } = useSession();
   const { submitRequest, requests, busy, storageError } = useTimeOff();

@@ -5,22 +5,25 @@ import Button from '../button/Button';
 
 import './Calendar.scss';
 
-/** A controlled, Monday-first calendar for selecting a single local date. */
 export type CalendarProps = {
-  /** Displayed month; only the local year and month are used. */
+  /** Only the local year and month are used. */
   month: Date;
-  /** Selected local date in YYYY-MM-DD form; may be outside the displayed month. */
+  /** Selected YYYY-MM-DD local date. May be outside `month`. */
   selectedDate: string;
-  /** Receives the adjacent month's first day at local noon. Does not change selection. */
+  /** Emits the adjacent month's first day at local noon, preserving selection. */
   onMonthChange: (month: Date) => void;
-  /** Receives the clicked local date in YYYY-MM-DD form. The parent updates selection. */
+  /** Emits the selected YYYY-MM-DD local date. The parent updates selection. */
   onDateChange: (date: string) => void;
-  /** Optional non-interactive content below each day number. Include its meaning in getDayAriaLabel. */
+  /** Non-interactive day annotations. Describe them in `getDayAriaLabel`. */
   renderDayContent?: (date: string) => ReactNode;
-  /** Accessible name for each day button. Defaults to the formatted local date. */
+  /**
+   * Accessible day label, localized by default.
+   * @default formatDate
+   */
   getDayAriaLabel?: (date: string) => string;
 };
 
+/** Controlled, Monday-first calendar using local dates. */
 export default function Calendar({
   month,
   selectedDate,

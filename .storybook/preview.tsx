@@ -1,5 +1,5 @@
 import { IonApp, setupIonicReact } from '@ionic/react';
-import type { Preview } from '@storybook/react-vite';
+import type { Preview, StoryContext } from '@storybook/react-vite';
 
 import '@ionic/react/css/core.css';
 import '@ionic/react/css/normalize.css';
@@ -18,9 +18,14 @@ import '../src/theme/variables.scss';
 setupIonicReact();
 
 const preview: Preview = {
+  tags: ['autodocs'],
   decorators: [
-    (Story: () => React.ReactNode): React.JSX.Element => (
-      <IonApp>
+    (Story: () => React.ReactNode, context: StoryContext): React.JSX.Element => (
+      <IonApp
+        style={
+          context.viewMode === 'docs' ? { position: 'relative', height: 'auto', contain: 'layout style' } : undefined
+        }
+      >
         <Story />
       </IonApp>
     ),

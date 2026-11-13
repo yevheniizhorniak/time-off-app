@@ -25,14 +25,6 @@ const meta = {
       </div>
     ),
   ],
-  parameters: {
-    docs: {
-      description: {
-        component:
-          'Hover, focus, or tap the trigger. Tap again, tap outside, or press Escape to dismiss. Use an enabled, focusable trigger with an accessible name and a 44px touch target. Custom triggers must forward aria-describedby. Tapping also runs the trigger’s action; use an informational trigger when people need time to read.',
-      },
-    },
-  },
 } satisfies Meta<typeof Tooltip>;
 
 export default meta;

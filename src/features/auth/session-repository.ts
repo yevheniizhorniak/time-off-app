@@ -1,12 +1,11 @@
 import type { Session } from './session-domain';
 
-/** Persistence contract for the simulated session, independent of its storage adapter. */
 export interface SessionRepository {
-  /** Returns the saved session or null when absent. Throws when data is invalid or cannot be read. */
+  /** Returns `null` when absent. Throws on invalid data or read failure. */
   load(): Session | null;
   /**
-   * Persists the session, or removes it for null, before returning.
-   * Throws on failure and preserves the saved session. Callers publish state after success.
+   * Persists before returning. Pass `null` to remove the session.
+   * Failures throw and preserve saved data. Publish state after success.
    */
   save(session: Session | null): void;
 }

@@ -9,10 +9,15 @@ import { useToastQueue } from './useToastQueue';
 import './ToastProvider.scss';
 
 export type ToastProviderProps = {
-  /** Application content that can call useToast. Mount one provider around the router. */
+  /** Content with access to `useToast`. */
   children: ReactNode;
 };
 
+/**
+ * Mount once above `useToast` callers. Notifications render in `document.body`
+ * with polite announcements and expire after five seconds, paused on hover or focus.
+ * Use inline feedback inside modal dialogs.
+ */
 export default function ToastProvider({ children }: ToastProviderProps): ReactElement {
   const { notifications, actions, setPaused } = useToastQueue();
   const stackRef = useRef<HTMLDivElement>(null);

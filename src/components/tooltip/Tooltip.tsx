@@ -6,12 +6,16 @@ import { useTooltip } from './useTooltip';
 import './Tooltip.scss';
 
 export type TooltipProps = {
-  /** Descriptive plain text; must not contain interactive content. */
+  /** Non-interactive description. */
   content: string;
-  /** One enabled, focusable trigger. Custom components must forward `aria-describedby` to their control. Its actions and ref are preserved; touch activation also runs its action. */
+  /** Enabled, focusable trigger that forwards `aria-describedby`. Actions and ref are preserved. */
   children: ReactElement;
 };
 
+/**
+ * Shown on hover, focus, or tap. Dismiss with Escape, another tap, or an outside tap.
+ * Tapping also activates the trigger.
+ */
 export default function Tooltip({ content, children }: TooltipProps): ReactElement {
   const id = useId();
   const { isOpen, triggerRef, tooltipRef, triggerEvents, tooltipEvents } = useTooltip(content);

@@ -2,32 +2,31 @@ import { useId, type ChangeEventHandler, type ComponentProps, type ReactElement 
 
 import './Dropdown.scss';
 
-/** A text option in a single-select dropdown. */
 export type DropdownOption = {
-  /** Unique, nonempty option value; the empty string is reserved for the placeholder. */
+  /** Must be unique and nonempty. An empty string is reserved for the placeholder. */
   value: string;
-  /** Text displayed in the option list. */
+  /** Visible option text. */
   label: string;
   /** Prevents selecting this option. Defaults to `false`. */
   disabled?: boolean;
 };
 
-/** Controlled native single-select field with a visible label and optional validation feedback. */
 export type DropdownProps = Pick<ComponentProps<'select'>, 'id' | 'name' | 'disabled' | 'required'> & {
-  /** Visible label and accessible name for the select. */
+  /** Visible label and accessible name. */
   label: string;
-  /** Selected option value, or an empty string to display the placeholder. */
+  /** Selected option value. An empty string shows the placeholder. */
   value: string;
-  /** Available options, each with a unique, nonempty value. */
+  /** Options in display order. */
   options: readonly DropdownOption[];
-  /** Native change handler; the parent updates `value` using `event.currentTarget.value`. */
+  /** Update `value` from `event.currentTarget.value`. */
   onChange: ChangeEventHandler<HTMLSelectElement>;
-  /** Disabled prompt shown for an empty value. Defaults to `Select an option`. */
+  /** Disabled prompt for an empty value. Defaults to `Select an option`. */
   placeholder?: string;
-  /** Validation message displayed below and associated with the invalid select. */
+  /** Marks the control invalid and associates this validation message. */
   error?: string;
 };
 
+/** Controlled single-select field. Generates a control ID when `id` is omitted. */
 export default function Dropdown({
   id,
   label,

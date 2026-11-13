@@ -4,7 +4,6 @@ import Label from '../label/Label';
 
 import './TextField.scss';
 
-/** Controlled native single-line text field with a visible label and optional validation feedback. */
 export type TextFieldProps = Pick<
   ComponentProps<'input'>,
   | 'id'
@@ -21,18 +20,19 @@ export type TextFieldProps = Pick<
   | 'min'
   | 'max'
 > & {
-  /** Visible label and accessible name for the input. */
+  /** Visible label and accessible name. */
   label: string;
-  /** Current text; the parent owns and updates this value. */
+  /** Parent-controlled text. */
   value: string;
-  /** Native change handler; update `value` using `event.currentTarget.value`. */
+  /** Update `value` from `event.currentTarget.value`. */
   onChange: ChangeEventHandler<HTMLInputElement>;
-  /** Validation message displayed below and associated with the invalid control. */
+  /** Marks the control invalid and associates this validation message. */
   error?: string;
-  /** Native single-line input type. Date values use YYYY-MM-DD. Defaults to `text`. */
+  /** Defaults to `text`. Date values use YYYY-MM-DD. */
   type?: 'text' | 'email' | 'password' | 'search' | 'tel' | 'url' | 'date';
 };
 
+/** Controlled single-line input. Generates a control ID when `id` is omitted. */
 export default function TextField({
   id,
   label,

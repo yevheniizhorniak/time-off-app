@@ -35,14 +35,6 @@ const meta = {
     ),
   ],
   args: { message: 'Your request has been submitted.', onDismiss: () => undefined },
-  parameters: {
-    docs: {
-      description: {
-        component:
-          'Mount ToastProvider around the application and call useToast().showToast(message). Each call returns an ID for dismissToast(id). Messages stack and dismiss after five seconds, pausing while hovered or focused. Use inline feedback inside modal dialogs. Toast itself is presentational; the provider owns timers and announcements.',
-      },
-    },
-  },
 } satisfies Meta<typeof Toast>;
 
 export default meta;

@@ -3,15 +3,15 @@ import { useEffect, useId, useRef, type MouseEvent, type ReactElement, type Synt
 import './ConfirmationDialog.scss';
 
 export type ConfirmationDialogProps = {
-  /** Whether the dialog is open; the parent updates this after an action. */
+  /** Parent-controlled visibility. Set to `false` after either action to close. */
   isOpen: boolean;
-  /** Dialog heading and accessible name. */
+  /** Visible heading and accessible name. */
   title: string;
-  /** Explanation of the action being confirmed. */
+  /** Body text and accessible description. */
   message: string;
-  /** Called when the user confirms the action. */
+  /** Called on confirmation. */
   onConfirm: () => void;
-  /** Called when the user cancels, presses Escape, or clicks the backdrop. */
+  /** Called on cancellation, Escape, or a backdrop click. */
   onCancel: () => void;
   /** Confirm button text. Defaults to `Confirm`. */
   confirmLabel?: string;
@@ -19,6 +19,7 @@ export type ConfirmationDialogProps = {
   cancelLabel?: string;
 };
 
+/** Controlled native modal dialog. */
 export default function ConfirmationDialog({
   isOpen,
   title,

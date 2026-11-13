@@ -13,6 +13,9 @@ const options = [
 const meta = {
   title: 'Components/Dropdown',
   component: Dropdown,
+  argTypes: {
+    onChange: { control: false },
+  },
   args: {
     label: 'Time off type',
     value: '',

@@ -5,12 +5,13 @@ import LoadingSpinner from '../loading-spinner/LoadingSpinner';
 import './Button.scss';
 
 export type ToaButtonProps = Omit<ComponentProps<'button'>, 'children' | 'className'> & {
-  /** Text shown on the button, including while loading. */
+  /** Remains visible while loading. */
   label: string;
-  /** Shows a spinner, disables the button, and marks it busy. Defaults to `false`. */
+  /** Shows a spinner, disables activation, and sets `aria-busy`. Defaults to `false`. */
   loading?: boolean;
 };
 
+/** Native button. Defaults to `type="button"`. */
 export default function ToaButton({
   disabled,
   label,

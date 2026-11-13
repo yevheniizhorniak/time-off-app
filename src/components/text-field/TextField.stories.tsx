@@ -7,6 +7,10 @@ import TextField, { type TextFieldProps } from './TextField';
 const meta = {
   title: 'Components/TextField',
   component: TextField,
+  argTypes: {
+    placeholder: { table: { disable: true } },
+    onChange: { control: false },
+  },
   args: {
     label: 'Employee name',
     value: '',

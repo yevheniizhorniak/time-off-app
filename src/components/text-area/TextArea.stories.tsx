@@ -7,6 +7,10 @@ import TextArea, { type TextAreaProps } from './TextArea';
 const meta = {
   title: 'Components/TextArea',
   component: TextArea,
+  argTypes: {
+    placeholder: { table: { disable: true } },
+    onChange: { control: false },
+  },
   args: {
     label: 'Notes',
     value: '',
