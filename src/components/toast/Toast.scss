@@ -10,7 +10,7 @@
 
   &__message {
     flex: 1;
-    line-height: 1.5;
+    line-height: var(--toa-line-height-body);
     margin: 0;
     min-width: 0;
     overflow-wrap: anywhere;
@@ -26,7 +26,6 @@
     cursor: pointer;
     display: inline-block;
     flex: 0 0 44px;
-    font: inherit;
     font-size: 1.5rem;
     min-height: 44px;
     padding: 0;

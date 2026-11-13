@@ -1,3 +1,5 @@
+@use '../../../../theme/typography';
+
 .time-off-app {
   .request-card {
     background: var(--toa-surface-color);
@@ -13,14 +15,14 @@
       justify-content: space-between;
     }
     &__employee {
-      font-weight: 600;
+      @include typography.text-semibold;
     }
     &__note {
       white-space: pre-wrap;
     }
     &__metadata {
       color: var(--app-muted);
-      font-size: 0.875rem;
+      font-size: var(--toa-font-size-small);
     }
     &__review {
       border-top: 1px solid var(--app-border);
@@ -36,7 +38,7 @@
     border-radius: 20px;
     flex-shrink: 0;
     font-size: 0.75rem;
-    font-weight: 600;
+    @include typography.text-semibold;
     padding: 0.15rem 0.625rem;
     text-transform: capitalize;
     &--pending {

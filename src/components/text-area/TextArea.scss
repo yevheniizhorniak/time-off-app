@@ -1,3 +1,5 @@
+@use '../../theme/typography';
+
 .toa-text-area {
   color: var(--toa-text-color, #1f2937);
   display: flex;
@@ -7,7 +9,7 @@
   width: 100%;
 
   .toa-label {
-    line-height: 1.5;
+    line-height: var(--toa-line-height-body);
   }
 
   &__textarea {
@@ -17,9 +19,7 @@
     box-sizing: border-box;
     color: inherit;
     color-scheme: light dark;
-    font: inherit;
-    font-size: 1rem;
-    line-height: 1.5;
+    @include typography.text-body;
     min-height: 44px;
     min-width: 0;
     padding: 0.625rem 0.75rem;
@@ -51,8 +51,7 @@
 
   &__error {
     color: var(--toa-color-danger-shade, #ac000d);
-    font-size: 0.875rem;
-    line-height: 1.5;
+    @include typography.text-small;
     margin: 0;
     overflow-wrap: anywhere;
 

@@ -1,0 +1,13 @@
+@mixin text-body {
+  font-size: var(--toa-font-size-body);
+  line-height: var(--toa-line-height-body);
+}
+
+@mixin text-small {
+  font-size: var(--toa-font-size-small);
+  line-height: var(--toa-line-height-body);
+}
+
+@mixin text-semibold {
+  font-weight: var(--toa-font-weight-semibold);
+}

@@ -1,3 +1,5 @@
+@use '../../theme/typography';
+
 .toa-dropdown {
   color: var(--toa-text-color, #1f2937);
   display: flex;
@@ -7,8 +9,8 @@
   width: 100%;
 
   &__label {
-    font-weight: 600;
-    line-height: 1.5;
+    @include typography.text-semibold;
+    line-height: var(--toa-line-height-body);
     overflow-wrap: anywhere;
   }
 
@@ -20,8 +22,7 @@
     color: inherit;
     color-scheme: light dark;
     cursor: pointer;
-    font: inherit;
-    font-size: 1rem;
+    font-size: var(--toa-font-size-body);
     min-height: 44px;
     min-width: 0;
     padding: 0.625rem 0.75rem;
@@ -52,8 +53,7 @@
 
   &__error {
     color: var(--toa-color-danger-shade, #ac000d);
-    font-size: 0.875rem;
-    line-height: 1.5;
+    @include typography.text-small;
     margin: 0;
     overflow-wrap: anywhere;
 

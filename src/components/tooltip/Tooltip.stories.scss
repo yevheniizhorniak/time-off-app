@@ -1,7 +1,6 @@
 .toa-tooltip-example {
   box-sizing: border-box;
   color: var(--toa-text-color, #17243b);
-  font-family: var(--toa-font-family, sans-serif);
   padding: 4rem 1rem;
   width: 100%;
 
@@ -11,7 +10,6 @@
     border-radius: 8px;
     color: var(--toa-color-primary-text, #fff);
     cursor: pointer;
-    font: inherit;
     min-height: 44px;
     min-width: 44px;
     padding: 0.625rem 1rem;

@@ -2,7 +2,7 @@
   box-sizing: border-box;
   color: var(--toa-text-color, #17243b);
   min-width: 0;
-  line-height: 1.5;
+  line-height: var(--toa-line-height-body);
 
   *,
   *::before,
@@ -23,7 +23,7 @@
     margin-bottom: 1rem;
 
     h3 {
-      font-size: 1rem;
+      font-size: var(--toa-font-size-body);
       margin: 0;
       overflow-wrap: anywhere;
       text-align: center;
@@ -31,15 +31,11 @@
 
     button {
       flex-shrink: 0;
-      font-size: 0.875rem;
+      font-size: var(--toa-font-size-small);
       padding: 0.5rem;
 
       &:hover:not(:disabled) {
-        background: color-mix(
-          in srgb,
-          var(--toa-color-primary, #0054e9) 94%,
-          var(--toa-color-primary-text, #fff)
-        );
+        background: color-mix(in srgb, var(--toa-color-primary, #0054e9) 94%, var(--toa-color-primary-text, #fff));
       }
     }
   }
@@ -65,7 +61,6 @@
     color: inherit;
     cursor: pointer;
     display: inline-block;
-    font: inherit;
     min-height: 52px;
     min-width: 0;
     overflow-wrap: anywhere;

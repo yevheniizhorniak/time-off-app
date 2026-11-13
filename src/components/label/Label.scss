@@ -1,8 +1,9 @@
+@use '../../theme/typography';
+
 .toa-label {
   color: var(--toa-text-color, #000);
   display: inline-block;
-  font: inherit;
-  font-weight: 600;
+  @include typography.text-semibold;
   max-width: 100%;
   overflow-wrap: anywhere;
 

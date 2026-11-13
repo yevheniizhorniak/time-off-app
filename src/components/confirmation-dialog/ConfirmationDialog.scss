@@ -1,3 +1,5 @@
+@use '../../theme/typography';
+
 .toa-confirmation-dialog {
   background: var(--toa-background-color, #fff);
   border: 0;
@@ -19,7 +21,7 @@
   }
 
   &__message {
-    line-height: 1.5;
+    line-height: var(--toa-line-height-body);
     margin: 0.75rem 0 1.5rem;
   }
 
@@ -34,8 +36,7 @@
     border: 1px solid transparent;
     border-radius: 8px;
     cursor: pointer;
-    font: inherit;
-    font-weight: 600;
+    @include typography.text-semibold;
     min-height: 44px;
     padding: 0.625rem 1rem;
 

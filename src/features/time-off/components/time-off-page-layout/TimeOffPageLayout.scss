@@ -4,7 +4,7 @@
   max-width: 1180px;
   padding: 1.5rem 1rem 3rem;
   color: var(--toa-text-color);
-  line-height: 1.5;
+  line-height: var(--toa-line-height-body);
 
   *,
   *::before,
@@ -27,7 +27,7 @@
     letter-spacing: -0.015em;
   }
   h3 {
-    font-size: 1rem;
+    font-size: var(--toa-font-size-body);
   }
   p,
   h3,
