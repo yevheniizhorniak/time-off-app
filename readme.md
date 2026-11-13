@@ -1,6 +1,8 @@
 # Time Off App
 
-Ionic React application for requesting and reviewing time off.
+Ionic React application for requesting and reviewing time off. You can quickly check deployed versions of an app and storybook in the urls linked in the description of the repository.
+
+Mobile apk for an Android can be built using GH Action.
 
 ## Requirements
 
@@ -49,28 +51,6 @@ Open the local URL printed by Vite.
 The employee-name field defaults to `testusr` whenever the login page opens. It has some pre-created data for past requests.
 
 See [Calendar policy](docs/calendar-policy.md) for calendar, holiday, and timezone rules.
-
-## Persistence and architecture
-
-The list lives at `/time-off-requests`, with the employee form at `/time-off-requests/new`.
-
-On first launch, the app creates three demonstration requests for `testusr`: past approved Paid Time Off, past rejected Sick day, and upcoming pending Paid Time Off. Dates are relative to the device's local date at initialization and exclude weekends and configured Czech holidays. Supervisors see these examples immediately. other employees start with empty personal lists.
-
-Time off requests are stored locally in this browser under `time-off-app.time-off-requests` as `{ version: 2, timeOffRequests }`. Examples are created only when this storage key is absent. Existing data, including empty collections, is preserved without backfilling examples. Reloads preserve demo dates and review decisions. To restore the examples, clear this key using browser developer tools and reload. this removes all existing request history in this browser. Only this storage key and format are supported. invalid data is reported rather than replaced.
-
-The active simulated login is kept in session storage under `time-off-app.session`, so it survives refresh within the tab. Switching users keeps submitted time off requests available. This demonstration uses name-based identities and a shared supervisor role. Anyone using the browser can choose either role.
-
-Time off request validation and transitions live in `time-off-domain.ts`, independently of React and the component library. Shared date-key handling lives in `src/type-safety/`. date formatting and month layout stay with calendar presentation code. The domain accepts a narrow employee identity rather than an authentication session.
-
-The time-off feature owns `time-off-request-repository.ts` and its `browser-time-off-request-repository.ts` adapter. The contract provides asynchronous `load`, `submit`, `review`, and `cancel` operations. Commands validate against current data and return the complete persisted collection for the current unpaginated app. Invalid submissions and stale reviews or cancellations reject with typed domain errors. other save failures retain their original cause. Collection-update callbacks stay private to the browser adapter, which creates IDs and timestamps inside each transaction.
-
-Providers and hooks depend on feature-owned repository contracts. Session types and persistence live in `src/features/auth/`. Workflow components and React state live in `src/features/time-off/`. Reusable UI controls live in `src/components/`, with toast components, delivery, and hooks together in the `toast` folder. Routed screens live in `src/pages/`, with form coordination in the colocated `useNewTimeOffRequestForm.ts` hook. Adapter/provider composition lives in `src/App.tsx`.
-
-The store loads after mounting and serializes reads and commands. Loading and saving have separate states, failed refreshes retain the last snapshot, and results from an unmounted or replaced repository lifecycle are ignored. The browser adapter validates stored data and saves before updating the UI. Storage events refresh other tabs. Web Locks serialize cross-tab changes where supported. the fallback has no cross-tab atomicity guarantee and concurrent writes may overwrite each other.
-
-Persistence remains browser-local. The asynchronous command contract supports a future remote adapter, but a real backend must generate authoritative IDs and timestamps and enforce authentication, authorization, business validation, and concurrency control. The browser's role checks and supplied employee identity are a login simulation, not a security boundary. Session persistence remains synchronous browser session storage.
-
-When saving fails, the form keeps its input and offers another submission attempt. Invalid saved time off requests are preserved and reported. Restore valid data or clear the active storage entry through browser developer tools, then choose **Retry loading time off requests**. To delete all of this browser's time off request history, clear `time-off-app.time-off-requests`. Browser storage access must be available for saving time off requests and restoring sessions.
 
 ## Android debug build
 
