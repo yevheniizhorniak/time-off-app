@@ -87,10 +87,11 @@ test('allows today, one-day periods and all supported leave types', () => {
 });
 
 test('rejects missing or impossible dates, past dates, reversed periods and unknown leave types', () => {
+  const anyString: unknown = expect.any(String);
   expect(validateRequest({ ...draft, startDate: '', endDate: '', leaveType: '' }, 'alex', [], today)).toMatchObject({
-    startDate: expect.any(String),
-    endDate: expect.any(String),
-    leaveType: expect.any(String),
+    startDate: anyString,
+    endDate: anyString,
+    leaveType: anyString,
   });
   expect(isDate('2026-02-29')).toBe(false);
   expect(isDate('2028-02-29')).toBe(true);

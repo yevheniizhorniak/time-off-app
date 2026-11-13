@@ -27,7 +27,9 @@ function stack(): HTMLElement {
 }
 
 function advance(milliseconds: number): void {
-  act(() => vi.advanceTimersByTime(milliseconds));
+  act(() => {
+    vi.advanceTimersByTime(milliseconds);
+  });
 }
 
 test('requires a provider and explains how to fix missing context', () => {

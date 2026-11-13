@@ -50,11 +50,15 @@ test('reports an initial read failure and recovers through storage notifications
   expect(result.current.storageError).toContain('Saved requests could not be read');
   localStorage.removeItem('time-off-app.requests');
   await repository.update(() => [request]);
-  act(() => window.dispatchEvent(new StorageEvent('storage', { key: 'time-off-app.requests' })));
+  act(() => {
+    window.dispatchEvent(new StorageEvent('storage', { key: 'time-off-app.requests' }));
+  });
   expect(result.current.requests).toEqual([request]);
   expect(result.current.storageError).toBeNull();
   localStorage.setItem('time-off-app.requests', '{broken');
-  act(() => window.dispatchEvent(new StorageEvent('storage', { key: 'time-off-app.requests' })));
+  act(() => {
+    window.dispatchEvent(new StorageEvent('storage', { key: 'time-off-app.requests' }));
+  });
   expect(result.current.requests).toEqual([request]);
   expect(result.current.storageError).toContain('Saved requests could not be read');
   unmount();
