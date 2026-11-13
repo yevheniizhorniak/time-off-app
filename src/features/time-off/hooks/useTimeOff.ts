@@ -9,6 +9,7 @@ export type TimeOffState = {
   reload: () => void;
   submitRequest: (draft: RequestDraft) => Promise<void>;
   reviewRequest: (id: string, status: 'approved' | 'rejected', note: string) => Promise<void>;
+  cancelRequest: (id: string) => Promise<void>;
 };
 
 export const TimeOffContext = createContext<TimeOffState | null>(null);

@@ -39,10 +39,14 @@ export default function TimeOffRequests(): ReactElement {
             .sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
         },
         {
-          title: 'Reviewed requests',
+          title: 'Reviewed and cancelled requests',
           items: visible
             .filter((request) => request.status !== 'pending')
-            .sort((a, b) => b.reviewedAt!.localeCompare(a.reviewedAt!)),
+            .sort((a, b) =>
+              (b.cancelledAt ?? b.reviewedAt ?? b.createdAt).localeCompare(
+                a.cancelledAt ?? a.reviewedAt ?? a.createdAt,
+              ),
+            ),
         },
       ];
 

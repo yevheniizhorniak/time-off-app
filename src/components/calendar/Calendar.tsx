@@ -1,7 +1,10 @@
 import type { ReactElement, ReactNode } from 'react';
 
-import { dateKey, formatDate, monthDays } from '../../dates/calendar-dates';
 import Button from '../button/Button';
+
+import { dateKey } from './date-key';
+import { formatDate } from './format-date';
+import { monthDays } from './month-days';
 
 import './Calendar.scss';
 

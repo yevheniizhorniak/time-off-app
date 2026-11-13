@@ -297,3 +297,134 @@ test('supports keyboard login and the legacy home entry point', async ({ page })
   await page.goto('/home');
   await expect(page).toHaveURL(/\/requests$/);
 });
+
+for (const status of ['pending', 'approved']) {
+  test(`confirms cancellation of future ${status} leave and retains its history`, async ({ page }) => {
+    await loginEmployee(page);
+    await fillRequest(page);
+    await page.getByRole('button', { name: 'Submit request', exact: true }).click();
+    if (status === 'approved') {
+      await switchUser(page);
+      await page.getByRole('button', { name: 'Log in as a supervisor', exact: true }).click();
+      await page.getByLabel('Decision note (optional)').fill('Enjoy your break');
+      await page.getByRole('button', { name: 'Approve', exact: true }).click();
+      await expect(page.getByRole('article')).toContainText('approved');
+      await switchUser(page);
+      await loginEmployee(page);
+    }
+    const cancel = page.getByRole('button', { name: 'Cancel request', exact: true });
+    const dialog = page.getByRole('dialog', { name: 'Cancel time off?', exact: true });
+    const original = await page.evaluate(() => localStorage.getItem('time-off-app.requests'));
+    await cancel.focus();
+    await page.keyboard.press('Enter');
+    await expect(dialog).toContainText('Nov 13, 2026 to Nov 16, 2026');
+    await dialog.getByRole('button', { name: 'Keep request', exact: true }).click();
+    await expect(dialog).toBeHidden();
+    await expect(cancel).toBeFocused();
+    await cancel.click();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(cancel).toBeFocused();
+    await cancel.click();
+    await page.mouse.click(1, 1);
+    await expect(dialog).toBeHidden();
+    expect(await page.evaluate(() => localStorage.getItem('time-off-app.requests'))).toBe(original);
+
+    await cancel.click();
+    await dialog.getByRole('button', { name: 'Cancel time off', exact: true }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page.getByRole('article')).toContainText('cancelled');
+    await expect(page.getByRole('article')).toContainText('Cancelled Nov 13, 2026 to Nov 16, 2026 on Nov 12, 2026');
+    await expect(cancel).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByRole('article')).toContainText('cancelled');
+    if (status === 'approved') await expect(page.getByRole('article')).toContainText('Enjoy your break');
+
+    await switchUser(page);
+    await loginEmployee(page, 'Bob');
+    await expect(page.getByRole('article')).toHaveCount(0);
+    await switchUser(page);
+    await page.getByRole('button', { name: 'Log in as a supervisor', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Reviewed and cancelled requests' })).toBeVisible();
+    await expect(page.getByRole('article')).toContainText('cancelled');
+    await expect(page.getByRole('button', { name: 'Approve', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Cancel request', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('region', { name: 'Team calendar' })).toContainText('No time off this month.');
+
+    await switchUser(page);
+    await loginEmployee(page);
+    await fillRequest(page);
+    await page.getByRole('button', { name: 'Submit request', exact: true }).click();
+    await expect(page.getByRole('article')).toHaveCount(2);
+  });
+}
+
+test('partial cancellation retains today and allows a new request for the released dates', async ({ page }) => {
+  await loginEmployee(page);
+  await fillRequest(page, '2026-11-12', '2026-11-16');
+  await page.getByLabel('Notes (optional)').fill('Original leave');
+  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
+  await page.getByRole('button', { name: 'Cancel request', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Cancel time off?', exact: true });
+  await expect(dialog).toContainText('Nov 13, 2026 to Nov 16, 2026');
+  await expect(dialog).toContainText('Cancellation starts tomorrow.');
+  await dialog.getByRole('button', { name: 'Cancel time off', exact: true }).click();
+  await expect(page.getByRole('article')).toContainText('Cancelled Nov 13, 2026 to Nov 16, 2026');
+  await expect(page.getByRole('article').locator('.request-status')).toHaveText('pending');
+  await expect(page.getByRole('button', { name: 'Cancel request', exact: true })).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole('article')).toContainText('Cancelled Nov 13, 2026 to Nov 16, 2026');
+
+  await switchUser(page);
+  await page.getByRole('button', { name: 'Log in as a supervisor', exact: true }).click();
+  const calendar = page.getByRole('region', { name: 'Team calendar' });
+  await expect(calendar.getByRole('button', { name: 'Nov 12, 2026, 1 request', exact: true })).toBeEnabled();
+  await expect(calendar.getByRole('button', { name: 'Nov 13, 2026, 0 requests', exact: true })).toBeDisabled();
+  await expect(calendar.getByRole('button', { name: 'Nov 16, 2026, 0 requests', exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: 'Approve', exact: true }).click();
+  await expect(page.getByRole('article').locator('.request-status')).toHaveText('approved');
+  await expect(page.getByRole('article')).toContainText('Cancelled Nov 13, 2026 to Nov 16, 2026');
+
+  await switchUser(page);
+  await loginEmployee(page);
+  await fillRequest(page, '2026-11-12', '2026-11-12');
+  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
+  await expect(page.getByText('These dates overlap one of your pending or approved requests.')).toBeVisible();
+  await selectRequestDate(page, 'End date', '2026-11-16');
+  await selectRequestDate(page, 'Start date', '2026-11-13');
+  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
+  await expect(page.getByRole('article')).toHaveCount(2);
+});
+
+test('failed cancellation preserves the request and allows confirmation and save to be retried', async ({ page }) => {
+  await loginEmployee(page);
+  await fillRequest(page);
+  await page.getByRole('button', { name: 'Submit request', exact: true }).click();
+  const original = await page.evaluate(() => localStorage.getItem('time-off-app.requests'));
+  await page.evaluate(() => {
+    document.documentElement.dataset.failSave = 'true';
+    const original = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (key, value) {
+      if (key === 'time-off-app.requests' && document.documentElement.dataset.failSave === 'true') {
+        throw new DOMException('Storage full', 'QuotaExceededError');
+      }
+      original.call(this, key, value);
+    };
+  });
+  const cancel = page.getByRole('button', { name: 'Cancel request', exact: true });
+  const dialog = page.getByRole('dialog', { name: 'Cancel time off?', exact: true });
+  await cancel.click();
+  await dialog.getByRole('button', { name: 'Cancel time off', exact: true }).click();
+  await expect(dialog).toBeHidden();
+  await expect(page.getByRole('alert')).toContainText('Your changes could not be saved');
+  await expect(page.getByRole('article').locator('.request-status')).toHaveText('pending');
+  await expect(cancel).toBeEnabled();
+  expect(await page.evaluate(() => localStorage.getItem('time-off-app.requests'))).toBe(original);
+  await page.evaluate(() => {
+    document.documentElement.dataset.failSave = 'false';
+  });
+  await cancel.click();
+  await dialog.getByRole('button', { name: 'Cancel time off', exact: true }).click();
+  await expect(page.getByRole('article').locator('.request-status')).toHaveText('cancelled');
+  await expect(page.getByRole('alert')).toHaveCount(0);
+});

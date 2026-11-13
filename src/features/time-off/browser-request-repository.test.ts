@@ -84,3 +84,54 @@ test('refreshes only for request storage changes and unsubscribes cleanly', () =
   window.dispatchEvent(new StorageEvent('storage', { key: null }));
   expect(onChange).toHaveBeenCalledOnce();
 });
+
+test('loads existing version-1 records and round-trips full and partial cancellation history', async () => {
+  const repository = createRequestRepository(() => localStorage);
+  localStorage.setItem('time-off-app.requests', JSON.stringify({ version: 1, requests: [request] }));
+  expect(repository.load()).toEqual([request]);
+  for (const saved of [
+    { ...request, status: 'cancelled' as const, cancelledFromDate: request.startDate },
+    {
+      ...request,
+      status: 'cancelled' as const,
+      cancelledFromDate: request.startDate,
+      reviewedAt: '2026-11-10T11:00:00Z',
+      reviewerNote: 'Approved earlier',
+    },
+    { ...request, cancelledFromDate: request.endDate },
+    { ...request, status: 'approved' as const, reviewedAt: '2026-11-10T11:00:00Z', cancelledFromDate: request.endDate },
+    { ...request, status: 'rejected' as const, reviewedAt: '2026-11-12T13:00:00Z', cancelledFromDate: request.endDate },
+  ]) {
+    const cancelled = { ...saved, cancelledAt: '2026-11-11T12:00:00Z' };
+    await repository.update(() => [cancelled]);
+    expect(repository.load()).toEqual([cancelled]);
+  }
+});
+
+test('rejects incomplete, invalid and inconsistent cancellation metadata without overwriting it', async () => {
+  const repository = createRequestRepository(() => localStorage);
+  const cancelled = {
+    ...request,
+    status: 'cancelled',
+    cancelledFromDate: request.startDate,
+    cancelledAt: '2026-11-11T12:00:00Z',
+  };
+  for (const saved of [
+    { ...request, status: 'cancelled' },
+    { ...cancelled, cancelledFromDate: undefined },
+    { ...cancelled, cancelledAt: undefined },
+    { ...cancelled, cancelledAt: 'invalid' },
+    { ...cancelled, cancelledFromDate: '2026-02-30' },
+    { ...cancelled, cancelledFromDate: '2026-11-11' },
+    { ...cancelled, cancelledFromDate: '2026-11-16' },
+    { ...cancelled, cancelledFromDate: request.endDate },
+    { ...cancelled, status: 'pending' },
+    { ...cancelled, reviewedAt: 'invalid' },
+  ]) {
+    const raw = JSON.stringify({ version: 1, requests: [saved] });
+    localStorage.setItem('time-off-app.requests', raw);
+    expect(() => repository.load()).toThrow();
+    await expect(repository.update(() => [])).rejects.toThrow();
+    expect(localStorage.getItem('time-off-app.requests')).toBe(raw);
+  }
+});

@@ -2,9 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useArgs } from 'storybook/preview-api';
 import { fn } from 'storybook/test';
 
-import { formatDate } from '../../dates/calendar-dates';
-
 import Calendar, { type CalendarProps } from './Calendar';
+import { formatDate } from './format-date';
 
 const meta = {
   title: 'Components/Calendar',

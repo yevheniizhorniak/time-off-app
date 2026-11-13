@@ -13,6 +13,19 @@ function isTimestamp(value: unknown): value is string {
   return typeof value === 'string' && !Number.isNaN(Date.parse(value));
 }
 
+function hasValidCancellation(value: Record<string, unknown>, startDate: string, endDate: string): boolean {
+  if (value.cancelledFromDate === undefined && value.cancelledAt === undefined) {
+    return value.status !== 'cancelled';
+  }
+  return (
+    isDate(value.cancelledFromDate) &&
+    isTimestamp(value.cancelledAt) &&
+    value.cancelledFromDate >= startDate &&
+    value.cancelledFromDate <= endDate &&
+    (value.status === 'cancelled' ? value.cancelledFromDate === startDate : value.cancelledFromDate > startDate)
+  );
+}
+
 function isRequest(value: unknown): value is TimeOffRequest {
   if (!isRecord(value)) return false;
   return (
@@ -27,9 +40,11 @@ function isRequest(value: unknown): value is TimeOffRequest {
     isLeaveType(value.leaveType) &&
     typeof value.note === 'string' &&
     isTimestamp(value.createdAt) &&
+    hasValidCancellation(value, value.startDate, value.endDate) &&
     (value.reviewerNote === undefined || typeof value.reviewerNote === 'string') &&
     ((value.status === 'pending' && value.reviewedAt === undefined) ||
-      ((value.status === 'approved' || value.status === 'rejected') && isTimestamp(value.reviewedAt)))
+      ((value.status === 'approved' || value.status === 'rejected') && isTimestamp(value.reviewedAt)) ||
+      (value.status === 'cancelled' && (value.reviewedAt === undefined || isTimestamp(value.reviewedAt))))
   );
 }
 

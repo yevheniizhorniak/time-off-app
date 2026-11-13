@@ -9,6 +9,7 @@ import { useSession } from '../../auth/useSession';
 import { createRequestRepository } from '../browser-request-repository';
 import { useTimeOff } from '../hooks/useTimeOff';
 import {
+  RequestCancellationError,
   RequestDecisionError,
   RequestValidationError,
   type RequestDraft,
@@ -68,6 +69,7 @@ test('authorizes each action against the current session before updating storage
     await expect(result.current.timeOff.reviewRequest('one', 'approved', '')).rejects.toThrow(
       'Sign in as a supervisor',
     );
+    await expect(result.current.timeOff.cancelRequest('one')).rejects.toThrow('Sign in as an employee');
   });
   expect(update).not.toHaveBeenCalled();
 
@@ -87,6 +89,7 @@ test('authorizes each action against the current session before updating storage
   update.mockClear();
   await act(async () => {
     await expect(result.current.timeOff.submitRequest(draft)).rejects.toThrow('Sign in as an employee');
+    await expect(result.current.timeOff.cancelRequest(created.id)).rejects.toThrow('Sign in as an employee');
   });
   expect(update).not.toHaveBeenCalled();
   await act(async () => result.current.timeOff.reviewRequest(created.id, 'approved', ' Enjoy your break '));
@@ -170,4 +173,68 @@ test('request state updates do not render a consumer subscribed only to session 
 
 test('requires a time-off provider', () => {
   expect(() => renderHook(() => useTimeOff())).toThrow('useTimeOff requires TimeOffProvider.');
+});
+
+test('cancels the latest approved request while preserving its review details', async () => {
+  const { result, repository } = renderTimeOff(employee);
+  const future: TimeOffRequest = { ...request, startDate: '2026-11-13', endDate: '2026-11-16' };
+  await repository.update(() => [future]);
+  act(() => result.current.timeOff.reload());
+  await repository.update(() => [
+    { ...future, status: 'approved', reviewedAt: '2026-11-12T11:00:00Z', reviewerNote: 'Enjoy your break' },
+  ]);
+  expect(result.current.timeOff.requests[0].status).toBe('pending');
+  await act(async () => result.current.timeOff.cancelRequest(future.id));
+  expect(repository.load()[0]).toMatchObject({
+    status: 'cancelled',
+    cancelledFromDate: '2026-11-13',
+    cancelledAt: '2026-11-12T12:00:00.000Z',
+    reviewedAt: '2026-11-12T11:00:00Z',
+    reviewerNote: 'Enjoy your break',
+  });
+  expect(result.current.timeOff.requests).toEqual(repository.load());
+});
+
+test('rejects another employee and stale cancellation attempts against the latest saved data', async () => {
+  const { result, repository } = renderTimeOff(employee);
+  const future: TimeOffRequest = { ...request, startDate: '2026-11-13', endDate: '2026-11-16' };
+  await repository.update(() => [future]);
+  act(() => result.current.timeOff.reload());
+  for (const saved of [
+    [],
+    [{ ...future, employeeName: 'Bob', employeeKey: 'bob' }],
+    [{ ...future, status: 'rejected' as const, reviewedAt: '2026-11-12T11:00:00Z' }],
+    [{ ...future, status: 'cancelled' as const, cancelledFromDate: future.startDate, cancelledAt: future.createdAt }],
+  ]) {
+    await repository.update(() => saved);
+    await act(async () => {
+      await expect(result.current.timeOff.cancelRequest(future.id)).rejects.toBeInstanceOf(RequestCancellationError);
+    });
+    expect(repository.load()).toEqual(saved);
+    expect(result.current.timeOff.busy).toBe(false);
+  }
+});
+
+test('partially cancels ongoing leave and preserves it after a failed write for retry', async () => {
+  const { result, repository } = renderTimeOff(employee);
+  await repository.update(() => [request]);
+  act(() => result.current.timeOff.reload());
+  const write = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    throw new DOMException('Storage full', 'QuotaExceededError');
+  });
+  await act(async () => {
+    await expect(result.current.timeOff.cancelRequest(request.id)).rejects.toThrow('Your changes could not be saved');
+  });
+  expect(result.current.timeOff.requests).toEqual([request]);
+  expect(repository.load()).toEqual([request]);
+  expect(result.current.timeOff.busy).toBe(false);
+  write.mockRestore();
+  await act(async () => result.current.timeOff.cancelRequest(request.id));
+  expect(repository.load()[0]).toMatchObject({
+    status: 'pending',
+    startDate: request.startDate,
+    endDate: request.endDate,
+    cancelledFromDate: '2026-11-13',
+    cancelledAt: '2026-11-12T12:00:00.000Z',
+  });
 });

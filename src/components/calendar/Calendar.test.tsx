@@ -1,9 +1,9 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, expect, test, vi } from 'vitest';
 
-import { dateKey, formatDate } from '../../dates/calendar-dates';
-
 import Calendar, { type CalendarProps } from './Calendar';
+import { dateKey } from './date-key';
+import { formatDate } from './format-date';
 
 const props: CalendarProps = {
   month: new Date(2026, 10, 1, 12),

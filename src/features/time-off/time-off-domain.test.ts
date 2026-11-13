@@ -3,11 +3,14 @@ import { afterEach, expect, test, vi } from 'vitest';
 import type { Session } from '../auth/session-domain';
 
 import {
+  cancellationStartDate,
+  cancelTimeOffRequest,
   createTimeOffRequest,
   dateKey,
   isDate,
   monthDays,
   RequestDecisionError,
+  RequestCancellationError,
   RequestValidationError,
   requestsOnDate,
   reviewTimeOffRequest,
@@ -198,4 +201,73 @@ test('builds Monday-first months across leap years and year boundaries using loc
   expect(monthDays(new Date(2028, 1, 1, 12)).at(-1)).toBe('2028-02-29');
   expect(monthDays(new Date(2026, 12, 1, 12)).filter(Boolean)[0]).toBe('2027-01-01');
   expect(dateKey(new Date(2026, 0, 1, 0, 30))).toBe('2026-01-01');
+});
+
+test.each(['pending', 'approved'] as const)('fully cancels future %s leave and preserves its history', (status) => {
+  const saved = Object.freeze({
+    ...request,
+    status,
+    startDate: '2026-11-13',
+    endDate: '2026-11-16',
+    ...(status === 'approved' && { reviewedAt: '2026-11-11T11:00:00Z', reviewerNote: 'Enjoy your break' }),
+  });
+  const other = Object.freeze({ ...request, id: 'other' });
+  const current = Object.freeze([saved, other]);
+  const cancelledAt = '2026-11-12T12:00:00Z';
+  const cancelled = cancelTimeOffRequest(current, saved.id, 'alex', { today, cancelledAt });
+  expect(cancelled[0]).toEqual({ ...saved, status: 'cancelled', cancelledFromDate: '2026-11-13', cancelledAt });
+  expect(cancelled[1]).toBe(other);
+  expect(saved.status).toBe(status);
+  expect(requestsOnDate([cancelled[0]], '2026-11-13')).toEqual([]);
+  expect(validateRequest({ ...draft, startDate: '2026-11-13' }, 'alex', [cancelled[0]], today)).toEqual({});
+  expect(() => reviewTimeOffRequest(cancelled, saved.id, 'approved', '', cancelledAt)).toThrow(RequestDecisionError);
+});
+
+test.each(['pending', 'approved'] as const)(
+  'partially cancels ongoing %s leave and releases only future dates',
+  (status) => {
+    const saved = { ...request, status, endDate: '2026-11-16' };
+    const cancelledAt = '2026-11-12T12:00:00Z';
+    const cancelled = cancelTimeOffRequest([saved], saved.id, 'alex', { today, cancelledAt });
+    expect(cancelled[0]).toEqual({ ...saved, cancelledFromDate: '2026-11-13', cancelledAt });
+    expect(requestsOnDate(cancelled, today)).toEqual(cancelled);
+    expect(requestsOnDate(cancelled, '2026-11-13')).toEqual([]);
+    expect(requestsOnDate(cancelled, '2026-11-16')).toEqual([]);
+    expect(validateRequest({ ...draft, endDate: today }, 'alex', cancelled, today)).toHaveProperty('startDate');
+    expect(validateRequest({ ...draft, startDate: '2026-11-13' }, 'alex', cancelled, today)).toEqual({});
+    expect(validateRequest(draft, 'alex', cancelled, today)).toHaveProperty('startDate');
+    expect(() => cancelTimeOffRequest(cancelled, saved.id, 'alex', { today, cancelledAt })).toThrow(
+      RequestCancellationError,
+    );
+    if (status === 'pending') {
+      for (const decision of ['approved', 'rejected'] as const) {
+        const reviewed = reviewTimeOffRequest(cancelled, saved.id, decision, 'Retained dates', cancelledAt);
+        expect(reviewed[0]).toMatchObject({ status: decision, cancelledFromDate: '2026-11-13', cancelledAt });
+        expect(requestsOnDate(reviewed, '2026-11-13')).toEqual([]);
+      }
+    }
+  },
+);
+
+test('cancellation rejects unavailable requests, other employees and requests without future dates', () => {
+  const metadata = { today, cancelledAt: '2026-11-12T12:00:00Z' };
+  expect(() => cancelTimeOffRequest([request], 'missing', 'alex', metadata)).toThrow(RequestCancellationError);
+  expect(() => cancelTimeOffRequest([request], request.id, 'bob', metadata)).toThrow(RequestCancellationError);
+  for (const saved of [
+    { ...request, status: 'rejected' as const },
+    { ...request, status: 'cancelled' as const },
+    { ...request, endDate: today },
+    { ...request, startDate: '2026-11-10', endDate: '2026-11-11' },
+  ]) {
+    expect(cancellationStartDate(saved, today)).toBeNull();
+    expect(() => cancelTimeOffRequest([saved], saved.id, 'alex', metadata)).toThrow(RequestCancellationError);
+  }
+});
+
+test.each([
+  ['2026-12-31', '2027-01-01'],
+  ['2028-02-28', '2028-02-29'],
+  ['2026-03-28', '2026-03-29'],
+])('cancellation advances the local calendar date after %s', (today, tomorrow) => {
+  expect(cancellationStartDate({ ...request, startDate: today, endDate: '2028-12-31' }, today)).toBe(tomorrow);
 });

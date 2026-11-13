@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import type { RequestRepository } from '../request-repository';
-import { RequestDecisionError, RequestValidationError, type TimeOffRequest } from '../time-off-domain';
+import {
+  RequestCancellationError,
+  RequestDecisionError,
+  RequestValidationError,
+  type TimeOffRequest,
+} from '../time-off-domain';
 
 type RequestSnapshot = {
   requests: TimeOffRequest[];
@@ -45,7 +50,13 @@ export function useRequestStore(repository: RequestRepository): RequestStore {
         const requests = await repository.update(change);
         setSnapshot({ requests, storageError: null });
       } catch (error) {
-        if (error instanceof RequestValidationError || error instanceof RequestDecisionError) throw error;
+        if (
+          error instanceof RequestValidationError ||
+          error instanceof RequestDecisionError ||
+          error instanceof RequestCancellationError
+        ) {
+          throw error;
+        }
         throw new Error('Your changes could not be saved. Check browser storage access and try again.', {
           cause: error,
         });

@@ -2,7 +2,12 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
 import { createRequestRepository } from '../browser-request-repository';
-import { RequestDecisionError, RequestValidationError, type TimeOffRequest } from '../time-off-domain';
+import {
+  RequestCancellationError,
+  RequestDecisionError,
+  RequestValidationError,
+  type TimeOffRequest,
+} from '../time-off-domain';
 
 import { useRequestStore } from './useRequestStore';
 
@@ -82,7 +87,11 @@ test('failed saves preserve requests and the original cause, then allow retry', 
 test('preserves typed validation and decision failures without publishing a change', async () => {
   const repository = createRequestRepository(() => localStorage);
   const { result } = renderHook(() => useRequestStore(repository));
-  for (const failure of [new RequestValidationError({ startDate: 'Overlap' }), new RequestDecisionError()]) {
+  for (const failure of [
+    new RequestValidationError({ startDate: 'Overlap' }),
+    new RequestDecisionError(),
+    new RequestCancellationError(),
+  ]) {
     await act(async () => {
       await expect(
         result.current.persist(() => {

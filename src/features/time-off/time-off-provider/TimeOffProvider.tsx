@@ -4,7 +4,13 @@ import { useSession } from '../../auth/useSession';
 import { useRequestStore } from '../hooks/useRequestStore';
 import { TimeOffContext } from '../hooks/useTimeOff';
 import type { RequestRepository } from '../request-repository';
-import { createTimeOffRequest, dateKey, reviewTimeOffRequest, type RequestDraft } from '../time-off-domain';
+import {
+  cancelTimeOffRequest,
+  createTimeOffRequest,
+  dateKey,
+  reviewTimeOffRequest,
+  type RequestDraft,
+} from '../time-off-domain';
 
 type TimeOffProviderProps = {
   /** Application content sharing requests. */
@@ -41,9 +47,23 @@ export default function TimeOffProvider({ children, repository }: TimeOffProvide
     [session, persist],
   );
 
+  const cancelRequest = useCallback(
+    async (id: string): Promise<void> => {
+      if (session?.role !== 'employee') throw new Error('Sign in as an employee to cancel a request.');
+      await persist((current) => {
+        const now = new Date();
+        return cancelTimeOffRequest(current, id, session.employeeKey, {
+          today: dateKey(now),
+          cancelledAt: now.toISOString(),
+        });
+      });
+    },
+    [session, persist],
+  );
+
   const value = useMemo(
-    () => ({ requests, storageError, busy, reload, submitRequest, reviewRequest }),
-    [requests, storageError, busy, reload, submitRequest, reviewRequest],
+    () => ({ requests, storageError, busy, reload, submitRequest, reviewRequest, cancelRequest }),
+    [requests, storageError, busy, reload, submitRequest, reviewRequest, cancelRequest],
   );
 
   return <TimeOffContext.Provider value={value}>{children}</TimeOffContext.Provider>;

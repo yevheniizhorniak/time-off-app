@@ -48,5 +48,8 @@
     &--rejected {
       color: var(--app-error);
     }
+    &--cancelled {
+      color: var(--app-muted);
+    }
   }
 }
