@@ -10,6 +10,11 @@
     box-sizing: border-box;
   }
 
+  button {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
   &__navigation {
     align-items: center;
     display: flex;
@@ -28,6 +33,14 @@
       flex-shrink: 0;
       font-size: 0.875rem;
       padding: 0.5rem;
+
+      &:hover:not(:disabled) {
+        background: color-mix(
+          in srgb,
+          var(--ion-color-primary, #0054e9) 94%,
+          var(--ion-color-primary-contrast, #fff)
+        );
+      }
     }
   }
 
@@ -58,8 +71,8 @@
     overflow-wrap: anywhere;
     padding: 0.25rem 0;
 
-    &:hover:not(:disabled) {
-      background: var(--app-subtle, #e9eef8);
+    &:hover:not(:disabled):not([aria-pressed='true']) {
+      background: color-mix(in srgb, currentColor 6%, transparent);
     }
 
     &:active:not(:disabled) {

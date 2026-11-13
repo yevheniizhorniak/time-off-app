@@ -4,3 +4,7 @@ body:has(#storybook-docs:not([hidden])) {
   max-height: none;
   overflow: auto;
 }
+
+.docs-story {
+  background: var(--ion-background-color);
+}

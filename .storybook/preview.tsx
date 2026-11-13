@@ -1,4 +1,5 @@
 import { IonApp, setupIonicReact } from '@ionic/react';
+import { Controls, Description, Primary, Stories, Title } from '@storybook/addon-docs/blocks';
 import type { Preview, StoryContext } from '@storybook/react-vite';
 
 import '@ionic/react/css/core.css';
@@ -20,6 +21,19 @@ setupIonicReact();
 
 const preview: Preview = {
   tags: ['autodocs'],
+  parameters: {
+    docs: {
+      page: () => (
+        <>
+          <Title />
+          <Description />
+          <Primary />
+          <Controls />
+          <Stories includePrimary={false} />
+        </>
+      ),
+    },
+  },
   decorators: [
     (Story: () => React.ReactNode, context: StoryContext): React.JSX.Element => (
       <IonApp

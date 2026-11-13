@@ -7,6 +7,17 @@ const meta = {
   component: ToaButton,
   args: {
     label: 'Click me',
+    type: 'button',
+  },
+  argTypes: {
+    type: {
+      control: false,
+      description: 'Native button behavior.',
+      table: {
+        type: { summary: "'button' | 'submit' | 'reset'" },
+        defaultValue: { summary: 'button' },
+      },
+    },
   },
 } satisfies Meta<typeof ToaButton>;
 
@@ -14,4 +25,6 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
+export const Preview: Story = {
+  tags: ['!dev'],
+};

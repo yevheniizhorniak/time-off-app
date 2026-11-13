@@ -38,7 +38,9 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
+export const Preview: Story = {
+  tags: ['!dev'],
+};
 
 export const Populated: Story = {
   args: { value: 'Family trip.\nI will hand over my tasks before leaving.' },

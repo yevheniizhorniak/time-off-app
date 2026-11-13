@@ -11,7 +11,6 @@ export type ToaButtonProps = Omit<ComponentProps<'button'>, 'children' | 'classN
   loading?: boolean;
 };
 
-/** Native button. Defaults to `type="button"`. */
 export function ToaButton({
   disabled,
   label,
