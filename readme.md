@@ -1,6 +1,6 @@
 # Time Off App
 
-Ionic React application for requesting and reviewing time off. You can quickly check deployed versions of an app and storybook in the urls linked in the description of the repository.
+Ionic React application for requesting and reviewing time off. You can quickly check deployed versions of an [app](https://time-off-app-kappa.vercel.app/) and [storybook](https://time-off-app-storybook.vercel.app/).
 
 Mobile apk for an Android can be built using GH Action.
 
