@@ -6,5 +6,5 @@ body:has(#storybook-docs:not([hidden])) {
 }
 
 .docs-story {
-  background: var(--ion-background-color);
+  background: var(--toa-background-color);
 }

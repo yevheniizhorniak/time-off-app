@@ -1,5 +1,5 @@
 .toa-text-field {
-  color: var(--ion-text-color, #1f2937);
+  color: var(--toa-text-color, #1f2937);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -11,8 +11,8 @@
   }
 
   &__input {
-    background: var(--ion-item-background, var(--ion-background-color, #fff));
-    border: 1px solid var(--ion-color-medium, #92949c);
+    background: var(--toa-surface-color, var(--toa-background-color, #fff));
+    border: 1px solid var(--toa-color-medium, #92949c);
     border-radius: 8px;
     box-sizing: border-box;
     color: inherit;
@@ -26,19 +26,19 @@
     width: 100%;
 
     &:hover:not(:disabled) {
-      border-color: var(--ion-color-primary, #0054e9);
+      border-color: var(--toa-color-primary, #0054e9);
     }
 
     &:active:not(:disabled) {
-      border-color: var(--ion-color-primary-shade, #004acd);
+      border-color: var(--toa-color-primary-hover, #004acd);
     }
 
     &[aria-invalid='true'] {
-      border-color: var(--ion-color-danger, #c5000f);
+      border-color: var(--toa-color-danger, #c5000f);
     }
 
     &:focus-visible {
-      outline: 2px solid var(--ion-color-primary, #0054e9);
+      outline: 2px solid var(--toa-color-primary, #0054e9);
       outline-offset: 2px;
     }
 
@@ -49,14 +49,14 @@
   }
 
   &__error {
-    color: var(--ion-color-danger-shade, #ac000d);
+    color: var(--toa-color-danger-shade, #ac000d);
     font-size: 0.875rem;
     line-height: 1.5;
     margin: 0;
     overflow-wrap: anywhere;
 
     @media (prefers-color-scheme: dark) {
-      color: var(--ion-color-danger-tint, #ff4961);
+      color: var(--toa-color-danger-tint, #ff4961);
     }
   }
 }

@@ -3,11 +3,11 @@
   flex-direction: column;
   gap: 0.5rem;
   min-width: 0;
-  color: var(--ion-text-color, #17243b);
+  color: var(--toa-text-color, #17243b);
 
   &__trigger {
-    background: var(--ion-item-background, #fff);
-    border: 1px solid var(--ion-color-medium, #92949c);
+    background: var(--toa-surface-color, #fff);
+    border: 1px solid var(--toa-color-medium, #92949c);
     border-radius: 8px;
     color: inherit;
     cursor: pointer;
@@ -19,11 +19,11 @@
 
     &:hover:not(:disabled),
     &:active:not(:disabled) {
-      border-color: var(--ion-color-primary, #2457c5);
+      border-color: var(--toa-color-primary, #2457c5);
     }
 
     &:focus-visible {
-      outline: 2px solid var(--ion-color-primary, #2457c5);
+      outline: 2px solid var(--toa-color-primary, #2457c5);
       outline-offset: 2px;
     }
 
@@ -52,12 +52,12 @@
   }
 
   &__dialog {
-    background: var(--ion-item-background, #fff);
+    background: var(--toa-surface-color, #fff);
     border: 0;
     border-radius: 12px;
     box-sizing: border-box;
     box-shadow: 0 16px 48px rgb(0 0 0 / 0.24);
-    color: var(--ion-text-color, #17243b);
+    color: var(--toa-text-color, #17243b);
     max-height: calc(100dvh - 2rem);
     max-width: 28rem;
     overflow-y: auto;

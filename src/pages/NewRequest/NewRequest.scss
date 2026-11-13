@@ -5,13 +5,13 @@
     min-height: 44px;
     padding: 0.5rem;
     &:hover {
-      color: var(--ion-color-primary-shade);
+      color: var(--toa-color-primary-hover);
     }
     &:active {
       filter: brightness(0.85);
     }
     &:focus-visible {
-      outline: 2px solid var(--ion-color-primary);
+      outline: 2px solid var(--toa-color-primary);
       outline-offset: 2px;
     }
   }

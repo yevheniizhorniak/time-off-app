@@ -1,6 +1,6 @@
 .toa-calendar {
   box-sizing: border-box;
-  color: var(--ion-text-color, #17243b);
+  color: var(--toa-text-color, #17243b);
   min-width: 0;
   line-height: 1.5;
 
@@ -37,8 +37,8 @@
       &:hover:not(:disabled) {
         background: color-mix(
           in srgb,
-          var(--ion-color-primary, #0054e9) 94%,
-          var(--ion-color-primary-contrast, #fff)
+          var(--toa-color-primary, #0054e9) 94%,
+          var(--toa-color-primary-text, #fff)
         );
       }
     }
@@ -80,16 +80,16 @@
     }
 
     &[aria-current='date'] {
-      border-color: var(--ion-color-primary, #2457c5);
+      border-color: var(--toa-color-primary, #2457c5);
     }
 
     &[aria-pressed='true'] {
-      background: var(--ion-color-primary, #2457c5);
-      color: var(--ion-color-primary-contrast, #fff);
+      background: var(--toa-color-primary, #2457c5);
+      color: var(--toa-color-primary-text, #fff);
     }
 
     &:focus-visible {
-      outline: 2px solid var(--ion-color-primary, #2457c5);
+      outline: 2px solid var(--toa-color-primary, #2457c5);
       outline-offset: 1px;
     }
 

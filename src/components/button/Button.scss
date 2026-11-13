@@ -1,6 +1,6 @@
 button.toa-button {
-  background: var(--ion-color-primary, #0054e9);
-  color: var(--ion-color-primary-contrast, #fff);
+  background: var(--toa-color-primary, #0054e9);
+  color: var(--toa-color-primary-text, #fff);
   display: inline-block;
   border: 0;
   border-radius: 8px;
@@ -11,7 +11,7 @@ button.toa-button {
   padding: 0.625rem 1rem;
 
   &:hover:not(:disabled) {
-    background: var(--ion-color-primary-shade, #0047c7);
+    background: var(--toa-color-primary-hover, #0047c7);
   }
 
   &:active:not(:disabled) {

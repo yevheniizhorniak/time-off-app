@@ -1,15 +1,15 @@
 .toa-tooltip-example {
   box-sizing: border-box;
-  color: var(--ion-text-color, #17243b);
+  color: var(--toa-text-color, #17243b);
   font-family: var(--toa-font-family, sans-serif);
   padding: 4rem 1rem;
   width: 100%;
 
   &__button {
-    background: var(--ion-color-primary, #2457c5);
+    background: var(--toa-color-primary, #2457c5);
     border: 0;
     border-radius: 8px;
-    color: var(--ion-color-primary-contrast, #fff);
+    color: var(--toa-color-primary-text, #fff);
     cursor: pointer;
     font: inherit;
     min-height: 44px;
@@ -17,7 +17,7 @@
     padding: 0.625rem 1rem;
 
     &:hover:not(:disabled) {
-      background: var(--ion-color-primary-shade, #1c469f);
+      background: var(--toa-color-primary-hover, #1c469f);
     }
 
     &:active:not(:disabled) {
@@ -25,7 +25,7 @@
     }
 
     &:focus-visible {
-      outline: 2px solid var(--ion-text-color, #17243b);
+      outline: 2px solid var(--toa-text-color, #17243b);
       outline-offset: 2px;
     }
 

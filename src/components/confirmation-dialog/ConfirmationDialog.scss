@@ -1,9 +1,9 @@
 .toa-confirmation-dialog {
-  background: var(--ion-background-color, #fff);
+  background: var(--toa-background-color, #fff);
   border: 0;
   border-radius: 12px;
   box-shadow: 0 16px 48px rgb(0 0 0 / 0.24);
-  color: var(--ion-text-color, #1f2937);
+  color: var(--toa-text-color, #1f2937);
   max-width: 28rem;
   padding: 1.5rem;
   width: calc(100% - 2rem);
@@ -40,7 +40,7 @@
     padding: 0.625rem 1rem;
 
     &:focus-visible {
-      outline: 2px solid var(--ion-color-primary, #0054e9);
+      outline: 2px solid var(--toa-color-primary, #0054e9);
       outline-offset: 2px;
     }
 
@@ -50,20 +50,20 @@
 
     &--cancel {
       background: transparent;
-      border-color: var(--ion-color-medium, #92949c);
+      border-color: var(--toa-color-medium, #92949c);
       color: inherit;
 
       &:hover {
-        background: var(--ion-color-light, #f4f5f8);
+        background: var(--toa-color-light, #f4f5f8);
       }
     }
 
     &--confirm {
-      background: var(--ion-color-primary, #0054e9);
-      color: var(--ion-color-primary-contrast, #fff);
+      background: var(--toa-color-primary, #0054e9);
+      color: var(--toa-color-primary-text, #fff);
 
       &:hover {
-        background: var(--ion-color-primary-shade, #004acd);
+        background: var(--toa-color-primary-hover, #004acd);
       }
     }
   }

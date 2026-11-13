@@ -1,9 +1,9 @@
 .toa-toast {
   align-items: flex-start;
-  background: var(--ion-color-dark, #2f2f2f);
+  background: var(--toa-color-dark, #2f2f2f);
   border-radius: 12px;
   box-shadow: 0 4px 16px rgb(0 0 0 / 0.2);
-  color: var(--ion-color-dark-contrast, #fff);
+  color: var(--toa-color-dark-text, #fff);
   display: flex;
   gap: 0.5rem;
   padding: 0.5rem 0.5rem 0.5rem 1rem;

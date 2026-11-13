@@ -17,6 +17,14 @@
   --toa-color-secondary-text: #243447;
   --toa-color-secondary-disabled-text: #6b7785;
 
+  --toa-color-danger: #c5000f;
+  --toa-color-danger-shade: #ad000d;
+  --toa-color-danger-tint: #cb1a27;
+  --toa-color-medium: #636469;
+  --toa-color-light: #f4f5f8;
+  --toa-color-dark: #222428;
+  --toa-color-dark-text: #ffffff;
+
   --toa-background-color: #f4f6fa;
   --toa-text-color: #17243b;
   --toa-surface-color: #ffffff;
@@ -47,9 +55,17 @@
     --toa-color-secondary-text: #e7edf7;
     --toa-color-secondary-disabled-text: #7f8da3;
 
-    --toa-background-color: #101725;
-    --toa-text-color: #e7edf7;
-    --toa-surface-color: #1a2435;
+    --toa-color-danger: #f24c58;
+    --toa-color-danger-shade: #d5434d;
+    --toa-color-danger-tint: #f35e69;
+    --toa-color-medium: #989aa2;
+    --toa-color-light: #222428;
+    --toa-color-dark: #f4f5f8;
+    --toa-color-dark-text: #000000;
+
+    --toa-background-color: #121212;
+    --toa-text-color: #ffffff;
+    --toa-surface-color: #1e1e1e;
 
     --app-border: #35435a;
     --app-muted: #b5c1d4;
@@ -57,6 +73,11 @@
     --app-error: #ff9aaa;
     --app-approved: #7bd4a6;
     --app-pending: #f1cc73;
+  }
+
+  :root.ios {
+    --toa-background-color: #000000;
+    --toa-surface-color: #000000;
   }
 }
 
