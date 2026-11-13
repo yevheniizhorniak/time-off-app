@@ -216,9 +216,21 @@ for (const status of ['pending', 'approved']) {
       await switchUser(page);
       await loginEmployee(page);
     }
+    const employeeCalendar = page.getByRole('region', { name: 'Your calendar' });
+    await employeeCalendar.getByRole('button', { name: 'Nov 16, 2026, 1 time off request', exact: true }).click();
+    await expect(employeeCalendar.getByRole('heading', { name: 'Nov 16, 2026', exact: true })).toBeVisible();
+    await expect(employeeCalendar.getByRole('list')).toContainText('Alex');
+    await expect(employeeCalendar.getByRole('list')).toContainText(status);
     await fillTimeOffRequest(page, '2026-11-12', '2026-11-18');
     await page.getByLabel('Notes (optional)').fill('Spanning leave');
     await page.getByRole('button', { name: 'End date', exact: true }).click();
+    await expect(page.getByRole('dialog').getByText('Pending or approved time off', { exact: true })).toBeVisible();
+    await expect(
+      page
+        .getByRole('dialog')
+        .getByRole('button', { name: /Nov 13, 2026, already covered/ })
+        .locator('.time-off-date-field__request-marker'),
+    ).toBeVisible();
     await expect(
       page.getByRole('dialog').getByRole('button', { name: /Nov 13, 2026, already covered/ }),
     ).toBeDisabled();

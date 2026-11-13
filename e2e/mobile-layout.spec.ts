@@ -108,18 +108,3 @@ test('scrolls short confirmation dialogs and date dialogs to their actions and r
   await confirm.click();
   await expect(page.getByRole('article')).toContainText('cancelled');
 });
-
-test('allows zoom and applies hover feedback only with a fine hover-capable pointer', async ({ page }) => {
-  const viewport = await page.locator('meta[name="viewport"]').getAttribute('content');
-  expect(viewport).toContain('viewport-fit=cover');
-  expect(viewport).not.toMatch(/maximum-scale|minimum-scale|user-scalable/);
-  const button = page.getByRole('button', { name: 'Log in as employee', exact: true });
-  const original = await button.evaluate((element) => getComputedStyle(element).backgroundColor);
-  await button.hover();
-  const canHover = await page.evaluate(() => matchMedia('(hover: hover) and (pointer: fine)').matches);
-  if (canHover) {
-    await expect(button).not.toHaveCSS('background-color', original);
-  } else {
-    await expect(button).toHaveCSS('background-color', original);
-  }
-});

@@ -111,6 +111,10 @@ test.each(sessions)('filters calendar counts and details to the viewer for $role
     } else {
       expect(calendar.getByRole('list')).toHaveTextContent('Bob');
     }
+    fireEvent.click(calendar.getByRole('button', { name: `Nov 13, 2026, ${count}` }));
+    expect(calendar.getByRole('heading', { name: 'Nov 13, 2026' })).toBeInTheDocument();
+    expect(calendar.getByRole('list')).toHaveTextContent('Alex');
+    expect(calendar.getByRole('list')).toHaveTextContent('pending');
     fireEvent.click(calendar.getByRole('button', { name: 'Next month' }));
     expect(calendar.getByRole('heading', { name: 'December 2026' })).toBeInTheDocument();
     expect(calendar.getByText('No time off this month.')).toBeInTheDocument();
