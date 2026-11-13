@@ -94,59 +94,37 @@ test('refreshes only for time off request storage changes and unsubscribes clean
   window.dispatchEvent(new StorageEvent('storage', { key: 'time-off-app.time-off-requests' }));
   expect(onChange).toHaveBeenCalledOnce();
   window.dispatchEvent(new StorageEvent('storage', { key: 'time-off-app.requests' }));
-  expect(onChange).toHaveBeenCalledTimes(2);
+  expect(onChange).toHaveBeenCalledOnce();
   window.dispatchEvent(new StorageEvent('storage', { key: null }));
-  expect(onChange).toHaveBeenCalledTimes(3);
+  expect(onChange).toHaveBeenCalledTimes(2);
   unsubscribe();
   window.dispatchEvent(new StorageEvent('storage', { key: 'time-off-app.time-off-requests' }));
   window.dispatchEvent(new StorageEvent('storage', { key: 'time-off-app.requests' }));
   window.dispatchEvent(new StorageEvent('storage', { key: null }));
-  expect(onChange).toHaveBeenCalledTimes(3);
+  expect(onChange).toHaveBeenCalledTimes(2);
 });
 
-test('loads legacy data without writing and migrates on the next successful save', async () => {
-  const legacyRaw = JSON.stringify({ version: 1, requests: [timeOffRequest] });
-  localStorage.setItem('time-off-app.requests', legacyRaw);
-  const repository = createTimeOffRequestRepository(() => localStorage);
-  expect(repository.load()).toEqual([timeOffRequest]);
-  expect(localStorage.getItem('time-off-app.time-off-requests')).toBeNull();
-  const second = { ...timeOffRequest, id: 'two', employeeKey: 'bob', employeeName: 'Bob' };
-  await repository.update((current) => [...current, second]);
-  expect(JSON.parse(localStorage.getItem('time-off-app.time-off-requests')!)).toEqual({
-    version: 2,
-    timeOffRequests: [timeOffRequest, second],
-  });
-  expect(localStorage.getItem('time-off-app.requests')).toBe(legacyRaw);
-  expect(repository.load()).toEqual([timeOffRequest, second]);
-});
+test.each([JSON.stringify({ version: 1, requests: [timeOffRequest] }), '{broken'])(
+  'ignores the retired storage key when loading and saving: %s',
+  async (raw) => {
+    localStorage.setItem('time-off-app.requests', raw);
+    const repository = createTimeOffRequestRepository(() => localStorage);
+    expect(repository.load()).toEqual([]);
+    await repository.update((current) => [...current, { ...timeOffRequest, id: 'new' }]);
+    expect(repository.load()).toEqual([{ ...timeOffRequest, id: 'new' }]);
+    expect(JSON.parse(localStorage.getItem('time-off-app.time-off-requests')!)).toEqual({
+      version: 2,
+      timeOffRequests: [{ ...timeOffRequest, id: 'new' }],
+    });
+    expect(localStorage.getItem('time-off-app.requests')).toBe(raw);
+  },
+);
 
-test('preserves legacy data when migration fails and allows retry', async () => {
-  const legacyRaw = JSON.stringify({ version: 1, requests: [timeOffRequest] });
-  localStorage.setItem('time-off-app.requests', legacyRaw);
-  const repository = createTimeOffRequestRepository(() => localStorage);
-  const write = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-    throw new DOMException('Storage full', 'QuotaExceededError');
-  });
-  try {
-    await expect(repository.update(() => [])).rejects.toThrow('Storage full');
-    expect(localStorage.getItem('time-off-app.time-off-requests')).toBeNull();
-    expect(localStorage.getItem('time-off-app.requests')).toBe(legacyRaw);
-    expect(repository.load()).toEqual([timeOffRequest]);
-  } finally {
-    write.mockRestore();
-  }
-  await repository.update(() => []);
-  expect(repository.load()).toEqual([]);
-});
-
-test.each([{ timeOffRequests: [] }, { timeOffRequests: [{ ...timeOffRequest, id: 'current' }] }])(
-  'uses current data instead of a legacy backup, including an empty collection: %j',
+test.each([{ timeOffRequests: [] }, { timeOffRequests: [timeOffRequest] }])(
+  'loads the saved collection: %j',
   ({ timeOffRequests }) => {
     const repository = createTimeOffRequestRepository(() => localStorage);
-    localStorage.setItem('time-off-app.requests', JSON.stringify({ version: 1, requests: [timeOffRequest] }));
     localStorage.setItem('time-off-app.time-off-requests', JSON.stringify({ version: 2, timeOffRequests }));
-    expect(repository.load()).toEqual(timeOffRequests);
-    localStorage.setItem('time-off-app.requests', '{broken');
     expect(repository.load()).toEqual(timeOffRequests);
   },
 );
@@ -154,32 +132,15 @@ test.each([{ timeOffRequests: [] }, { timeOffRequests: [{ ...timeOffRequest, id:
 test.each([
   '{broken',
   JSON.stringify({ version: 1, timeOffRequests: [timeOffRequest] }),
+  JSON.stringify({ version: 1, requests: [timeOffRequest] }),
   JSON.stringify({ version: 2, requests: [timeOffRequest] }),
   JSON.stringify({ version: 2, timeOffRequests: null }),
-])('rejects invalid current data without falling back to legacy data: %s', async (raw) => {
-  const legacyRaw = JSON.stringify({ version: 1, requests: [timeOffRequest] });
-  localStorage.setItem('time-off-app.requests', legacyRaw);
+])('rejects unsupported saved formats without overwriting them: %s', async (raw) => {
   localStorage.setItem('time-off-app.time-off-requests', raw);
   const repository = createTimeOffRequestRepository(() => localStorage);
   expect(() => repository.load()).toThrow();
   await expect(repository.update(() => [])).rejects.toThrow();
   expect(localStorage.getItem('time-off-app.time-off-requests')).toBe(raw);
-  expect(localStorage.getItem('time-off-app.requests')).toBe(legacyRaw);
-});
-
-test.each([
-  '{broken',
-  JSON.stringify({ version: 2, requests: [timeOffRequest] }),
-  JSON.stringify({ version: 1, timeOffRequests: [timeOffRequest] }),
-  JSON.stringify({ version: 1, requests: [timeOffRequest, timeOffRequest] }),
-  JSON.stringify({ version: 1, requests: [{ ...timeOffRequest, endDate: 'invalid' }] }),
-])('preserves invalid legacy data instead of migrating or overwriting it: %s', async (raw) => {
-  localStorage.setItem('time-off-app.requests', raw);
-  const repository = createTimeOffRequestRepository(() => localStorage);
-  expect(() => repository.load()).toThrow();
-  await expect(repository.update(() => [])).rejects.toThrow();
-  expect(localStorage.getItem('time-off-app.requests')).toBe(raw);
-  expect(localStorage.getItem('time-off-app.time-off-requests')).toBeNull();
 });
 
 test('loads version-2 records and round-trips full and partial cancellation history', async () => {

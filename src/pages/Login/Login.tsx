@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactElement } from 'react';
+import { useRef, useState, type FormEvent, type ReactElement } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 import { ToaButton } from '../../components/button/Button';
@@ -13,6 +13,7 @@ import './Login.scss';
 export default function Login(): ReactElement {
   const { session, signIn, sessionError } = useSession();
   const navigate = useNavigate();
+  const formRef = useRef<HTMLFormElement>(null);
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState('');
   const [error, setError] = useState('');
@@ -33,6 +34,7 @@ export default function Login(): ReactElement {
     event.preventDefault();
     if (!name.trim()) {
       setNameError('Enter your name.');
+      requestAnimationFrame(() => formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus());
       return;
     }
     setNameError('');
@@ -52,7 +54,7 @@ export default function Login(): ReactElement {
             {error}
           </p>
         )}
-        <form noValidate onSubmit={employeeLogin} className="app-form">
+        <form noValidate onSubmit={employeeLogin} className="app-form" ref={formRef}>
           <ToaTextField
             label="Employee name"
             autoComplete="name"

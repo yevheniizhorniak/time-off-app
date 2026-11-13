@@ -8,10 +8,6 @@
   min-width: 0;
   width: 100%;
 
-  .toa-label {
-    line-height: var(--toa-line-height-body);
-  }
-
   &__textarea {
     background: var(--toa-surface-color);
     border: 1px solid var(--toa-color-medium);

@@ -38,16 +38,7 @@ async function switchUser(page: Page): Promise<void> {
   await expect(page.getByLabel('Employee name')).toBeVisible();
 }
 
-for (const path of [
-  '/login',
-  '/time-off-requests',
-  '/time-off-requests/new',
-  '/requests',
-  '/requests/new',
-  '/home',
-  '/',
-  '/unknown',
-]) {
+for (const path of ['/login', '/time-off-requests', '/time-off-requests/new', '/', '/unknown']) {
   test(`only shows login when visiting ${path} without a session`, async ({ page }) => {
     await page.goto(path);
     await expect(page).toHaveURL(/\/login$/);
@@ -58,64 +49,30 @@ for (const path of [
   });
 }
 
-test('redirects legacy time off request URLs and preserves role guards and browser history', async ({ page }) => {
+test('preserves role guards and browser history for time off request URLs', async ({ page }) => {
   await loginEmployee(page);
-  await page.goto('/requests/new');
+  await page.goto('/time-off-requests/new');
   await expect(page).toHaveURL(/\/time-off-requests\/new$/);
   await expect(page.getByRole('button', { name: 'Start date', exact: true })).toBeVisible();
   await page.reload();
   await expect(page).toHaveURL(/\/time-off-requests\/new$/);
-  await page.goto('/requests');
+  await page.goto('/time-off-requests');
   await expect(page).toHaveURL(/\/time-off-requests$/);
   await page.goBack();
   await expect(page).toHaveURL(/\/time-off-requests\/new$/);
   await expect(page.getByRole('button', { name: 'Start date', exact: true })).toBeVisible();
   await page.goForward();
   await expect(page).toHaveURL(/\/time-off-requests$/);
+  await page.goto('/requests/new');
+  await expect(page).toHaveURL(/\/time-off-requests$/);
   await switchUser(page);
   await page.getByRole('button', { name: 'Log in as a supervisor', exact: true }).click();
-  for (const path of ['/requests', '/requests/new']) {
+  for (const path of ['/time-off-requests', '/time-off-requests/new']) {
     await page.goto(path);
     await expect(page).toHaveURL(/\/time-off-requests$/);
     await expect(page.getByRole('heading', { name: 'Team time off requests', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Start date', exact: true })).toHaveCount(0);
   }
-});
-
-test('shows legacy time off requests and converts storage on the next submission', async ({ page }) => {
-  const legacyRaw = JSON.stringify({
-    version: 1,
-    requests: [
-      {
-        id: 'legacy',
-        employeeKey: 'alex',
-        employeeName: 'Alex',
-        startDate: '2026-11-13',
-        endDate: '2026-11-16',
-        leaveType: 'paid-time-off',
-        note: 'Saved before the rename',
-        status: 'pending',
-        createdAt: '2026-11-12T08:00:00Z',
-      },
-    ],
-  });
-  await page.evaluate((raw) => localStorage.setItem('time-off-app.requests', raw), legacyRaw);
-  await page.reload();
-  await loginEmployee(page);
-  await expect(page.getByRole('article')).toContainText('Saved before the rename');
-  expect(await page.evaluate(() => localStorage.getItem('time-off-app.time-off-requests'))).toBeNull();
-  await fillTimeOffRequest(page, '2026-11-18', '2026-11-18');
-  await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
-  await expect(page.getByRole('article')).toHaveCount(2);
-  const saved: unknown = await page.evaluate(() => JSON.parse(localStorage.getItem('time-off-app.time-off-requests')!));
-  expect(saved).toMatchObject({
-    version: 2,
-    timeOffRequests: [expect.objectContaining({ id: 'legacy', note: 'Saved before the rename' }), expect.any(Object)],
-  });
-  expect(saved).not.toHaveProperty('requests');
-  expect(await page.evaluate(() => localStorage.getItem('time-off-app.requests'))).toBe(legacyRaw);
-  await page.reload();
-  await expect(page.getByRole('article')).toHaveCount(2);
 });
 
 test('restores access to protected pages on refresh and blocks browser Back after sign-out', async ({ page }) => {
@@ -202,6 +159,7 @@ test('validates dates and inclusive overlaps while allowing a one-day time off r
   await page.getByLabel('Employee name').fill('   ');
   await page.getByRole('button', { name: 'Log in as employee', exact: true }).click();
   await expect(page.getByText('Enter your name.', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Employee name')).toBeFocused();
   await loginEmployee(page);
   await page.getByRole('link', { name: 'Request time off', exact: true }).click();
   await page.getByRole('button', { name: 'Submit time off request', exact: true }).click();
@@ -368,16 +326,14 @@ test('guards routes, navigates calendar across years and fits the viewport', asy
   await page.screenshot({ path: testInfo.outputPath('supervisor-light.png'), fullPage: true });
 });
 
-test('supports keyboard login and the legacy home entry point', async ({ page }) => {
-  await page.goto('/home');
+test('supports keyboard login', async ({ page }) => {
+  await page.goto('/login');
   await page.getByLabel('Employee name').focus();
   await page.keyboard.type('Keyboard user');
   await page.keyboard.press('Tab');
   await expect(page.getByRole('button', { name: 'Log in as employee', exact: true })).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.getByRole('heading', { name: 'Your time off requests' })).toBeVisible();
-  await page.goto('/home');
-  await expect(page).toHaveURL(/\/time-off-requests$/);
 });
 
 for (const status of ['pending', 'approved']) {

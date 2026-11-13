@@ -45,15 +45,15 @@ Different employees can request overlapping dates. Each employee's pending and a
 
 ## Persistence and architecture
 
-The list lives at `/time-off-requests`, with the employee form at `/time-off-requests/new`. The old `/requests` and `/requests/new` URLs redirect to these pages, retaining the same access restrictions.
+The list lives at `/time-off-requests`, with the employee form at `/time-off-requests/new`.
 
-The app starts with empty data. Time off requests are stored locally in this browser under `time-off-app.time-off-requests` as `{ version: 2, timeOffRequests }`. If that entry is absent, the app reads the legacy `time-off-app.requests` version-1 format without modifying it. The next successful save writes the new format and keeps the legacy entry as a backup. An existing new entry always takes precedence, including an empty collection; invalid data is reported rather than replaced. Tabs running older app versions do not stay synchronized after migration.
+The app starts with empty data. Time off requests are stored locally in this browser under `time-off-app.time-off-requests` as `{ version: 2, timeOffRequests }`. Only this storage key and format are supported; invalid data is reported rather than replaced.
 
 The active simulated login is kept in session storage under `time-off-app.session`, so it survives refresh within the tab. Switching users keeps submitted time off requests available. This demonstration uses name-based identities and a shared supervisor role. Anyone using the browser can choose either role.
 
 Shared time off request types and validation live in `time-off-domain.ts`. The time-off feature owns `time-off-request-repository.ts` and its `browser-time-off-request-repository.ts` adapter. Session types, `session-repository.ts`, and `browser-session-repository.ts` live in `src/features/auth/`. Providers and hooks depend on feature-owned repository contracts. Workflow components and React state live in `src/features/time-off/`. Reusable UI controls live in `src/components/`, with toast components, delivery, and hooks together in the `toast` folder. Routed screens live in `src/pages/`, with time-off-request-form coordination in the colocated `useNewTimeOffRequestForm.ts` hook. Adapter/provider composition lives in `src/App.tsx`. The time off request repository validates stored data, saves before updating the UI, and refreshes other tabs through storage events. Web Locks serialize concurrent changes across tabs where the browser supports them.
 
-When saving fails, the form keeps its input and offers another submission attempt. Invalid saved time off requests are preserved and reported. Restore valid data or clear the active storage entry through browser developer tools, then choose **Retry loading time off requests**. To delete all of this browser's time off request history, clear both `time-off-app.time-off-requests` and the legacy `time-off-app.requests` backup; clearing only the new entry makes the app read the backup again. Browser storage access must be available for saving time off requests and restoring sessions.
+When saving fails, the form keeps its input and offers another submission attempt. Invalid saved time off requests are preserved and reported. Restore valid data or clear the active storage entry through browser developer tools, then choose **Retry loading time off requests**. To delete all of this browser's time off request history, clear `time-off-app.time-off-requests`. Browser storage access must be available for saving time off requests and restoring sessions.
 
 ## Storybook
 

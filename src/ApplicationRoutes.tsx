@@ -13,8 +13,6 @@ export default function ApplicationRoutes(): React.JSX.Element {
       key={session?.role === 'employee' ? `employee-${session.employeeKey}` : (session?.role ?? 'login')}
     >
       <Route path="/login" element={<Login />} />
-      <Route path="/requests" element={<Navigate to={session ? '/time-off-requests' : '/login'} replace />} />
-      <Route path="/requests/new" element={<Navigate to={session ? '/time-off-requests/new' : '/login'} replace />} />
       {session
         ? [
             <Route

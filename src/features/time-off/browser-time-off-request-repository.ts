@@ -4,20 +4,16 @@ import { isTimeOffRequest, type TimeOffRequest } from './types/time-off-request'
 import type { TimeOffRequestRepository } from './types/time-off-request-repository';
 
 const timeOffRequestKey = 'time-off-app.time-off-requests';
-const legacyTimeOffRequestKey = 'time-off-app.requests';
 
 export function createTimeOffRequestRepository(getStorage: () => Storage): TimeOffRequestRepository {
   function load(): TimeOffRequest[] {
-    const storage = getStorage();
-    const currentRaw = storage.getItem(timeOffRequestKey);
-    const isLegacy = currentRaw === null;
-    const raw = isLegacy ? storage.getItem(legacyTimeOffRequestKey) : currentRaw;
+    const raw = getStorage().getItem(timeOffRequestKey);
     if (raw === null) return [];
     const data: unknown = JSON.parse(raw);
-    if (!isRecord(data) || data.version !== (isLegacy ? 1 : 2)) {
+    if (!isRecord(data) || data.version !== 2) {
       throw new Error('Saved time off requests have an unsupported format.');
     }
-    const timeOffRequests = isLegacy ? data.requests : data.timeOffRequests;
+    const timeOffRequests = data.timeOffRequests;
     if (
       !Array.isArray(timeOffRequests) ||
       !timeOffRequests.every(isTimeOffRequest) ||
@@ -42,7 +38,7 @@ export function createTimeOffRequestRepository(getStorage: () => Storage): TimeO
     },
     subscribe(onChange) {
       function handleStorage(event: StorageEvent): void {
-        if (event.key === timeOffRequestKey || event.key === legacyTimeOffRequestKey || event.key === null) onChange();
+        if (event.key === timeOffRequestKey || event.key === null) onChange();
       }
       window.addEventListener('storage', handleStorage);
       return () => window.removeEventListener('storage', handleStorage);

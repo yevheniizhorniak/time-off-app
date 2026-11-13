@@ -5,7 +5,8 @@ import { isTimestamp } from '../../../type-safety/is-timestamp';
 
 import { isLeaveType, type LeaveType } from './leave-type';
 import type { TimeOffRequestDraft } from './time-off-request-draft';
-import type { TimeOffRequestStatus } from './time-off-request-status';
+
+export type TimeOffRequestStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
 
 export type TimeOffRequest = Omit<TimeOffRequestDraft, 'leaveType'> & {
   id: string;

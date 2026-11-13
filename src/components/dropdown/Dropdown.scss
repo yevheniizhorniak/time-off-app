@@ -8,12 +8,6 @@
   min-width: 0;
   width: 100%;
 
-  &__label {
-    @include typography.text-semibold;
-    line-height: var(--toa-line-height-body);
-    overflow-wrap: anywhere;
-  }
-
   &__select {
     background: var(--toa-surface-color);
     border: 1px solid var(--toa-color-medium);
@@ -21,7 +15,7 @@
     box-sizing: border-box;
     color: inherit;
     cursor: pointer;
-    font-size: var(--toa-font-size-body);
+    @include typography.text-body;
     min-height: 44px;
     min-width: 0;
     padding: 0.625rem 0.75rem;

@@ -5,6 +5,7 @@ button.toa-button {
   border: 1px solid transparent;
   border-radius: 8px;
   cursor: pointer;
+  @include typography.text-body;
   @include typography.text-semibold;
   min-height: 44px;
   padding: 0.625rem 1rem;

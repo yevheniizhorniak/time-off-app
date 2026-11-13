@@ -13,14 +13,18 @@
     border-radius: 8px;
     color: inherit;
     cursor: pointer;
+    @include typography.text-body;
     min-height: 44px;
     padding: 0.625rem 0.75rem;
     text-align: left;
     width: 100%;
 
-    &:hover:not(:disabled),
-    &:active:not(:disabled) {
+    &:hover:not(:disabled) {
       border-color: var(--toa-color-primary);
+    }
+
+    &:active:not(:disabled) {
+      border-color: var(--toa-color-primary-hover);
     }
 
     &:focus-visible {
@@ -29,7 +33,7 @@
     }
 
     &[aria-invalid='true'] {
-      border-color: var(--toa-color-error);
+      border-color: var(--toa-color-danger);
     }
 
     &:disabled {
@@ -42,8 +46,9 @@
 
   &__hint,
   &__error {
-    font-size: var(--toa-font-size-small);
+    @include typography.text-small;
     margin: 0;
+    overflow-wrap: anywhere;
   }
 
   &__hint {
@@ -51,11 +56,10 @@
   }
 
   &__error {
-    color: var(--toa-color-error);
+    color: var(--toa-color-field-error);
   }
 
   &__dialog {
-    background: var(--toa-surface-color);
     box-sizing: border-box;
     color: var(--toa-text-color);
     max-height: calc(100dvh - 2rem);

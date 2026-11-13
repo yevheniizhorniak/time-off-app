@@ -1,5 +1,7 @@
 import { useId, type ChangeEventHandler, type ComponentProps, type ReactElement } from 'react';
 
+import { ToaLabel } from '../label/Label';
+
 import './Dropdown.scss';
 
 export type DropdownOption = {
@@ -43,10 +45,7 @@ export function ToaDropdown({
 
   return (
     <div className="toa-dropdown">
-      <label className="toa-dropdown__label" htmlFor={selectId}>
-        {label}
-        {selectProps.required && <span aria-hidden="true"> *</span>}
-      </label>
+      <ToaLabel htmlFor={selectId} required={selectProps.required} text={label} />
       <select
         {...selectProps}
         aria-describedby={error ? errorId : undefined}
