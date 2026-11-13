@@ -28,17 +28,23 @@
   --toa-color-light: #f4f5f8;
   --toa-color-dark: #222428;
   --toa-color-dark-text: #ffffff;
+  --toa-color-dark-hover: #3d3e42;
+  --toa-color-dark-active: #4e5053;
+
+  --toa-color-shadow: rgb(0 0 0 / 0.2);
+  --toa-color-dialog-shadow: rgb(0 0 0 / 0.24);
+  --toa-color-backdrop: rgb(0 0 0 / 0.5);
 
   --toa-background-color: #f4f6fa;
   --toa-text-color: #17243b;
   --toa-surface-color: #ffffff;
 
-  --app-border: #dce2eb;
-  --app-muted: #56647a;
-  --app-subtle: #e9eef8;
-  --app-error: #b42336;
-  --app-approved: #1c704b;
-  --app-pending: #886007;
+  --toa-color-border: #dce2eb;
+  --toa-color-muted: #56647a;
+  --toa-color-subtle: #e9eef8;
+  --toa-color-error: #b42336;
+  --toa-color-approved: #1c704b;
+  --toa-color-pending: #886007;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -66,17 +72,19 @@
     --toa-color-light: #222428;
     --toa-color-dark: #f4f5f8;
     --toa-color-dark-text: #000000;
+    --toa-color-dark-hover: #d7d8da;
+    --toa-color-dark-active: #c3c4c6;
 
     --toa-background-color: #121212;
     --toa-text-color: #ffffff;
     --toa-surface-color: #1e1e1e;
 
-    --app-border: #35435a;
-    --app-muted: #b5c1d4;
-    --app-subtle: #2d3b55;
-    --app-error: #ff9aaa;
-    --app-approved: #7bd4a6;
-    --app-pending: #f1cc73;
+    --toa-color-border: #35435a;
+    --toa-color-muted: #b5c1d4;
+    --toa-color-subtle: #2d3b55;
+    --toa-color-error: #ff9aaa;
+    --toa-color-approved: #7bd4a6;
+    --toa-color-pending: #f1cc73;
   }
 
   :root.ios {

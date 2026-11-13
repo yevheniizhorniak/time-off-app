@@ -20,7 +20,7 @@
       background: var(--toa-color-primary-hover);
     }
     &:active {
-      filter: brightness(0.85);
+      background: var(--toa-color-primary-active);
     }
     &:focus-visible {
       outline: 2px solid var(--toa-color-primary);
@@ -41,9 +41,9 @@
   }
 
   .app-empty {
-    border: 1px dashed var(--app-border);
+    border: 1px dashed var(--toa-color-border);
     border-radius: 12px;
-    color: var(--app-muted);
+    color: var(--toa-color-muted);
     padding: 1.5rem;
   }
 

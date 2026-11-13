@@ -12,16 +12,16 @@
 
   circle {
     fill: none;
-    stroke: currentColor;
     stroke-width: 3;
   }
 }
 
 .toa-loading-spinner__track {
-  opacity: 0.25;
+  stroke: var(--toa-color-border);
 }
 
 .toa-loading-spinner__arc {
+  stroke: currentColor;
   stroke-dasharray: 42 57;
   stroke-linecap: round;
 }

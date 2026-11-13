@@ -9,7 +9,7 @@
       margin-bottom: 1rem;
     }
     &__count {
-      background: var(--app-subtle);
+      background: var(--toa-color-subtle);
       border-radius: 10px;
       color: var(--toa-text-color);
       font-size: 0.625rem;
@@ -17,7 +17,7 @@
       padding: 0 3px;
     }
     &__details {
-      border-top: 1px solid var(--app-border);
+      border-top: 1px solid var(--toa-color-border);
       padding-top: 1rem;
     }
     &__details p {

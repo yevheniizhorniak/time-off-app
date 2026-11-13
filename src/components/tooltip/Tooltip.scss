@@ -7,11 +7,11 @@
 }
 
 .toa-tooltip {
-  background: var(--toa-text-color, #17243b);
+  background: var(--toa-text-color);
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgb(0 0 0 / 0.2);
+  box-shadow: 0 4px 16px var(--toa-color-shadow);
   box-sizing: border-box;
-  color: var(--toa-background-color, #f4f6fa);
+  color: var(--toa-background-color);
   @include typography.text-small;
   left: 0;
   margin: 0;

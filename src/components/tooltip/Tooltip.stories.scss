@@ -1,35 +1,36 @@
 .toa-tooltip-example {
   box-sizing: border-box;
-  color: var(--toa-text-color, #17243b);
+  color: var(--toa-text-color);
   padding: 4rem 1rem;
   width: 100%;
 
   &__button {
-    background: var(--toa-color-primary, #2457c5);
+    background: var(--toa-color-primary);
     border: 0;
     border-radius: 8px;
-    color: var(--toa-color-primary-text, #fff);
+    color: var(--toa-color-primary-text);
     cursor: pointer;
     min-height: 44px;
     min-width: 44px;
     padding: 0.625rem 1rem;
 
     &:hover:not(:disabled) {
-      background: var(--toa-color-primary-hover, #1c469f);
+      background: var(--toa-color-primary-hover);
     }
 
     &:active:not(:disabled) {
-      filter: brightness(0.85);
+      background: var(--toa-color-primary-active);
     }
 
     &:focus-visible {
-      outline: 2px solid var(--toa-text-color, #17243b);
+      outline: 2px solid var(--toa-text-color);
       outline-offset: 2px;
     }
 
     &:disabled {
+      background: var(--toa-color-primary-disabled);
+      color: var(--toa-color-primary-disabled-text);
       cursor: not-allowed;
-      opacity: 0.6;
     }
   }
 
@@ -47,7 +48,7 @@
   }
 
   &__scroll {
-    border: 1px solid var(--app-border, #dce2eb);
+    border: 1px solid var(--toa-color-border);
     height: 16rem;
     max-width: 24rem;
     overflow: auto;

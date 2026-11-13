@@ -1,6 +1,6 @@
 .toa-calendar {
   box-sizing: border-box;
-  color: var(--toa-text-color, #17243b);
+  color: var(--toa-text-color);
   min-width: 0;
   line-height: var(--toa-line-height-body);
 
@@ -33,10 +33,6 @@
       flex-shrink: 0;
       font-size: var(--toa-font-size-small);
       padding: 0.5rem;
-
-      &:hover:not(:disabled) {
-        background: color-mix(in srgb, var(--toa-color-primary, #0054e9) 94%, var(--toa-color-primary-text, #fff));
-      }
     }
   }
 
@@ -48,7 +44,7 @@
   }
 
   &__weekday {
-    color: var(--app-muted, #56647a);
+    color: var(--toa-color-muted);
     font-size: 0.75rem;
     text-align: center;
     padding: 0.5rem 0;
@@ -67,31 +63,34 @@
     padding: 0.25rem 0;
 
     &:hover:not(:disabled):not([aria-pressed='true']) {
-      background: color-mix(in srgb, currentColor 6%, transparent);
+      background: var(--toa-color-secondary-hover);
     }
 
-    &:active:not(:disabled) {
-      filter: brightness(0.85);
+    &:active:not(:disabled):not([aria-pressed='true']) {
+      background: var(--toa-color-secondary-active);
     }
 
     &[aria-current='date'] {
-      border-color: var(--toa-color-primary, #2457c5);
+      border-color: var(--toa-color-primary);
     }
 
     &[aria-pressed='true'] {
-      background: var(--toa-color-primary, #2457c5);
-      color: var(--toa-color-primary-text, #fff);
+      background: var(--toa-color-primary);
+      color: var(--toa-color-primary-text);
+
+      &:active:not(:disabled) {
+        background: var(--toa-color-primary-active);
+      }
     }
 
     &:focus-visible {
-      outline: 2px solid var(--toa-color-primary, #2457c5);
+      outline: 2px solid var(--toa-color-primary);
       outline-offset: 1px;
     }
 
     &:disabled {
-      color: var(--app-muted, #56647a);
+      color: var(--toa-color-secondary-disabled-text);
       cursor: not-allowed;
-      opacity: 0.55;
     }
   }
 

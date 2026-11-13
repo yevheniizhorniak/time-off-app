@@ -14,11 +14,16 @@ button.toa-button {
     color: var(--toa-color-primary-text);
 
     &:hover:not(:disabled) {
-      background: color-mix(in srgb, var(--toa-color-primary) 90%, var(--toa-text-color));
+      background: var(--toa-color-primary-hover);
     }
 
     &:active:not(:disabled) {
-      background: color-mix(in srgb, var(--toa-color-primary) 80%, var(--toa-text-color));
+      background: var(--toa-color-primary-active);
+    }
+
+    &:disabled {
+      background: var(--toa-color-primary-disabled);
+      color: var(--toa-color-primary-disabled-text);
     }
   }
 
@@ -28,11 +33,17 @@ button.toa-button {
     color: var(--toa-text-color);
 
     &:hover:not(:disabled) {
-      background: color-mix(in srgb, var(--toa-text-color) 8%, transparent);
+      background: var(--toa-color-secondary-hover);
     }
 
     &:active:not(:disabled) {
-      background: color-mix(in srgb, var(--toa-text-color) 14%, transparent);
+      background: var(--toa-color-secondary-active);
+    }
+
+    &:disabled {
+      background: var(--toa-color-secondary-disabled);
+      border-color: var(--toa-color-border);
+      color: var(--toa-color-secondary-disabled-text);
     }
   }
 
@@ -43,7 +54,6 @@ button.toa-button {
 
   &:disabled {
     cursor: not-allowed;
-    opacity: 0.6;
   }
 }
 

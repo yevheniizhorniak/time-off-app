@@ -1,13 +1,13 @@
 @use '../../theme/typography';
 
 .toa-label {
-  color: var(--toa-text-color, #000);
+  color: var(--toa-text-color);
   display: inline-block;
   @include typography.text-semibold;
   max-width: 100%;
   overflow-wrap: anywhere;
 
   .toa-label__required {
-    color: var(--toa-color-danger, #c5000f);
+    color: var(--toa-color-danger);
   }
 }

@@ -8,7 +8,7 @@
       color: var(--toa-color-primary-hover);
     }
     &:active {
-      filter: brightness(0.85);
+      color: var(--toa-color-primary-active);
     }
     &:focus-visible {
       outline: 2px solid var(--toa-color-primary);
