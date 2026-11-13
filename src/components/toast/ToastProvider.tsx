@@ -1,8 +1,7 @@
 import { useEffect, useRef, type ReactElement, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
-import Toast from '../toast/Toast';
-
+import Toast from './Toast';
 import { ToastContext } from './useToast';
 import { useToastQueue } from './useToastQueue';
 

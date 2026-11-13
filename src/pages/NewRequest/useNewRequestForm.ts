@@ -1,7 +1,7 @@
 import { useRef, useState, type Dispatch, type FormEvent, type RefObject, type SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { useToast } from '../../components/toast-provider/useToast';
+import { useToast } from '../../components/toast/useToast';
 import { useSession } from '../../features/auth/useSession';
 import { useTimeOff } from '../../features/time-off/hooks/useTimeOff';
 import {

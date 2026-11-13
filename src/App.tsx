@@ -2,7 +2,7 @@ import { IonApp, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 
 import ApplicationRoutes from './ApplicationRoutes';
-import ToastProvider from './components/toast-provider/ToastProvider';
+import ToastProvider from './components/toast/ToastProvider';
 import { createSessionRepository } from './features/auth/browser-session-repository';
 import SessionProvider from './features/auth/session-provider/SessionProvider';
 import { createRequestRepository } from './features/time-off/browser-request-repository';

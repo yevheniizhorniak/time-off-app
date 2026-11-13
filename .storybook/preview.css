@@ -1,0 +1,6 @@
+body:has(#storybook-docs:not([hidden])) {
+  position: static;
+  height: auto;
+  max-height: none;
+  overflow: auto;
+}

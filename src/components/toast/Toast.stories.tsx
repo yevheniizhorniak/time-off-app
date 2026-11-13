@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import Button from '../button/Button';
-import ToastProvider from '../toast-provider/ToastProvider';
-import { useToast } from '../toast-provider/useToast';
 
 import Toast from './Toast';
+import ToastProvider from './ToastProvider';
+import { useToast } from './useToast';
 
 function ToastExample({ message, stacked = false }: { message: string; stacked?: boolean }): React.JSX.Element {
   const { showToast } = useToast();
